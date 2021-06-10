@@ -1,3 +1,5 @@
+#!/usr/bin/env perl
+
 # Detects potential cross-contamination by comparing consensus-level and minor alleles.
 
 use strict;

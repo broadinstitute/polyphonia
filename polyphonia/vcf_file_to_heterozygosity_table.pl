@@ -1,3 +1,5 @@
+#!/usr/bin/env perl
+
 # reads in vcf file and prints human-readable heterozygosity table
 
 # includes positions with with all of:
