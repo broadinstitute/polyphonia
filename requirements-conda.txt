@@ -1,0 +1,4 @@
+lofreq>=2.1.5
+mafft>=7.480
+perl-parallel-forkmanager>=2.02
+r-tidyverse>=1.2.1
