@@ -10,7 +10,6 @@ ENV \
 	PATH="$POLYPHONIA_PATH:$MINICONDA_PATH/envs/$CONDA_DEFAULT_ENV/bin:$MINICONDA_PATH/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
 # initiate conda environment
-WORKDIR $INSTALL_PATH
 RUN conda create -n $CONDA_DEFAULT_ENV python=3.7
 RUN echo "source activate $CONDA_DEFAULT_ENV" >> ~/.bashrc
 RUN hash -r
