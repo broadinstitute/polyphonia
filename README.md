@@ -32,7 +32,7 @@ OPTIONS:
 	-a | --max-mismatches INT	Maximum allowed bases in contaminating sample consensus not matching contaminated sample alleles [1]
 	-p | --cores INT		Optional number of cores to use for preprocessing in parallel [1]
 	-u | --verbose BOOL		Print progress to STDOUT [TRUE]
-	-i | --directory DIRECTORY	Path of directory to store intermediate and temp files [/Users/lakras/]
-	-o | --output FILE		Output file path [/Users/lakras/potential_cross-contamination.txt]
+	-i | --directory DIRECTORY	Path of directory to store intermediate and temp files [current working directory]
+	-o | --output FILE		Output file path [current working directory/potential_cross-contamination.txt]
 	-j | --overwrite FILE		Overwrite output, intermediate, and temp files at input paths [FALSE]
 ```
