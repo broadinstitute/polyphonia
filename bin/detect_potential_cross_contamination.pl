@@ -8,10 +8,10 @@ use warnings;
 # tools used:
 use Math::Round;
 use Parallel::ForkManager; # download here: https://metacpan.org/pod/Parallel::ForkManager
-my $LOFREQ_EXECUTABLE_FILE_PATH = retrieve_file_directory(__FILE__)."lofreq_star-2.1.3.1/bin/lofreq";
-my $MAFFT_EXECUTABLE_FILE_PATH = retrieve_file_directory(__FILE__)."mafft-mac/mafft.bat";
-my $VCF_TO_HETEROZYGOSITY_TABLE_SCRIPT_FILE_PATH = retrieve_file_directory(__FILE__)."vcf_file_to_heterozygosity_table.pl";
-my $PLATE_VISUALIZATION_FILE_PATH = retrieve_file_directory(__FILE__)."visualize_potential_cross_contamination.R";
+my $LOFREQ_EXECUTABLE_FILE_PATH = "lofreq";
+my $MAFFT_EXECUTABLE_FILE_PATH = "mafft";
+my $VCF_TO_HETEROZYGOSITY_TABLE_SCRIPT_FILE_PATH = "vcf_file_to_heterozygosity_table.pl";
+my $PLATE_VISUALIZATION_FILE_PATH = "visualize_potential_cross_contamination.R";
 
 # plate map input file:
 my $PLATE_MAP_SAMPLE_COLUMN = 0;
@@ -78,7 +78,7 @@ my $default_output_file = $default_temp_intermediate_files_directory.$DEFAULT_OU
 if(!scalar @ARGV) # no command line arguments supplied
 {
 	print STDOUT "\nDetects potential cross-contamination.\n";
-	print STDOUT "Usage: perl detect_potential_cross_contamination.pl [options]\n";
+	print STDOUT "Usage: detect_potential_cross_contamination.pl [options]\n";
 	print STDOUT "\n";
 	
 	print STDOUT "OPTIONS:\n";
@@ -1440,8 +1440,8 @@ sub process_within_sample_diversity_file_for_sample
 		# runs vcf_file_to_heterozygosity_table.pl for vcf -> heterozygosity table
 		my $output_heterozygosity_table = $temp_intermediate_directory.retrieve_file_name($within_sample_diversity_file)."_heterozygosity.txt";
 		check_if_file_exists_before_writing($output_heterozygosity_table);
-		print STDOUT "perl $VCF_TO_HETEROZYGOSITY_TABLE_SCRIPT_FILE_PATH $within_sample_diversity_file > $output_heterozygosity_table\n" if $verbose;
-		`perl $VCF_TO_HETEROZYGOSITY_TABLE_SCRIPT_FILE_PATH $within_sample_diversity_file > $output_heterozygosity_table`;
+		print STDOUT "$VCF_TO_HETEROZYGOSITY_TABLE_SCRIPT_FILE_PATH $within_sample_diversity_file > $output_heterozygosity_table\n" if $verbose;
+		`$VCF_TO_HETEROZYGOSITY_TABLE_SCRIPT_FILE_PATH $within_sample_diversity_file > $output_heterozygosity_table`;
 		print STDOUT "\n" if $verbose;
 		
 		# updates within-sample diversity file saved for this sample
