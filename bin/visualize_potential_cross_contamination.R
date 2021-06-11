@@ -1,3 +1,5 @@
+#!/usr/bin/env Rscript
+
 # Visualizes plate map with wells colored by total estimated contamination volume
 # and with arrows to contaminated wells from proposed potential sources of contamination.
 
