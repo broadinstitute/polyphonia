@@ -95,7 +95,7 @@ TODO
 
 [**Diafonia**](https://translate.google.com/?sl=it&tl=en&text=diafonia&op=translate) means crosstalk in Italian, Portuguese, and Haitian creole, and is very close to the words for crosstalk in Spanish (diafonía) and French (diaphonie). In Italian, diafonia also refers to the simultaneous presence of multiple voices, in music and otherwise.
 
-In addition to being the name of our software package, **Polyphonia** is also the name of a particularly beautiful abstract ballet created by Christopher Wheeldon for New York City Ballet. You can watch an excerpt by clicking the preview image below:
+In addition to being the name of our software package, **Polyphonia** is also the name of [a particularly beautiful abstract ballet](https://www.nycballet.com/discover/ballet-repertory/polyphonia/) created by Christopher Wheeldon for New York City Ballet. You can watch an excerpt by clicking the preview image below:
 
 [<img width="1157" alt="ballet_video_preview" src="https://user-images.githubusercontent.com/6245320/121761826-3421c900-cb00-11eb-8712-544ab801fe3c.png">](http://www.youtube.com/watch?v=MOhvllhQo8A)
 
