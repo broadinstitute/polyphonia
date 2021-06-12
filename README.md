@@ -44,30 +44,34 @@ We use Docker to distribute and run polyphonia pre-packaged in an isolated, frie
 
 1. Install Docker. [Download Docker for your system](https://docs.docker.com/get-docker/) and follow instructions to install. When prompted, grant permissions to access your file system. Open the Docker application on your computer and leave it open in the background.
 
-2. Use Docker to create a new isolated, ephemeral pre-built file system containing polyphonia installed alongside the software it requires, with access to your computer's file system. In your terminal application, enter:
+2. Update your version of polyphonia. If there have been any updates to polyphonia since you last ran it, your version will be out of date. Update it by entering:
+
+   `docker pull quay.io/broadinstitute/polyphonia:latest`
+
+3. Use Docker to create a new, isolated, ephemeral, pre-built file system containing polyphonia installed alongside the software it requires, with access to your computer's file system. In your terminal application, enter:
 
    `docker run -v $(pwd):/mnt/data -it --rm quay.io/broadinstitute/polyphonia`
 
-   - [`docker run`](https://docs.docker.com/engine/reference/commandline/run/)` quay.io/broadinstitute/polyphonia` creates a new, isolated file system (a container) copied from the snapshot (docker image) we created, which is stored at quay.io/broadinstitute/polyphonia
+   - [`docker run`](https://docs.docker.com/engine/reference/commandline/run/)` quay.io/broadinstitute/polyphonia` creates a new file system (a container) copied from the snapshot (docker image) we created, which is stored at quay.io/broadinstitute/polyphonia. This new file system is isolated from the rest of your computer.
    - `-v $(pwd):/mnt/data` connects your current directory on your computer (`pwd`) to the `/mnt/data` directory in the new file system. (If you navigate to `/mnt/data` in the new file system, you will see your own familiar files.)
-   - `-it` connects and provides a terminal for you to communicate with the new file system
-   - `--rm` automatically destroys the file system once it is exited
+   - `-it` connects and provides a terminal for you to communicate with the new file system.
+   - `--rm` automatically destroys the new file system once it is exited.
 
    You should see your new container appear in the Docker application interface.
 
-3. Explore the space. Regardless of your computer's file system, your new, isolated file system is an Ubuntu file system. Type `ls` to look in a directory and `cd` to navigate to it (or `cd ../` to navigate to the parent directory). Polyphonia lives in the directory `opt/polyphonia`. Your own files are in the directory `/mnt/data/`.
+4. Explore the space. Regardless of your computer's file system, your new, isolated file system is an Ubuntu file system. Type `ls` to look in a directory and `cd` to navigate to it (or `cd ../` to navigate to the parent directory). Polyphonia lives in the directory `opt/polyphonia`. Your own files are in the directory `/mnt/data`.
 
-4. Run polyphonia. Enter `/opt/polyphonia/detect_potential_cross_contamination.pl`. You should see a description of the software and a list of options. To detect potential cross-contamination in a set of example files included with polyphonia, enter:
+5. Run polyphonia. Enter `/opt/polyphonia/detect_potential_cross_contamination.pl`. You should see a description of the software and a list of options. To detect potential cross-contamination in a set of example files included with polyphonia, enter:
 
    `TODO`
 
-   You can detect potential cross-contamination in your own files by adding `/mnt/data` to the start of your current directory when you created your container. On my computer, my files live in a directory called `/Users/lakras/myfiles`. When I created my container I was in `/Users/lakras`—from the perspective of the container, my files are in `/mnt/data/myfiles`. To detect potential cross-contamination in files on my computer, I would enter:
+   You can detect potential cross-contamination in your own files by adding `/mnt/data` to the start of the directory you were in when you created your container. On my computer, my files live in a directory called `/Users/lakras/myfiles`. When I created my container I was in `/Users/lakras`—from the perspective of the container, my files are in `/mnt/data/myfiles`. To detect potential cross-contamination in files on my computer, I would enter:
 
    `TODO`
 
    Follow the guide below to learn more about polyphonia's input and output options.
 
-5. Exit. When you are done, destroy your ephemeral file system by typing `exit`. You should see your container disappear from the Docker interface.
+6. Exit. When you are done, destroy your ephemeral file system by typing `exit`. You should see your container disappear from the Docker interface.
 
 ## Required Input Files
 
@@ -85,3 +89,14 @@ TODO
 
 TODO
 
+## The Name
+
+[**Polyphony**](https://www.youtube.com/watch?v=teh22szdnRQ) describes music containing multiple simultaneous voices with their own melodies, like ["We Will Fall Together" by Streetlight Manifesto](https://www.youtube.com/watch?v=SOqenYis1iQ), ["Somebody That I Used to Know" by Walk off the Earth](https://www.youtube.com/watch?v=d9NF2edxy-M), ["exile" by Taylor Swift with Bon Iver](https://www.youtube.com/watch?v=osdoLjUNFnA), ["Daddy Cool" by Boney M](https://www.youtube.com/watch?v=tHyHOUShOg8), ["Come As You Are" by Nirvana](https://www.youtube.com/watch?v=vabnZ9-ex7o), ["Severed" by The Decemberists](https://www.youtube.com/watch?v=ksTFj6L0mao), and to at least some extent most music created in recent memory.
+
+[**Diafonia**](https://translate.google.com/?sl=it&tl=en&text=diafonia&op=translate) means crosstalk in Italian, Portuguese, and Haitian creole, and is very close to the words for crosstalk in Spanish (diafonía) and French (diaphonie). In Italian, diafonia also refers to the simultaneous presence of multiple voices, in music and otherwise.
+
+In addition to being the name of our software package, **Polyphonia** is also the name of a particularly beautiful abstract ballet created by Christopher Wheeldon for New York City Ballet. You can watch an excerpt by clicking the preview image below:
+
+[<img width="1157" alt="ballet_video_preview" src="https://user-images.githubusercontent.com/6245320/121761826-3421c900-cb00-11eb-8712-544ab801fe3c.png">](http://www.youtube.com/watch?v=MOhvllhQo8A)
+
+I think you will find it captures the essence of cross-contamination quite nicely.
