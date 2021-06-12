@@ -1,7 +1,7 @@
 # polyphonia
-Detects cross-contamination in sequence data.
+Detects potential cross-contamination in sequence data.
 
-Usage: `perl detect_potential_cross_contamination.pl [options]`
+Usage: `detect_potential_cross_contamination.pl [options]`
 
 ```
 OPTIONS:
@@ -36,3 +36,52 @@ OPTIONS:
 	-o | --output FILE		Output file path [current working directory/potential_cross-contamination.txt]
 	-j | --overwrite FILE		Overwrite output, intermediate, and temp files at input paths [FALSE]
 ```
+
+## Getting Started
+
+We use Docker to distribute and run polyphonia pre-packaged in an isolated, friendly environment with the software it depends on. If you are new to Docker, you can learn more about it [here](https://docs.docker.com/get-started/).
+
+
+1. Install Docker. [Download Docker for your system](https://docs.docker.com/get-docker/) and follow instructions to install. When prompted, grant permissions to access your file system. Open the Docker application on your computer and leave it open in the background.
+
+2. Use Docker to create a new isolated, ephemeral pre-built file system containing polyphonia installed alongside the software it requires, with access to your computer's file system. In your terminal application, enter:
+
+   `docker run -v $(pwd):/mnt/data -it --rm quay.io/broadinstitute/polyphonia`
+
+   - [`docker run`](https://docs.docker.com/engine/reference/commandline/run/)` quay.io/broadinstitute/polyphonia` creates a new, isolated file system (a container) copied from the snapshot (docker image) we created, which is stored at quay.io/broadinstitute/polyphonia
+   - `-v $(pwd):/mnt/data` connects your current directory on your computer (`pwd`) to the `/mnt/data` directory in the new file system. (If you navigate to `/mnt/data` in the new file system, you will see your own familiar files.)
+   - `-it` connects and provides a terminal for you to communicate with the new file system
+   - `--rm` automatically destroys the file system once it is exited
+
+   You should see your new container appear in the Docker application interface.
+
+3. Explore the space. Regardless of your computer's file system, your new, isolated file system is an Ubuntu file system. Type `ls` to look in a directory and `cd` to navigate to it (or `cd ../` to navigate to the parent directory). Polyphonia lives in the directory `opt/polyphonia`. Your own files are in the directory `/mnt/data/`.
+
+4. Run polyphonia. Enter `/opt/polyphonia/detect_potential_cross_contamination.pl`. You should see a description of the software and a list of options. To detect potential cross-contamination in a set of example files included with polyphonia, enter:
+
+   `TODO`
+
+   You can detect potential cross-contamination in your own files by adding `/mnt/data` to the start of your current directory when you created your container. On my computer, my files live in a directory called `/Users/lakras/myfiles`. When I created my container I was in `/Users/lakras`—from the perspective of the container, my files are in `/mnt/data/myfiles`. To detect potential cross-contamination in files on my computer, I would enter:
+
+   `TODO`
+
+   Follow the guide below to learn more about polyphonia's input and output options.
+
+5. Exit. When you are done, destroy your ephemeral file system by typing `exit`. You should see your container disappear from the Docker interface.
+
+## Required Input Files
+
+TODO
+
+## Optional Plate Map Inputs
+
+TODO
+
+## Other Options
+
+TODO
+
+## Output Files
+
+TODO
+
