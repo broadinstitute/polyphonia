@@ -10,8 +10,8 @@ use Math::Round;
 use Parallel::ForkManager; # download here: https://metacpan.org/pod/Parallel::ForkManager
 my $LOFREQ_EXECUTABLE_FILE_PATH = "lofreq";
 my $MAFFT_EXECUTABLE_FILE_PATH = "mafft";
-my $VCF_TO_HETEROZYGOSITY_TABLE_SCRIPT_FILE_PATH = "/opt/polyphonia/vcf_file_to_heterozygosity_table.pl";
-my $PLATE_VISUALIZATION_FILE_PATH = "/opt/polyphonia/visualize_potential_cross_contamination.R";
+my $VCF_TO_HETEROZYGOSITY_TABLE_SCRIPT_FILE_PATH = "vcf_file_to_heterozygosity_table.pl";
+my $PLATE_VISUALIZATION_FILE_PATH = "visualize_potential_cross_contamination.R";
 
 # plate map input file:
 my $PLATE_MAP_SAMPLE_COLUMN = 0;

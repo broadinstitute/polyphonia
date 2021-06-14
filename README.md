@@ -71,11 +71,11 @@ We use Docker to distribute and run polyphonia pre-packaged in an isolated envir
 
 4. Explore the space. Regardless of your computer's file system, your new, isolated file system is an Ubuntu file system. Type `ls` to look in a directory and `cd` to navigate to it (or `cd ../` to navigate to the parent directory). Polyphonia lives in the directory `opt/polyphonia`. Your own files are in the directory `/mnt/data`.
 
-5. Run polyphonia. Enter `/opt/polyphonia/detect_potential_cross_contamination.pl`. You should see a description of the software and a list of options. To detect potential cross-contamination in a set of example files included with polyphonia, enter:
+5. Run polyphonia. Enter `detect_potential_cross_contamination.pl`. You should see a description of the software and a list of options. To detect potential cross-contamination in a set of example files included with polyphonia, enter:
 
    `TODO`
 
-   You can detect potential cross-contamination in your own files by adding `/mnt/data` to the start of the directory you were in when you created your container. On my computer, my files live in a directory called `/Users/lakras/myfiles`. When I created my container I was in `/Users/lakras`—from the perspective of the container, my files are in `/mnt/data/myfiles`. To detect potential cross-contamination in files on my computer, I would enter:
+   You can read from or write to files outside the isolated file system by replacing the directory you were in when you created your container with `/mnt/data`. On my computer, my files live in a directory called `/Users/lakras/myfiles`. When I created my container I was in `/Users/lakras`—from the perspective of the container, my files are in `/mnt/data/myfiles`. To detect potential cross-contamination in files on my computer, I would enter:
 
    `TODO`
 
