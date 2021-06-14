@@ -6,7 +6,10 @@
 use strict;
 use warnings;
 
+# option entered by user
 my $DETECT_POTENTIAL_CROSS_CONTAMIANTION_OPTION = "detect_cross_contam";
+
+# script run in response to option entered by user
 my $DETECT_POTENTIAL_CROSS_CONTAMINATION_SCRIPT_FILE_PATH = "detect_potential_cross_contamination.pl";
 
 
@@ -29,7 +32,7 @@ my $command = $ARGV[0];
 if($command eq $DETECT_POTENTIAL_CROSS_CONTAMIANTION_OPTION)
 {
 	# passes arguments to detect potential cross-contamination helper script
-	`$DETECT_POTENTIAL_CROSS_CONTAMINATION_SCRIPT_FILE_PATH $arguments_to_pass_along_string`;
+	exec("$DETECT_POTENTIAL_CROSS_CONTAMINATION_SCRIPT_FILE_PATH $arguments_to_pass_along_string");
 }
 else
 {

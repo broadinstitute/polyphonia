@@ -352,7 +352,6 @@ if($temp_intermediate_directory !~ /\/$/) # if doesn't end in /
 }
 
 # creates directory for temporary and intermediate files if it doesn't already exist
-print "!!!!\n".$temp_intermediate_directory."\n\n";
 if(-e $temp_intermediate_directory and -d $temp_intermediate_directory)
 {
 	# directory already exists
