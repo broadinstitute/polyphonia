@@ -78,7 +78,7 @@ my $default_output_file = $default_temp_intermediate_files_directory.$DEFAULT_OU
 if(!scalar @ARGV) # no command line arguments supplied
 {
 	print STDOUT "\nDetects potential cross-contamination.\n";
-	print STDOUT "Usage: detect_potential_cross_contamination.pl [options]\n";
+	print STDOUT "Usage: polyphonia detect_cross_contam [options]\n";
 	print STDOUT "\n";
 	
 	print STDOUT "OPTIONS:\n";
@@ -352,7 +352,6 @@ if($temp_intermediate_directory !~ /\/$/) # if doesn't end in /
 }
 
 # creates directory for temporary and intermediate files if it doesn't already exist
-print "!!!!\n".$temp_intermediate_directory."\n\n";
 if(-e $temp_intermediate_directory and -d $temp_intermediate_directory)
 {
 	# directory already exists
