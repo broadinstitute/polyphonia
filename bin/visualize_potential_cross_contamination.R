@@ -21,7 +21,7 @@ HEIGHT <- 5
 NUMBER_ROWS <- 12
 NUMBER_COLUMNS <- 8
 
-WELL_CIRCLE_SIZE <- 11
+WELL_CIRCLE_SIZE <- 12
 EXPAND_X <- 0.06
 EXPAND_Y <- 0.08
 
@@ -84,8 +84,9 @@ plate_figure <- ggplot() +
   scale_fill_gradient("Total Estimated Contamination Volume", low = "white", high = "#CC857E",
     breaks=c(0, maximum_contamination_volume), labels=c(0, maximum_contamination_volume_text))
 
-ggsave(paste(output_file_path, ".pdf", sep=""), plate_figure)#, width=WIDTH, height=HEIGHT)
-ggsave(paste(output_file_path, ".jpg", sep=""), plate_figure)#, width=WIDTH, height=HEIGHT)
+ggsave(paste(output_file_path, ".pdf", sep=""), plate_figure, width=WIDTH, height=HEIGHT)
+ggsave(paste(output_file_path, ".jpg", sep=""), plate_figure, width=WIDTH, height=HEIGHT)
 
 # May 20, 2021
 # June 9, 2021
+# June 14, 2021
