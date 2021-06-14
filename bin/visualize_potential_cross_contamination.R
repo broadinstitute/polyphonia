@@ -16,9 +16,14 @@ library(ggplot2)
 library(plyr)
 
 WIDTH <- 7.5
-HEIGHT <- 5 #4.25
+HEIGHT <- 5
 
-WELL_CIRCLE_SIZE <- 12
+NUMBER_ROWS <- 12
+NUMBER_COLUMNS <- 8
+
+WELL_CIRCLE_SIZE <- 11
+EXPAND_X <- 0.06
+EXPAND_Y <- 0.08
 
 # reads in input table
 input_table <- read.table(input_file_path, sep="\t", header=TRUE)
@@ -58,14 +63,13 @@ maximum_contamination_volume <- max(plate_map$estimated_contamination_volume_sum
 maximum_contamination_volume_text <- paste(100*maximum_contamination_volume, "%", sep="")
 
 # generates figures
-plate_figure <-
-ggplot() +
+plate_figure <- ggplot() +
   geom_point(data=plate_map, aes(x=Column, y=Row, fill=estimated_contamination_volume_sum),
     shape=21, size=WELL_CIRCLE_SIZE, colour="black") +
   geom_segment(data=input_table, mapping=aes(x=Column0, y=Row0, xend=Column, yend=Row), arrow=arrow()) +
-  coord_fixed(ratio=(13/12)/(9/8), xlim=c(0.5, 12.5), ylim=c(0.5, 8.5)) +
-  scale_y_reverse(breaks=seq(1, 8), labels=LETTERS[1:8]) +
-  scale_x_continuous(breaks=seq(1, 12)) +
+  coord_fixed(ratio=1, expand=TRUE, clip="off") +
+  scale_y_reverse(breaks=seq(1, NUMBER_COLUMNS), labels=LETTERS[1:NUMBER_COLUMNS], expand=c(EXPAND_Y,EXPAND_Y)) +
+  scale_x_continuous(breaks=seq(1, NUMBER_ROWS), position = "top", expand=c(EXPAND_X,EXPAND_X)) +
   xlab("") + ylab("") +
   theme(
     legend.background=element_blank(),
@@ -73,13 +77,15 @@ ggplot() +
     axis.ticks = element_blank(),
     legend.position="bottom",
     panel.background=element_blank(),
-    panel.border = element_rect(colour="black", fill=NA, size=0.3)
+    panel.border = element_rect(colour="black", fill=NA, size=0.3),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
   ) +
   scale_fill_gradient("Total Estimated Contamination Volume", low = "white", high = "#CC857E",
     breaks=c(0, maximum_contamination_volume), labels=c(0, maximum_contamination_volume_text))
 
-ggsave(paste(output_file_path, ".pdf", sep=""), plate_figure, width=WIDTH, height=HEIGHT)
-ggsave(paste(output_file_path, ".jpg", sep=""), plate_figure, width=WIDTH, height=HEIGHT)
+ggsave(paste(output_file_path, ".pdf", sep=""), plate_figure)#, width=WIDTH, height=HEIGHT)
+ggsave(paste(output_file_path, ".jpg", sep=""), plate_figure)#, width=WIDTH, height=HEIGHT)
 
 # May 20, 2021
 # June 9, 2021
