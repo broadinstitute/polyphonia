@@ -3,11 +3,11 @@ FROM quay.io/broadinstitute/viral-baseimage:0.1.20
 LABEL maintainer "dpark@broadinstitute.org"
 
 ENV \
-	POLYPHONIA_PATH="/opt/polyphonia" \
+    POLYPHONIA_PATH="/opt/polyphonia" \
     CONDA_DEFAULT_ENV="default" \
-	MINICONDA_PATH="/opt/miniconda"
+    MINICONDA_PATH="/opt/miniconda"
 ENV \
-	PATH="$POLYPHONIA_PATH/bin:$MINICONDA_PATH/envs/$CONDA_DEFAULT_ENV/bin:$MINICONDA_PATH/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+    PATH="$POLYPHONIA_PATH:$MINICONDA_PATH/envs/$CONDA_DEFAULT_ENV/bin:$MINICONDA_PATH/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
 # initiate conda environment
 RUN conda create -n $CONDA_DEFAULT_ENV python=3.7
