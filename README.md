@@ -1,7 +1,7 @@
 # polyphonia
 Detects potential cross-contamination in sequence data.
 
-Usage: `detect_potential_cross_contamination.pl [options]`
+Usage: `polyphonia detect_cross_contam [options]`
 
 ```
 OPTIONS:
@@ -73,7 +73,7 @@ We use [Docker](https://docs.docker.com/get-started/overview/) to distribute and
 
 4. Explore the space. Regardless of your computer's file system, your new, isolated file system is an Ubuntu file system. Type `ls` to look in a directory and `cd` to navigate to it (or `cd ../` to navigate to the parent directory). Polyphonia lives in the directory `opt/polyphonia`. Your own files are in the directory `/mnt/data`.
 
-5. Run polyphonia. Enter `detect_potential_cross_contamination.pl`. You should see a description of the software and a list of options. To detect potential cross-contamination in a set of example files included with polyphonia, enter:
+5. Run polyphonia. Enter `polyphonia detect_cross_contam`. You should see a description of the software and a list of options. To detect potential cross-contamination in a set of example files included with polyphonia, enter:
 
    `TODO`
 

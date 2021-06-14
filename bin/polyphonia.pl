@@ -17,8 +17,8 @@ my $DETECT_POTENTIAL_CROSS_CONTAMINATION_SCRIPT_FILE_PATH = "detect_potential_cr
 if(!scalar @ARGV) # no command line arguments supplied
 {
 	print STDOUT "\n";
-	print STDOUT "Usage: polyphonia.pl <command> [options]\n\n";
-	print STDOUT "\tdetect_cross_contam\tDetect potential cross-contamination.\n";
+	print STDOUT "Usage: polyphonia <command> [options]\n\n";
+	print STDOUT "\t".$DETECT_POTENTIAL_CROSS_CONTAMIANTION_OPTION."\tDetect potential cross-contamination.\n";
 	print STDOUT "\n\n";
 	exit;
 }
