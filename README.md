@@ -37,12 +37,22 @@ OPTIONS:
 	-j | --overwrite FILE		Overwrite output, intermediate, and temp files at input paths [FALSE]
 ```
 
+## Contents
+- [Getting Started](#getting-started)
+- [Required Input Files](#getting-started)
+- [Optional Plate Map Inputs](#optional-plate-map-inputs)
+- [Other Options](#other-options)
+- [Output Files](#output-files)
+- [Example Run-Throughs](#example-run-throughs)
+- [FAQ](#faq)
+
+
 ## Getting Started
 
-We use Docker to distribute and run polyphonia pre-packaged in an isolated, friendly environment with the software it depends on. If you are new to Docker, you can learn more about it [here](https://docs.docker.com/get-started/).
+We use Docker to distribute and run polyphonia pre-packaged in an isolated environment with the software it depends on. Using Docker will allow you to run polyphonia on your computer, on the cloud, or elsewhere without worrying about dependencies. If you are new to Docker, you can learn more about it [here](https://docs.docker.com/get-started/).
 
 
-1. Install Docker. [Download Docker for your system](https://docs.docker.com/get-docker/) and follow instructions to install. When prompted, grant permissions to access your file system. Open the Docker application on your computer and leave it open in the background.
+1. Install Docker. [Download Docker for your system](https://docs.docker.com/get-docker/) and follow instructions to install. When prompted, grant permission to access your file system. Open the Docker application on your computer and leave it open in the background.
 
 2. Update your version of polyphonia. If there have been any updates to polyphonia since you last ran it, your version will be out of date. Update it by entering:
 
@@ -52,7 +62,7 @@ We use Docker to distribute and run polyphonia pre-packaged in an isolated, frie
 
    `docker run -v $(pwd):/mnt/data -it --rm quay.io/broadinstitute/polyphonia`
 
-   - [`docker run`](https://docs.docker.com/engine/reference/commandline/run/)` quay.io/broadinstitute/polyphonia` creates a new file system (a container) copied from the snapshot (docker image) we created, which is stored at quay.io/broadinstitute/polyphonia. This new file system is isolated from the rest of your computer.
+   - [`docker run`](https://docs.docker.com/engine/reference/commandline/run/)` quay.io/broadinstitute/polyphonia` creates a new file system (a container) copied from the snapshot (docker image) we created. (Our snapshot is stored at quay.io/broadinstitute/polyphonia.) This new file system is isolated from the rest of your computer.
    - `-v $(pwd):/mnt/data` connects your current directory on your computer (`pwd`) to the `/mnt/data` directory in the new file system. (If you navigate to `/mnt/data` in the new file system, you will see your own familiar files.)
    - `-it` connects and provides a terminal for you to communicate with the new file system.
    - `--rm` automatically destroys the new file system once it is exited.
@@ -89,11 +99,19 @@ TODO
 
 TODO
 
-## The Name
+## Example Run-Throughs
+
+TODO
+
+## FAQ
+
+### The Name
 
 [**Polyphony**](https://www.youtube.com/watch?v=teh22szdnRQ) describes music containing multiple simultaneous voices with their own melodies, like ["We Will Fall Together" by Streetlight Manifesto](https://www.youtube.com/watch?v=SOqenYis1iQ), ["Somebody That I Used to Know" by Walk off the Earth](https://www.youtube.com/watch?v=d9NF2edxy-M), ["exile" by Taylor Swift with Bon Iver](https://www.youtube.com/watch?v=osdoLjUNFnA), ["Daddy Cool" by Boney M](https://www.youtube.com/watch?v=tHyHOUShOg8), ["Come As You Are" by Nirvana](https://www.youtube.com/watch?v=vabnZ9-ex7o), ["Severed" by The Decemberists](https://www.youtube.com/watch?v=ksTFj6L0mao), and to at least some extent most music created in recent memory.
 
 [**Diafonia**](https://translate.google.com/?sl=it&tl=en&text=diafonia&op=translate) means crosstalk in Italian, Portuguese, and Haitian Creole, and is very close to the words for crosstalk in Spanish (diafonía) and French (diaphonie). In Italian, diafonia also refers to the simultaneous presence of multiple voices, in music and otherwise.
+
+Polyphonia is both.
 
 In addition to being the name of our software package, **Polyphonia** is also the name of [a particularly beautiful abstract ballet](https://www.nycballet.com/discover/ballet-repertory/polyphonia/) created by Christopher Wheeldon for New York City Ballet. I think you will find it captures the essence of cross-contamination quite nicely. You can watch an excerpt by clicking the preview image below:
 
