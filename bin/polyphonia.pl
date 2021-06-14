@@ -7,7 +7,7 @@ use strict;
 use warnings;
 
 # option entered by user
-my $DETECT_POTENTIAL_CROSS_CONTAMIANTION_OPTION = "detect_cross_contam";
+my $DETECT_POTENTIAL_CROSS_CONTAMIANTION_OPTION = "cross_contamination";
 
 # script run in response to option entered by user
 my $DETECT_POTENTIAL_CROSS_CONTAMINATION_SCRIPT_FILE_PATH = "detect_potential_cross_contamination.pl";
