@@ -21,12 +21,14 @@ OPTIONS:
 	-i | --min-maf FLOAT		Minimum minor allele frequency for position to be considered heterozygous [0.03]
 
 - Plate map and neighbors (any combination, all optional):
-	-m | --map FILE(S)		Optional plate map (tab-separated, no header: sample name, plate position (e.g., A8)); provides substantial speed-up [null]
-	-n | --direct BOOL		Compare direct plate neighbors (left, right, top, bottom) [TRUE]
-	-d | --diagonal BOOL		Compare diagonal plate neighbors (top-right, bottom-right, top-left, bottom-left) [FALSE]
-	-w | --row BOOL			Compare samples in the same row (e.g., row A) [FALSE]
-	-l | --column BOOL		Compare samples in the same column (e.g., column 8) [FALSE]
-	-t | --plate BOOL		Compare all samples in the same plate map [FALSE]
+	-m | --plate-map FILE(S)	Optional plate map (tab-separated, no header: sample name, plate position (e.g., A8)); provides substantial speed-up [null]
+	-q | --plate-columns INT	Number columns in plate (e.g., 1, 2, 3, 4) [12]
+	-k | --plate-rows INT		Number rows in plate (e.g., A, B, C, D) [8]
+	-n | --compare-direct BOOL	Compare direct plate neighbors (left, right, top, bottom) [TRUE]
+	-d | --compare-diagonal BOOL	Compare diagonal plate neighbors (top-right, bottom-right, top-left, bottom-left) [FALSE]
+	-w | --compare-row BOOL		Compare samples in the same row (e.g., row A) [FALSE]
+	-l | --compare-column BOOL	Compare samples in the same column (e.g., column 8) [FALSE]
+	-t | --compare-plate BOOL	Compare all samples in the same plate map [FALSE]
 
 - Misc:
 	-a | --max-mismatches INT	Maximum allowed bases in contaminating sample consensus not matching contaminated sample alleles [1]
@@ -121,7 +123,7 @@ You can view the software polyphonia uses in `requirements-conda.txt`:
 
 ### Name
 
-[**Polyphony**](https://www.youtube.com/watch?v=teh22szdnRQ) describes music containing multiple simultaneous voices with their own melodies, like ["We Will Fall Together" by Streetlight Manifesto](https://www.youtube.com/watch?v=SOqenYis1iQ), ["Somebody That I Used to Know" by Walk off the Earth](https://www.youtube.com/watch?v=d9NF2edxy-M), ["exile" by Taylor Swift with Bon Iver](https://www.youtube.com/watch?v=osdoLjUNFnA), ["Daddy Cool" by Boney M](https://www.youtube.com/watch?v=tHyHOUShOg8), ["Come As You Are" by Nirvana](https://www.youtube.com/watch?v=vabnZ9-ex7o), ["Severed" by The Decemberists](https://www.youtube.com/watch?v=ksTFj6L0mao), and to at least some extent most music created in recent memory.
+[**Polyphony**](https://www.youtube.com/watch?v=teh22szdnRQ) describes music containing multiple simultaneous voices with their own melodies, like parts of ["We Will Fall Together" by Streetlight Manifesto](https://www.youtube.com/watch?v=SOqenYis1iQ), ["Somebody That I Used to Know" by Walk off the Earth](https://www.youtube.com/watch?v=d9NF2edxy-M), ["exile" by Taylor Swift with Bon Iver](https://www.youtube.com/watch?v=osdoLjUNFnA), ["Daddy Cool" by Boney M](https://www.youtube.com/watch?v=tHyHOUShOg8), ["Come As You Are" by Nirvana](https://www.youtube.com/watch?v=vabnZ9-ex7o), ["Severed" by The Decemberists](https://www.youtube.com/watch?v=ksTFj6L0mao), and to at least some extent most music created in recent memory.
 
 [**Diafonia**](https://translate.google.com/?sl=it&tl=en&text=diafonia&op=translate) means crosstalk in Italian, Portuguese, and Haitian Creole, and is very close to the words for crosstalk in Spanish (diafonía) and French (diaphonie). In Italian, diafonia also refers to the simultaneous presence of multiple voices, in music and otherwise.
 

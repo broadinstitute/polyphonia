@@ -11,7 +11,7 @@ use Parallel::ForkManager; # download here: https://metacpan.org/pod/Parallel::F
 my $LOFREQ_EXECUTABLE_FILE_PATH = "lofreq";
 my $MAFFT_EXECUTABLE_FILE_PATH = "mafft";
 my $VCF_TO_HETEROZYGOSITY_TABLE_SCRIPT_FILE_PATH = "vcf_file_to_heterozygosity_table.pl";
-my $PLATE_VISUALIZATION_FILE_PATH = "/opt/polyphonia/visualize_potential_cross_contamination.R";
+my $PLATE_VISUALIZATION_FILE_PATH = "visualize_potential_cross_contamination.R";
 
 # plate map input file:
 my $PLATE_MAP_SAMPLE_COLUMN = 0;
@@ -62,6 +62,9 @@ my $DEFAULT_OVERWRITE = 0; # false
 my $DEFAULT_CORES_TO_USE = 1;
 my $DEFAULT_VERBOSE = 1; # true
 
+my $DEFAULT_PLATE_NUMBER_ROWS = 8; # A through H
+my $DEFAULT_PLATE_NUMBER_COLUMNS = 12; # 1 through 12
+
 my $DEFAULT_COMPARE_DIRECT_NEIGHBORS = 1; # true
 my $DEFAULT_COMPARE_DIAGONAL_NEIGHBORS = 0; # false
 my $DEFAULT_COMPARE_ROW = 0; # false
@@ -102,12 +105,14 @@ if(!scalar @ARGV) # no command line arguments supplied
 	print STDOUT "\n";
 	
 	print STDOUT "- Plate map and neighbors (any combination, all optional):\n";
-	print STDOUT "\t-m | --map FILE(S)\t\tOptional plate map (tab-separated, no header: sample name, plate position (e.g., A8)); provides substantial speed-up [null]\n";
-	print STDOUT "\t-n | --direct BOOL\t\tCompare direct plate neighbors (left, right, top, bottom) [".int_to_bool_string($DEFAULT_COMPARE_DIRECT_NEIGHBORS)."]\n";
-	print STDOUT "\t-d | --diagonal BOOL\t\tCompare diagonal plate neighbors (top-right, bottom-right, top-left, bottom-left) [".int_to_bool_string($DEFAULT_COMPARE_DIAGONAL_NEIGHBORS)."]\n";
-	print STDOUT "\t-w | --row BOOL\t\t\tCompare samples in the same row (e.g., row A) [".int_to_bool_string($DEFAULT_COMPARE_ROW)."]\n";
-	print STDOUT "\t-l | --column BOOL\t\tCompare samples in the same column (e.g., column 8) [".int_to_bool_string($DEFAULT_COMPARE_COLUMN)."]\n";
-	print STDOUT "\t-t | --plate BOOL\t\tCompare all samples in the same plate map [".int_to_bool_string($DEFAULT_COMPARE_WHOLE_PLATE_MAP)."]\n";
+	print STDOUT "\t-m | --plate-map FILE(S)\tOptional plate map (tab-separated, no header: sample name, plate position (e.g., A8)); provides substantial speed-up [null]\n";
+	print STDOUT "\t-q | --plate-columns INT\tNumber columns in plate (e.g., 1, 2, 3, 4) [".$DEFAULT_PLATE_NUMBER_COLUMNS."]\n";
+	print STDOUT "\t-k | --plate-rows INT\t\tNumber rows in plate (e.g., A, B, C, D) [".$DEFAULT_PLATE_NUMBER_ROWS."]\n";
+	print STDOUT "\t-n | --compare-direct BOOL\tCompare direct plate neighbors (left, right, top, bottom) [".int_to_bool_string($DEFAULT_COMPARE_DIRECT_NEIGHBORS)."]\n";
+	print STDOUT "\t-d | --compare-diagonal BOOL\tCompare diagonal plate neighbors (top-right, bottom-right, top-left, bottom-left) [".int_to_bool_string($DEFAULT_COMPARE_DIAGONAL_NEIGHBORS)."]\n";
+	print STDOUT "\t-w | --compare-row BOOL\t\tCompare samples in the same row (e.g., row A) [".int_to_bool_string($DEFAULT_COMPARE_ROW)."]\n";
+	print STDOUT "\t-l | --compare-column BOOL\tCompare samples in the same column (e.g., column 8) [".int_to_bool_string($DEFAULT_COMPARE_COLUMN)."]\n";
+	print STDOUT "\t-t | --compare-plate BOOL\tCompare all samples in the same plate map [".int_to_bool_string($DEFAULT_COMPARE_WHOLE_PLATE_MAP)."]\n";
 	print STDOUT "\n";
 	
 	print STDOUT "- Misc:\n";
@@ -144,6 +149,8 @@ my $minimum_minor_allele_readcount = $DEFAULT_MINIMUM_MINOR_ALLELE_READCOUNT;
 my $minimum_minor_allele_frequency = $DEFAULT_MINIMUM_MINOR_ALLELE_FREQUENCY;
 
 my @plate_map_files = ();
+my $plate_number_rows = $DEFAULT_PLATE_NUMBER_ROWS;
+my $plate_number_columns = $DEFAULT_PLATE_NUMBER_COLUMNS;
 my $compare_direct_neighbors = $DEFAULT_COMPARE_DIRECT_NEIGHBORS;
 my $compare_diagonal_neighbors = $DEFAULT_COMPARE_DIAGONAL_NEIGHBORS;
 my $compare_row = $DEFAULT_COMPARE_ROW;
@@ -214,27 +221,35 @@ for($argument_index = 0; $argument_index <= $#ARGV; $argument_index++)
 	{
 		$minimum_minor_allele_frequency = $input;
 	}
-	elsif(($input = read_in_input_files_argument("-m", "--map")) ne "-1")
+	elsif(($input = read_in_input_files_argument("-m", "--plate-map")) ne "-1")
 	{
 		push(@plate_map_files, @$input);
 	}
-	elsif(($input = read_in_boolean_argument("-n", "--direct")) != -1)
+	elsif(($input = read_in_positive_integer_argument("-k", "--plate-rows")) != -1)
+	{
+		$plate_number_rows = $input;
+	}
+	elsif(($input = read_in_positive_integer_argument("-q", "--plate-columns")) != -1)
+	{
+		$plate_number_columns = $input;
+	}
+	elsif(($input = read_in_boolean_argument("-n", "--compare-direct")) != -1)
 	{
 		$compare_direct_neighbors = $input;
 	}
-	elsif(($input = read_in_boolean_argument("-d", "--diagonal")) != -1)
+	elsif(($input = read_in_boolean_argument("-d", "--compare-diagonal")) != -1)
 	{
 		$compare_diagonal_neighbors = $input;
 	}
-	elsif(($input = read_in_boolean_argument("-w", "--row")) != -1)
+	elsif(($input = read_in_boolean_argument("-w", "--compare-row")) != -1)
 	{
 		$compare_row = $input;
 	}
-	elsif(($input = read_in_boolean_argument("-l", "--column")) != -1)
+	elsif(($input = read_in_boolean_argument("-l", "--compare-column")) != -1)
 	{
 		$compare_column = $input;
 	}
-	elsif(($input = read_in_boolean_argument("-t", "--plate")) != -1)
+	elsif(($input = read_in_boolean_argument("-t", "--compare-plate")) != -1)
 	{
 		$compare_whole_plate_map = $input;
 	}
@@ -277,6 +292,14 @@ if(!scalar @plate_map_files and !$compare_direct_neighbors and !$compare_diagona
 	print STDERR "Warning: plate map(s) supplied but plate map options all set to False. "
 		."Plate map(s) will not be used.\n";
 	@plate_map_files = ();
+}
+if($plate_number_rows < 1)
+{
+	print STDERR "Error: plate map rows ".$plate_number_rows." < 1.\n";
+}
+if($plate_number_columns < 1)
+{
+	print STDERR "Error: plate map columns ".$plate_number_columns." < 1.\n";
 }
 if($minimum_genome_coverage < 0 or $minimum_genome_coverage > 1)
 {
@@ -417,6 +440,8 @@ if(scalar @plate_map_files)
 	{
 		print STDOUT "\t".$plate_map_file."\n" if $verbose;
 	}
+	print STDOUT "\t".$plate_number_rows." rows in plate\n" if $verbose;
+	print STDOUT "\t".$plate_number_columns." columns in plate\n" if $verbose;
 	
 	print STDOUT "PLATE MAP USE:\n" if $verbose;
 	if($compare_whole_plate_map)
@@ -913,7 +938,7 @@ if(scalar @plate_map_files)
 			check_if_file_exists_before_writing($plate_visualization_output_file.".jpg");
 			check_if_file_exists_before_writing($plate_visualization_output_file.".pdf");
 			
-			exec("Rscript $PLATE_VISUALIZATION_FILE_PATH $plate_output_file $plate_visualization_output_file");
+			exec("$PLATE_VISUALIZATION_FILE_PATH $plate_output_file $plate_visualization_output_file $plate_number_columns $plate_number_rows");
 		}
 		
 		# clears plate output for next plate map
