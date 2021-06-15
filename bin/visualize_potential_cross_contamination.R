@@ -14,6 +14,11 @@ output_file_path <- args[2]
 number_columns   <- as.numeric(args[3])
 number_rows      <- as.numeric(args[4])
 
+input_file_path = "/Users/lakras/2021_05_19_contamination_detection_from_minor_alleles/2021_06_01_polishing_software/intermediate0/plate_map.txt_potential_cross_contamination_2x3.txt"
+output_file_path = input_file_path
+number_columns = 72
+number_rows = 48
+
 library(ggplot2)
 library(plyr)
 
@@ -21,8 +26,8 @@ WIDTH <- 7.5
 HEIGHT <- 5
 
 # plate layouts:
-#   6-well plate    3 columns x 2 rows
-#   12-well plate   4 x 3
+#   6-well plate    3 columns (A, B, C) x 2 rows (1, 2)
+#   12-well plate   4 columns x 3 rows
 #   24-well plate   6 x 4
 #   48-well plate   8 x 6
 #   96-well plate   12 x 8
@@ -119,23 +124,25 @@ input_table_all_wells <- merge(x=all_wells, y=input_table, by="well", all=TRUE)
 volume_summed_by_well <- aggregate(x=input_table_all_wells$estimated_contamination_volume,
   by=list(input_table_all_wells$well), FUN=sum, na.rm=TRUE)
 colnames(volume_summed_by_well) <- c("well","estimated_contamination_volume_sum")
+plate_map <- volume_summed_by_well
 
 # splits out columns and rows of wells
-plate_map <- mutate(volume_summed_by_well,
-  Row=as.numeric(match(toupper(substr(well, 1, 1)), LETTERS)),
-  Column=as.numeric(substr(well, 2, 5)))
-input_table <- mutate(input_table,
-  Row=as.numeric(match(toupper(substr(well, 1, 1)), LETTERS)),
-  Column=as.numeric(substr(well, 2, 5)))
-input_table <- mutate(input_table,
-  Row0=as.numeric(match(toupper(substr(contamination_source_well, 1, 1)), LETTERS)),
-  Column0=as.numeric(substr(contamination_source_well, 2, 5)))
+# based on https://stackoverflow.com/questions/9756360/split-character-data-into-numbers-and-letters
+plate_map$Row <- as.numeric(lapply(gsub("[[:digit:]]","",plate_map$well), FUN=row_letters_to_row_number)) # retrieves letters, converts to digits
+plate_map$Column <- as.numeric(gsub("[^[:digit:]]", "", plate_map$well)) # retrieves digits
+
+input_table$Row <- as.numeric(lapply(gsub("[[:digit:]]","",input_table$well), FUN=row_letters_to_row_number)) # retrieves letters, converts to digits
+input_table$Column <- as.numeric(gsub("[^[:digit:]]", "", input_table$well)) # retrieves digits
+
+input_table$Row0 <- as.numeric(lapply(gsub("[[:digit:]]","",input_table$contamination_source_well), FUN=row_letters_to_row_number)) # retrieves letters, converts to digits
+input_table$Column0 <- as.numeric(gsub("[^[:digit:]]", "", input_table$contamination_source_well)) # retrieves digits
 
 # label for maximum contamination volume in legend
 maximum_contamination_volume <- max(plate_map$estimated_contamination_volume_sum)
-maximum_contamination_volume_text <- paste(100*maximum_contamination_volume, "%", sep="")
+maximum_contamination_volume_text <- paste(signif(100*maximum_contamination_volume, digits=2), "%", sep="")
 
-# generates figures
+# generates visualization of plate map colored by total potential contamination with arrows
+# from potential sources of contamination to potential contaminated wells
 plate_figure <- ggplot() +
   geom_point(
     data=plate_map,
@@ -149,23 +156,23 @@ plate_figure <- ggplot() +
   scale_x_continuous(
     breaks=seq(1, number_columns),
     position = "top",
-    expand=c(expand_x,expand_x)) +
+    expand=c(expand_x, expand_x)) +
   scale_y_reverse(
     breaks=seq(1, number_rows),
     labels=lapply(seq(1, number_rows), FUN=row_number_to_row_letters),
-    expand=c(expand_y,expand_y)) +
+    expand=c(expand_y, expand_y)) +
   xlab("") + ylab("") +
   theme(
     legend.background=element_blank(),
-    legend.key = element_blank(),
-    axis.ticks = element_blank(),
+    legend.key=element_blank(),
+    axis.ticks=element_blank(),
     legend.position="bottom",
     panel.background=element_blank(),
-    panel.border = element_rect(colour="black", fill=NA, size=0.3),
-    panel.grid.major = element_blank(),
-    panel.grid.minor = element_blank()
+    panel.border=element_rect(colour="black", fill=NA, size=0.3),
+    panel.grid.major=element_blank(),
+    panel.grid.minor=element_blank()
   ) +
-  scale_fill_gradient("Total Estimated Contamination Volume", low = "white", high = "#CC857E",
+  scale_fill_gradient("Total Estimated Contamination Volume", low="white", high="#CC857E",
     breaks=c(0, maximum_contamination_volume), labels=c(0, maximum_contamination_volume_text))
 
 ggsave(paste(output_file_path, ".pdf", sep=""), plate_figure, width=WIDTH, height=HEIGHT)
