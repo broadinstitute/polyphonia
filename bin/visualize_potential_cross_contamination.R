@@ -93,9 +93,15 @@ plate_list <- function(max_row, num_columns)
   paste(index_pairs$row, index_pairs$col, sep="")
 }
 
-# scales circle sizes and padding to panel edges
+# scales circle sizes, axis label sizes, and padding to panel edges
 scaling_factor <- min(12/number_columns, 8/number_rows)
 well_circle_size <- 12 * scaling_factor
+axis_text_size <- max(6, 9 * scaling_factor)
+axis_text_n <- 1 # display every value in axis text
+if(scaling_factor < 0.2)
+{
+  axis_text_n <- 2 # display every 2nd value in axis text
+}
 
 expand_x <- 0.06 * scaling_factor
 expand_y <- 0.08 * scaling_factor
@@ -149,18 +155,19 @@ plate_figure <- ggplot() +
     arrow=arrow(type="open", angle=30)) +
   coord_fixed(ratio=1, expand=TRUE, clip="off") +
   scale_x_continuous(
-    breaks=seq(1, number_columns),
+    breaks=seq(1, number_columns, axis_text_n),
     position = "top",
     expand=c(expand_x, expand_x)) +
   scale_y_reverse(
-    breaks=seq(1, number_rows),
-    labels=lapply(seq(1, number_rows), FUN=row_number_to_row_letters),
+    breaks=seq(1, number_rows, axis_text_n),
+    labels=lapply(seq(1, number_rows, axis_text_n), FUN=row_number_to_row_letters),
     expand=c(expand_y, expand_y)) +
   xlab("") + ylab("") +
   theme(
     legend.background=element_blank(),
     legend.key=element_blank(),
     axis.ticks=element_blank(),
+    axis.text=element_text(size=axis_text_size),
     legend.position="bottom",
     panel.background=element_blank(),
     panel.border=element_rect(colour="black", fill=NA, size=0.3),
@@ -172,7 +179,6 @@ plate_figure <- ggplot() +
 
 ggsave(paste(output_file_path, ".pdf", sep=""), plate_figure, width=WIDTH, height=HEIGHT)
 ggsave(paste(output_file_path, ".jpg", sep=""), plate_figure, width=WIDTH, height=HEIGHT)
-
 
 # May 20, 2021
 # June 9, 2021
