@@ -106,8 +106,8 @@ if(!scalar @ARGV) # no command line arguments supplied
 	
 	print STDOUT "- Plate map and neighbors (any combination, all optional):\n";
 	print STDOUT "\t-m | --plate-map FILE(S)\tOptional plate map (tab-separated, no header: sample name, plate position (e.g., A8)); provides substantial speed-up [null]\n";
-	print STDOUT "\t-k | --plate-rows INT\t\tNumber rows in plate (e.g., A, B, C, D) [".$DEFAULT_PLATE_NUMBER_ROWS."]\n";
 	print STDOUT "\t-q | --plate-columns INT\tNumber columns in plate (e.g., 1, 2, 3, 4) [".$DEFAULT_PLATE_NUMBER_COLUMNS."]\n";
+	print STDOUT "\t-k | --plate-rows INT\t\tNumber rows in plate (e.g., A, B, C, D) [".$DEFAULT_PLATE_NUMBER_ROWS."]\n";
 	print STDOUT "\t-n | --compare-direct BOOL\tCompare direct plate neighbors (left, right, top, bottom) [".int_to_bool_string($DEFAULT_COMPARE_DIRECT_NEIGHBORS)."]\n";
 	print STDOUT "\t-d | --compare-diagonal BOOL\tCompare diagonal plate neighbors (top-right, bottom-right, top-left, bottom-left) [".int_to_bool_string($DEFAULT_COMPARE_DIAGONAL_NEIGHBORS)."]\n";
 	print STDOUT "\t-w | --compare-row BOOL\t\tCompare samples in the same row (e.g., row A) [".int_to_bool_string($DEFAULT_COMPARE_ROW)."]\n";
@@ -938,7 +938,7 @@ if(scalar @plate_map_files)
 			check_if_file_exists_before_writing($plate_visualization_output_file.".jpg");
 			check_if_file_exists_before_writing($plate_visualization_output_file.".pdf");
 			
-			exec("$PLATE_VISUALIZATION_FILE_PATH $plate_output_file $plate_visualization_output_file $plate_number_rows $plate_number_columns");
+			exec("$PLATE_VISUALIZATION_FILE_PATH $plate_output_file $plate_visualization_output_file $plate_number_columns $plate_number_rows");
 		}
 		
 		# clears plate output for next plate map

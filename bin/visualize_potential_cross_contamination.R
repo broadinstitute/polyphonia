@@ -11,8 +11,8 @@ rm(list=ls())
 args = commandArgs(trailingOnly=TRUE)
 input_file_path  <- args[1]
 output_file_path <- args[2]
-number_rows      <- as.numeric(args[3])
-number_columns   <- as.numeric(args[4])
+number_columns   <- as.numeric(args[3])
+number_rows      <- as.numeric(args[4])
 
 library(ggplot2)
 library(plyr)
@@ -21,9 +21,16 @@ WIDTH <- 7.5
 HEIGHT <- 5
 
 scaling_factor <- min(12/number_columns, 8/number_rows)
-WELL_CIRCLE_SIZE <- 12 * scaling_factor
-EXPAND_X <- 0.06 * scaling_factor
-EXPAND_Y <- 0.08 * scaling_factor
+well_circle_size <- 12 * scaling_factor
+
+expand_x <- 0.06 * scaling_factor
+expand_Y <- 0.08 * scaling_factor
+if(number_columns < number_rows)
+{
+  # swap
+  expand_Y <- 0.06 * scaling_factor
+  expand_x <- 0.08 * scaling_factor
+}
 
 # reads in input table
 input_table <- read.table(input_file_path, sep="\t", header=TRUE)
@@ -59,12 +66,12 @@ maximum_contamination_volume_text <- paste(100*maximum_contamination_volume, "%"
 # generates figures
 plate_figure <- ggplot() +
   geom_point(data=plate_map, aes(x=Column, y=Row, fill=estimated_contamination_volume_sum),
-    shape=21, size=WELL_CIRCLE_SIZE, colour="black") +
+    shape=21, size=well_circle_size, colour="black") +
   geom_segment(data=input_table, mapping=aes(x=Column0, y=Row0, xend=Column, yend=Row),
     arrow=arrow(type="open", angle=30)) +
   coord_fixed(ratio=1, expand=TRUE, clip="off") +
-  scale_y_reverse(breaks=seq(1, number_rows), labels=LETTERS[1:number_rows], expand=c(EXPAND_Y,EXPAND_Y)) +
-  scale_x_continuous(breaks=seq(1, number_columns), position = "top", expand=c(EXPAND_X,EXPAND_X)) +
+  scale_x_continuous(breaks=seq(1, number_columns), position = "top", expand=c(expand_x,expand_x)) +
+  scale_y_reverse(breaks=seq(1, number_rows), labels=LETTERS[1:number_rows], expand=c(expand_Y,expand_Y)) +
   xlab("") + ylab("") +
   theme(
     legend.background=element_blank(),
