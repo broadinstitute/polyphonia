@@ -93,7 +93,6 @@ plate_list <- function(max_row, num_columns) {
         num_rows<-max_row
     }
     col_idx<-seq(1, num_columns, by=1)
-    #row_idx<-LETTERS[seq( from = 1, to = num_rows )]
     seq( from = 1, to = num_rows )
     row_idx<-unlist(lapply(seq( from = 1, to = num_rows ),rowNumToAlpha))
     wells<-expand.grid(row=row_idx,col=col_idx)
