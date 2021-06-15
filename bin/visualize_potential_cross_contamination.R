@@ -30,7 +30,10 @@ HEIGHT <- 5
 #   1536-well plate 48 x 32
 #   3456-well plate 72 x 48
 
-# converts from letter row index to number
+
+# HELPER FUNCTIONS:
+
+# helper function to convert from letter row index to number
 # test: 1 = A, 26 = Z, 27 = AA, 703 = AAA
 # from https://stackoverflow.com/a/34537691/2292993
 row_letters_to_row_number <- function(row)
@@ -48,7 +51,7 @@ row_letters_to_row_number <- function(row)
   return(row_number)
 }
 
-# converts row number to corresponding letter format
+# helper function to convert row number to corresponding letter format
 #  32 rows = 'AF'
 #  678     = 'ZB'
 #  729     = 'ABA'
@@ -64,7 +67,7 @@ row_number_to_row_letters <- function(row_number)
   return(row_letters)
 }
 
-# generates list of wells in plate
+# helper function to generate list of wells in plate
 #
 # accepts either letters of last row or number of rows
 # ex. for a 1536-well plate (32x48):
@@ -93,7 +96,9 @@ plate_list <- function(max_row, num_columns)
   paste(index_pairs$row, index_pairs$col, sep="")
 }
 
-# scales circle sizes, axis label sizes, and padding to panel edges
+
+# depending on plate size, scales circle sizes, axis label sizes,
+# and padding to panel edges
 scaling_factor <- min(12/number_columns, 8/number_rows)
 well_circle_size <- 12 * scaling_factor
 axis_text_size <- max(6, 9 * scaling_factor)
@@ -142,17 +147,8 @@ input_table$Column0 <- as.numeric(gsub("[^[:digit:]]", "", input_table$contamina
 maximum_contamination_volume <- max(plate_map$estimated_contamination_volume_sum)
 maximum_contamination_volume_text <- paste(signif(100*maximum_contamination_volume, digits=2), "%", sep="")
 
-# generates visualization of plate map colored by total potential contamination with arrows
-# from potential sources of contamination to potential contaminated wells
+# generates visualization of plate map (to overlay contamination or heterozygosity)
 plate_figure <- ggplot() +
-  geom_point(
-    data=plate_map,
-    aes(x=Column, y=Row, fill=estimated_contamination_volume_sum),
-    shape=21, size=well_circle_size, colour="black") +
-  geom_segment(
-    data=input_table,
-    mapping=aes(x=Column0, y=Row0, xend=Column, yend=Row),
-    arrow=arrow(type="open", angle=30)) +
   coord_fixed(ratio=1, expand=TRUE, clip="off") +
   scale_x_continuous(
     breaks=seq(1, number_columns, axis_text_n),
@@ -173,12 +169,24 @@ plate_figure <- ggplot() +
     panel.border=element_rect(colour="black", fill=NA, size=0.3),
     panel.grid.major=element_blank(),
     panel.grid.minor=element_blank()
-  ) +
-  scale_fill_gradient("Total Estimated Contamination Volume", low="white", high="#CC857E",
+  )
+
+# colors plate map by total potential contamination with arrows from
+# potential sources of contamination to potential contaminated wells
+plate_figure_contamination <- plate_figure +
+  geom_point(
+    data=plate_map,
+    aes(x=Column, y=Row, fill=estimated_contamination_volume_sum),
+    shape=21, size=well_circle_size, colour="black") +
+  geom_segment(
+    data=input_table,
+    mapping=aes(x=Column0, y=Row0, xend=Column, yend=Row),
+    arrow=arrow(type="open", angle=30)) +
+   scale_fill_gradient("Total Estimated Contamination Volume", low="white", high="#CC857E",
     breaks=c(0, maximum_contamination_volume), labels=c(0, maximum_contamination_volume_text))
 
-ggsave(paste(output_file_path, ".pdf", sep=""), plate_figure, width=WIDTH, height=HEIGHT)
-ggsave(paste(output_file_path, ".jpg", sep=""), plate_figure, width=WIDTH, height=HEIGHT)
+ggsave(paste(output_file_path, ".pdf", sep=""), plate_figure_contamination, width=WIDTH, height=HEIGHT)
+ggsave(paste(output_file_path, ".jpg", sep=""), plate_figure_contamination, width=WIDTH, height=HEIGHT)
 
 # May 20, 2021
 # June 9, 2021
