@@ -18,11 +18,6 @@ my $PLATE_MAP_SAMPLE_COLUMN = 0;
 my $PLATE_MAP_POSITION_COLUMN = 1;
 
 # for reading plate map:
-my %LETTER_TO_NEXT_LETTER = (
-	"A" => "B", "B" => "C", "C" => "D", "D" => "E", "E" => "F", "F" => "G", "G" => "H",
-	"H" => "I", "I" => "J", "J" => "K", "K" => "L", "L" => "M", "M" => "N", "N" => "O",
-	"O" => "P", "P" => "Q", "Q" => "R", "R" => "S", "S" => "T", "T" => "U", "U" => "V",
-	"V" => "W", "W" => "X", "X" => "Y", "Y" => "Z", "Z" => "");
 my %LETTER_TO_PREVIOUS_LETTER = (
 	"A" => "", "B" => "A", "C" => "B", "D" => "C", "E" => "D", "F" => "E", "G" => "F",
 	"H" => "G", "I" => "H", "J" => "I", "K" => "J", "L" => "K", "M" => "L", "N" => "M",
@@ -1626,20 +1621,49 @@ sub is_valid_plate_position
 	return 0;
 }
 
-# returns next letter
-# returns empty string if Z
+# returns next letter(s)
+# A -> B, B -> C, Z -> AA, AB -> AC, AZ -> BA, ZZ -> AAA, etc.
 sub get_next_letter
 {
-	my $letter = $_[0];
-	return $LETTER_TO_NEXT_LETTER{$letter};
+	my $letters_string = $_[0];
+	$letters_string++; # thank you perl!
+	return $letters_string;
 }
 
 # returns previous letter
 # returns empty string if A
+# B -> A, C -> B, AC -> AB, BA -> AZ, AA -> Z, AAA -> ZZ
 sub get_previous_letter
 {
-	my $letter = $_[0];
-	return $LETTER_TO_PREVIOUS_LETTER{$letter};
+	my $letters_string = $_[0];
+	my @letters = split(//, $letters_string);
+	for(my $letter_index = $#letters; $letter_index >= 0; $letter_index--) # starts at rightmost letter
+	{
+		my $letter = $letters[$letter_index];
+		if($LETTER_TO_PREVIOUS_LETTER{$letter}) # not A
+		{
+			# we can just decrement this letter and return what we have
+			$letters[$letter_index] = $LETTER_TO_PREVIOUS_LETTER{$letter};
+			return join("", @letters);
+		}
+		else # A
+		{
+			if($letter_index == 0) # this is the leftmost letter
+			{
+				# this letter disappears
+				$letters[$letter_index] = "";
+			}
+			
+			else # there are more letters to the left
+			{
+				# this letter turns to Z
+				$letters[$letter_index] = "Z";
+			
+				# and we decrement the letter to the left (next iteration through the loop!)
+			}
+		}
+	}
+	return join("", @letters);
 }
 
 
