@@ -867,27 +867,6 @@ if(scalar @plate_map_files)
 		}
 		close PLATE_MAP;
 		
-		# verifies that all plate positions are consistent with this plate being a 96-well plate
-		my $plate_is_96_well = 1;
-		foreach my $plate_position(keys %plate_position_to_sample_name)
-		{
-			if($plate_position =~ /^([A-Z])\s*(\d+)$/)
-			{
-				my $letter = $1;
-				my $number = $2;
-				
-				if($number < 1 or $number > 12)
-				{
-					$plate_is_96_well = 0;
-				}
-				if(!($letter eq "A" or $letter eq "B" or $letter eq "C" or $letter eq "D"
-					or $letter eq "E" or $letter eq "F" or $letter eq "G" or $letter eq "H"))
-				{
-					$plate_is_96_well = 0;
-				}
-			}
-		}
-		
 		# compares all pairs of samples that are neighbors
 		foreach my $plate_position(keys %plate_position_to_sample_name)
 		{
@@ -913,7 +892,7 @@ if(scalar @plate_map_files)
 		$pm -> wait_all_children;
 		
 		# prints plate map for this particular plate map
-		if($plate_is_96_well and scalar keys %plate_results)
+		if(scalar keys %plate_results)
 		{
 			my $plate_output_file = $temp_intermediate_directory.retrieve_file_name($plate_map_file)."_potential_cross_contamination.txt";
 			check_if_file_exists_before_writing($plate_output_file);
@@ -1527,7 +1506,7 @@ sub retrieve_samples_neighboring_plate_position
 	my $plate_position_sample_name = $_[1];
 	
 	my @neighbors = ();
-	if($plate_position =~ /^([A-Z])(\s*)(\d+)$/)
+	if($plate_position =~ /^([A-Z]+)(\s*)(\d+)$/)
 	{
 		my $letter = $1;
 		my $number = $3;
@@ -1587,7 +1566,7 @@ sub retrieve_samples_neighboring_plate_position
 				foreach my $sample_name(keys %sample_name_to_plate_position)
 				{
 					my $plate_position_option = $sample_name_to_plate_position{$sample_name};
-					if($plate_position_option =~ /^([A-Z])\s*\d+$/)
+					if($plate_position_option =~ /^([A-Z+])\s*\d+$/)
 					{
 						my $plate_position_option_letter = $1;
 						if($letter eq $plate_position_option_letter
@@ -1605,7 +1584,7 @@ sub retrieve_samples_neighboring_plate_position
 				foreach my $sample_name(keys %sample_name_to_plate_position)
 				{
 					my $plate_position_option = $sample_name_to_plate_position{$sample_name};
-					if($plate_position_option =~ /^([A-Z])\s*\d+$/)
+					if($plate_position_option =~ /^([A-Z]+)\s*\d+$/)
 					{
 						my $plate_position_option_number = $1;
 						if($number eq $plate_position_option_number
@@ -1640,7 +1619,7 @@ sub is_valid_plate_position
 {
 	my $plate_position = $_[0];
 	
-	if($plate_position =~ /^[A-Z]\s*\d+$/)
+	if($plate_position =~ /^[A-Z]+\s*\d+$/)
 	{
 		return 1;
 	}

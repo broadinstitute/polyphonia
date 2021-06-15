@@ -14,11 +14,6 @@ output_file_path <- args[2]
 number_columns   <- as.numeric(args[3])
 number_rows      <- as.numeric(args[4])
 
-input_file_path = "/Users/lakras/2021_05_19_contamination_detection_from_minor_alleles/2021_06_01_polishing_software/intermediate0/plate_map.txt_potential_cross_contamination_2x3.txt"
-output_file_path = input_file_path
-number_columns = 12
-number_rows = 8
-
 library(ggplot2)
 library(plyr)
 
@@ -26,82 +21,76 @@ WIDTH <- 7.5
 HEIGHT <- 5
 
 # plate layouts:
-#   6   2×3
-#   12  3×4
-#   24  4×6
-#   48  6×8
-#   96  8×12
-#   384 16×24
-#   1536 32×48
-#   3456 48×72
+#   6-well plate    3 columns x 2 rows
+#   12-well plate   4 x 3
+#   24-well plate   6 x 4
+#   48-well plate   8 x 6
+#   96-well plate   12 x 8
+#   384-well plate  24 x 16
+#   1536-well plate 48 x 32
+#   3456-well plate 72 x 48
 
-alphaToRowNum <- function(row)
+# converts from letter row index to number
+# test: 1 = A, 26 = Z, 27 = AA, 703 = AAA
+# from https://stackoverflow.com/a/34537691/2292993
+row_letters_to_row_number <- function(row)
 {
-  # convert from letter row index to 
-  # test: 1 = A, 26 = Z, 27 = AA, 703 = AAA
-  # from:
-  #   https://stackoverflow.com/a/34537691/2292993
+  # convert string to a vector of single uppercase letters
+  row <- toupper(row)
+  row_letters <- unlist(strsplit(row, split=""))
   
-  # codes from 
-  s = row
-  # Uppercase
-  s_upper <- toupper(s)
-  # Convert string to a vector of single letters
-  s_split <- unlist(strsplit(s_upper, split=""))
-  # Convert each letter to the corresponding number
-  s_number <- sapply(s_split, function(x) {which(LETTERS == x)})
-  # Derive the numeric value associated with each letter
-  numbers <- 26^((length(s_number)-1):0)
-  # Calculate the row number
-  row_number <- sum(s_number * numbers)
+  # convert each letter to corresponding number
+  row_numbers <- sapply(row_letters, function(x) {which(LETTERS == x)})
+  
+  # calculate row number
+  numbers <- 26^((length(row_numbers)-1):0)
+  row_number <- sum(row_numbers * numbers)
   return(row_number)
 }
 
-rowNumToAlpha <- function(row_num)
+# converts row number to corresponding letter format
+#  32 rows = 'AF'
+#  678     = 'ZB'
+#  729     = 'ABA'
+row_number_to_row_letters <- function(row_number)
 {
-  # convers a number of rows into the corresponding letter format
-  #  32 rows = 'AF'
-  #  678     = 'ZB'
-  #  729     = 'ABA')
-  row_alpha<-""
-  
-  row_num<-row_num
-  while(row_num > 0)
+  row_letters <- ""
+  while(row_number > 0)
   {
-    letters_into_alphabet <- (row_num-1)%%26
-    row_alpha <- paste(intToUtf8(letters_into_alphabet + utf8ToInt('A')), row_alpha , sep="")
-    row_num <- ((row_num-1)%/%26)
+    letters_into_alphabet <- (row_number-1)%%26
+    row_letters <- paste(intToUtf8(letters_into_alphabet + utf8ToInt('A')), row_letters , sep="")
+    row_number <- ((row_number-1)%/%26)
   }
-  return(row_alpha)
+  return(row_letters)
 }
 
+# generates list of wells in plate
+#
+# accepts either letters of last row or number of rows
+# ex. for a 1536-well plate (32x48):
+#  plate_list("AF",48)
+#  plate_list(32,48)
+#
+# can also be used to return the ID of a given 1-indexed well number
+# ex. for a 96-well plate (8x12):
+#  wells <- plate_list("H",12)
+#  wells[28] # (slice gives "C4")
 plate_list <- function(max_row, num_columns)
 {
-  # accepts either letters of last row or number of rows
-  #   Ex. for a 1536-well plate (32x48):
-  #     plate_list("AF",48)
-  #     plate_list(32,48)
-  #
-  # Can also be used to return the ID of a given
-  # 1-indexed well number
-  #   Ex. for a 96-well plate (8x12)
-  #     wells <- plate_list("H",12)
-  #     wells[28] # (slice gives "C4")
-  
   if(is.character(max_row))
   {
-    num_rows<-alphaToRowNum(max_row)
+    num_rows <- row_letters_to_row_number(max_row)
   }
   else
   {
-    num_rows<-max_row
+    num_rows <- max_row
   }
   col_idx <- seq(1, num_columns, by=1)
-  seq(from = 1, to = num_rows)
-  row_idx<-unlist(lapply(seq(from = 1, to = num_rows),rowNumToAlpha))
-  wells<-expand.grid(row=row_idx,col=col_idx)
-  index_pairs<-wells[with(wells, order(row, col)), ]
-  paste(index_pairs$row,index_pairs$col,sep="")
+  seq(from=1, to=num_rows)
+  row_idx <- unlist(lapply(seq(from=1, to=num_rows), row_number_to_row_letters))
+  wells <- expand.grid(row=row_idx, col=col_idx)
+  index_pairs <- wells[with(wells, order(row, col)), ]
+  paste(index_pairs$row, index_pairs$col, sep="")
 }
 
 # scales circle sizes and padding to panel edges
@@ -148,13 +137,23 @@ maximum_contamination_volume_text <- paste(100*maximum_contamination_volume, "%"
 
 # generates figures
 plate_figure <- ggplot() +
-  geom_point(data=plate_map, aes(x=Column, y=Row, fill=estimated_contamination_volume_sum),
+  geom_point(
+    data=plate_map,
+    aes(x=Column, y=Row, fill=estimated_contamination_volume_sum),
     shape=21, size=well_circle_size, colour="black") +
-  geom_segment(data=input_table, mapping=aes(x=Column0, y=Row0, xend=Column, yend=Row),
+  geom_segment(
+    data=input_table,
+    mapping=aes(x=Column0, y=Row0, xend=Column, yend=Row),
     arrow=arrow(type="open", angle=30)) +
   coord_fixed(ratio=1, expand=TRUE, clip="off") +
-  scale_x_continuous(breaks=seq(1, number_columns), position = "top", expand=c(expand_x,expand_x)) +
-  scale_y_reverse(breaks=seq(1, number_rows), labels=LETTERS[1:number_rows], expand=c(expand_y,expand_y)) +
+  scale_x_continuous(
+    breaks=seq(1, number_columns),
+    position = "top",
+    expand=c(expand_x,expand_x)) +
+  scale_y_reverse(
+    breaks=seq(1, number_rows),
+    labels=lapply(seq(1, number_rows), FUN=row_number_to_row_letters),
+    expand=c(expand_y,expand_y)) +
   xlab("") + ylab("") +
   theme(
     legend.background=element_blank(),
