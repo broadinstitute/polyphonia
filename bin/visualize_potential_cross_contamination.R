@@ -28,16 +28,81 @@ EXPAND_Y <- 0.08
 # reads in input table
 input_table <- read.table(input_file_path, sep="\t", header=TRUE)
 
+# plate layouts:
+#   6   2×3
+#   12  3×4
+#   24  4×6
+#   48  6×8
+#   96  8×12
+#   384 16×24
+#   1536 32×48
+#   3456 48×72
+
+alphaToRowNum <- function(row){
+    # convert from letter row index to 
+    # test: 1 = A, 26 = Z, 27 = AA, 703 = AAA
+    # from:
+    #   https://stackoverflow.com/a/34537691/2292993
+
+    # codes from 
+    s = row
+    # Uppercase
+    s_upper <- toupper(s)
+    # Convert string to a vector of single letters
+    s_split <- unlist(strsplit(s_upper, split=""))
+    # Convert each letter to the corresponding number
+    s_number <- sapply(s_split, function(x) {which(LETTERS == x)})
+    # Derive the numeric value associated with each letter
+    numbers <- 26^((length(s_number)-1):0)
+    # Calculate the row number
+    row_number <- sum(s_number * numbers)
+    return(row_number)
+}
+
+rowNumToAlpha <- function(row_num) {
+    # convers a number of rows into the corresponding letter format
+    #  32 rows = 'AF'
+    #  678     = 'ZB'
+    #  729     = 'ABA')
+    row_alpha<-""
+
+    row_num<-row_num
+    while (row_num > 0) {
+        letters_into_alphabet <- (row_num-1)%%26
+        row_alpha<-paste( intToUtf8(letters_into_alphabet + utf8ToInt('A')), row_alpha , sep="")
+        row_num<-((row_num-1)%/%26)
+    }
+    return(row_alpha)
+}
+
+plate_list <- function(max_row, num_columns) {
+    # accepts either letters of last row or number of rows
+    #   Ex. for a 1536-well plate (32x48):
+    #     plate_list("AF",48)
+    #     plate_list(32,48)
+    #
+    # Can also be used to return the ID of a given
+    # 1-indexed well number
+    #   Ex. for a 96-well plate (8x12)
+    #     wells <- plate_list("H",12)
+    #     wells[28] # (slice gives "C4")
+
+    if (is.character(max_row)) {
+        num_rows<-alphaToRowNum(max_row)
+    } else {
+        num_rows<-max_row
+    }
+    col_idx<-seq(1, num_columns, by=1)
+    #row_idx<-LETTERS[seq( from = 1, to = num_rows )]
+    seq( from = 1, to = num_rows )
+    row_idx<-unlist(lapply(seq( from = 1, to = num_rows ),rowNumToAlpha))
+    wells<-expand.grid(row=row_idx,col=col_idx)
+    index_pairs<-wells[with(wells, order(row, col)), ]
+    paste(index_pairs$row,index_pairs$col,sep="")
+}
+
 # expands input table to include all wells, including wells not included in input table
-well = c(
-  "A1","A2","A3","A4","A5","A6","A7","A8","A9","A10","A11","A12",
-  "B1","B2","B3","B4","B5","B6","B7","B8","B9","B10","B11","B12",
-  "C1","C2","C3","C4","C5","C6","C7","C8","C9","C10","C11","C12",
-  "D1","D2","D3","D4","D5","D6","D7","D8","D9","D10","D11","D12",
-  "E1","E2","E3","E4","E5","E6","E7","E8","E9","E10","E11","E12",
-  "F1","F2","F3","F4","F5","F6","F7","F8","F9","F10","F11","F12",
-  "G1","G2","G3","G4","G5","G6","G7","G8","G9","G10","G11","G12",
-  "H1","H2","H3","H4","H5","H6","H7","H8","H9","H10","H11","H12")
+well = plate_list(NUMBER_ROWS,NUMBER_COLUMNS)
 all_wells <- data.frame(well)
 input_table_all_wells <- merge(x=all_wells, y=input_table, by="well", all=TRUE)
 
