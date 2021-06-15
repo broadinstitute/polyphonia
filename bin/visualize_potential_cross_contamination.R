@@ -9,8 +9,10 @@
 rm(list=ls())
 
 args = commandArgs(trailingOnly=TRUE)
-input_file_path = args[1]
-output_file_path = args[2]
+input_file_path  <- args[1]
+output_file_path <- args[2]
+number_rows      <- as.numeric(args[3])
+number_columns   <- as.numeric(args[4])
 
 library(ggplot2)
 library(plyr)
@@ -18,10 +20,7 @@ library(plyr)
 WIDTH <- 7.5
 HEIGHT <- 5
 
-NUMBER_ROWS <- 12
-NUMBER_COLUMNS <- 8
-
-scaling_factor <- min(12/NUMBER_ROWS, 8/NUMBER_COLUMNS)
+scaling_factor <- min(12/number_columns, 8/number_rows)
 WELL_CIRCLE_SIZE <- 12 * scaling_factor
 EXPAND_X <- 0.06 * scaling_factor
 EXPAND_Y <- 0.08 * scaling_factor
@@ -30,8 +29,8 @@ EXPAND_Y <- 0.08 * scaling_factor
 input_table <- read.table(input_file_path, sep="\t", header=TRUE)
 
 # expands input table to include all wells, including wells not included in input table
-letters <- LETTERS[1:NUMBER_COLUMNS]
-numbers <- c(1:NUMBER_ROWS)
+letters <- LETTERS[1:number_rows]
+numbers <- c(1:number_columns)
 well <- paste(rep(letters, each = length(numbers)), numbers, sep = "")
 all_wells <- data.frame(well)
 input_table_all_wells <- merge(x=all_wells, y=input_table, by="well", all=TRUE)
@@ -64,8 +63,8 @@ plate_figure <- ggplot() +
   geom_segment(data=input_table, mapping=aes(x=Column0, y=Row0, xend=Column, yend=Row),
     arrow=arrow(type="open", angle=30)) +
   coord_fixed(ratio=1, expand=TRUE, clip="off") +
-  scale_y_reverse(breaks=seq(1, NUMBER_COLUMNS), labels=LETTERS[1:NUMBER_COLUMNS], expand=c(EXPAND_Y,EXPAND_Y)) +
-  scale_x_continuous(breaks=seq(1, NUMBER_ROWS), position = "top", expand=c(EXPAND_X,EXPAND_X)) +
+  scale_y_reverse(breaks=seq(1, number_rows), labels=LETTERS[1:number_rows], expand=c(EXPAND_Y,EXPAND_Y)) +
+  scale_x_continuous(breaks=seq(1, number_columns), position = "top", expand=c(EXPAND_X,EXPAND_X)) +
   xlab("") + ylab("") +
   theme(
     legend.background=element_blank(),

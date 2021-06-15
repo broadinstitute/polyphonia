@@ -21,12 +21,14 @@ OPTIONS:
 	-i | --min-maf FLOAT		Minimum minor allele frequency for position to be considered heterozygous [0.03]
 
 - Plate map and neighbors (any combination, all optional):
-	-m | --map FILE(S)		Optional plate map (tab-separated, no header: sample name, plate position (e.g., A8)); provides substantial speed-up [null]
-	-n | --direct BOOL		Compare direct plate neighbors (left, right, top, bottom) [TRUE]
-	-d | --diagonal BOOL		Compare diagonal plate neighbors (top-right, bottom-right, top-left, bottom-left) [FALSE]
-	-w | --row BOOL			Compare samples in the same row (e.g., row A) [FALSE]
-	-l | --column BOOL		Compare samples in the same column (e.g., column 8) [FALSE]
-	-t | --plate BOOL		Compare all samples in the same plate map [FALSE]
+	-m | --plate-map FILE(S)		Optional plate map (tab-separated, no header: sample name, plate position (e.g., A8)); provides substantial speed-up [null]
+	-k | --plate-rows INT		Number rows in plate (e.g., A, B, C, D) [8]
+	-q | --plate-columns INT	Number columns in plate (e.g., 1, 2, 3, 4) [12]
+	-n | --compare-direct BOOL	Compare direct plate neighbors (left, right, top, bottom) [TRUE]
+	-d | --compare-diagonal BOOL	Compare diagonal plate neighbors (top-right, bottom-right, top-left, bottom-left) [FALSE]
+	-w | --compare-row BOOL		Compare samples in the same row (e.g., row A) [FALSE]
+	-l | --compare-column BOOL	Compare samples in the same column (e.g., column 8) [FALSE]
+	-t | --compare-plate BOOL	Compare all samples in the same plate map [FALSE]
 
 - Misc:
 	-a | --max-mismatches INT	Maximum allowed bases in contaminating sample consensus not matching contaminated sample alleles [1]
