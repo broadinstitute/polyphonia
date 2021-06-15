@@ -20,17 +20,6 @@ library(plyr)
 WIDTH <- 7.5
 HEIGHT <- 5
 
-# plate layouts:
-#   6-well plate    3 columns (A, B, C) x 2 rows (1, 2)
-#   12-well plate   4 columns x 3 rows
-#   24-well plate   6 x 4
-#   48-well plate   8 x 6
-#   96-well plate   12 x 8
-#   384-well plate  24 x 16
-#   1536-well plate 48 x 32
-#   3456-well plate 72 x 48
-
-
 # HELPER FUNCTIONS:
 
 # helper function to convert from letter row index to number
@@ -148,7 +137,7 @@ maximum_contamination_volume <- max(plate_map$estimated_contamination_volume_sum
 maximum_contamination_volume_text <- paste(signif(100*maximum_contamination_volume, digits=2), "%", sep="")
 
 # generates visualization of plate map (to overlay contamination or heterozygosity)
-plate_figure <- ggplot() +
+plate_figure_base <- ggplot() +
   coord_fixed(ratio=1, expand=TRUE, clip="off") +
   scale_x_continuous(
     breaks=seq(1, number_columns, axis_text_n),
@@ -173,7 +162,7 @@ plate_figure <- ggplot() +
 
 # colors plate map by total potential contamination with arrows from
 # potential sources of contamination to potential contaminated wells
-plate_figure_contamination <- plate_figure +
+plate_figure_contamination <- plate_figure_base +
   geom_point(
     data=plate_map,
     aes(x=Column, y=Row, fill=estimated_contamination_volume_sum),

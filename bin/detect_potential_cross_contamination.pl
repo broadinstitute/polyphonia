@@ -17,6 +17,18 @@ my $PLATE_VISUALIZATION_FILE_PATH = "visualize_potential_cross_contamination.R";
 my $PLATE_MAP_SAMPLE_COLUMN = 0;
 my $PLATE_MAP_POSITION_COLUMN = 1;
 
+# standard plate layouts:
+#   6-well plate    3 columns (A, B, C) x 2 rows (1, 2)
+#   12-well plate   4 columns x 3 rows
+#   24-well plate   6 x 4
+#   48-well plate   8 x 6
+#   96-well plate   12 x 8
+#   384-well plate  24 x 16
+#   1536-well plate 48 x 32
+#   3456-well plate 72 x 48
+my %STANDARD_PLATE_SIZE_TO_NUMBER_COLUMNS = (
+	6 => 3, 12 => 4, 24 => 6, 48 => 8, 96 => 12, 384 => 24, 1536 => 48, 3456 => 72);
+
 # for reading plate map:
 my %LETTER_TO_PREVIOUS_LETTER = (
 	"A" => "", "B" => "A", "C" => "B", "D" => "C", "E" => "D", "F" => "E", "G" => "F",
@@ -57,6 +69,7 @@ my $DEFAULT_OVERWRITE = 0; # false
 my $DEFAULT_CORES_TO_USE = 1;
 my $DEFAULT_VERBOSE = 1; # true
 
+my $DEFAULT_PLATE_SIZE = 96; # 12 columns, 8 rows
 my $DEFAULT_PLATE_NUMBER_ROWS = 8; # A through H
 my $DEFAULT_PLATE_NUMBER_COLUMNS = 12; # 1 through 12
 
@@ -101,6 +114,7 @@ if(!scalar @ARGV) # no command line arguments supplied
 	
 	print STDOUT "- Plate map and neighbors (any combination, all optional):\n";
 	print STDOUT "\t-m | --plate-map FILE(S)\tOptional plate map (tab-separated, no header: sample name, plate position (e.g., A8)); provides substantial speed-up [null]\n";
+	print STDOUT "\t-z | --plate-size INT\t\tStandard plate size (6-well, 12-well, 24, 48, 96, 384, 1536, 3456) [".$DEFAULT_PLATE_SIZE."]\n";
 	print STDOUT "\t-q | --plate-columns INT\tNumber columns in plate (e.g., 1, 2, 3, 4) [".$DEFAULT_PLATE_NUMBER_COLUMNS."]\n";
 	print STDOUT "\t-k | --plate-rows INT\t\tNumber rows in plate (e.g., A, B, C, D) [".$DEFAULT_PLATE_NUMBER_ROWS."]\n";
 	print STDOUT "\t-n | --compare-direct BOOL\tCompare direct plate neighbors (left, right, top, bottom) [".int_to_bool_string($DEFAULT_COMPARE_DIRECT_NEIGHBORS)."]\n";
@@ -144,8 +158,11 @@ my $minimum_minor_allele_readcount = $DEFAULT_MINIMUM_MINOR_ALLELE_READCOUNT;
 my $minimum_minor_allele_frequency = $DEFAULT_MINIMUM_MINOR_ALLELE_FREQUENCY;
 
 my @plate_map_files = ();
+my $plate_size = $DEFAULT_PLATE_SIZE;
+my $plate_size_entered = 0;
 my $plate_number_rows = $DEFAULT_PLATE_NUMBER_ROWS;
 my $plate_number_columns = $DEFAULT_PLATE_NUMBER_COLUMNS;
+my $plate_row_column_count_entered = 0;
 my $compare_direct_neighbors = $DEFAULT_COMPARE_DIRECT_NEIGHBORS;
 my $compare_diagonal_neighbors = $DEFAULT_COMPARE_DIAGONAL_NEIGHBORS;
 my $compare_row = $DEFAULT_COMPARE_ROW;
@@ -220,13 +237,20 @@ for($argument_index = 0; $argument_index <= $#ARGV; $argument_index++)
 	{
 		push(@plate_map_files, @$input);
 	}
+	elsif(($input = read_in_positive_integer_argument("-z", "--plate-size")) != -1)
+	{
+		$plate_size = $input;
+		$plate_size_entered = 1;
+	}
 	elsif(($input = read_in_positive_integer_argument("-k", "--plate-rows")) != -1)
 	{
 		$plate_number_rows = $input;
+		$plate_row_column_count_entered = 1;
 	}
 	elsif(($input = read_in_positive_integer_argument("-q", "--plate-columns")) != -1)
 	{
 		$plate_number_columns = $input;
+		$plate_row_column_count_entered = 1;
 	}
 	elsif(($input = read_in_boolean_argument("-n", "--compare-direct")) != -1)
 	{
@@ -296,6 +320,23 @@ if($plate_number_columns < 1)
 {
 	print STDERR "Error: plate map columns ".$plate_number_columns." < 1.\n";
 }
+if($plate_size_entered and !@plate_map_files)
+{
+	print STDERR "Warning: plate size entered but no plate map. Ignoring plate size.\n";
+	$plate_size_entered = 0;
+}
+if(!@plate_map_files and $plate_row_column_count_entered)
+{
+	print STDERR "Warning: plate map column or row count entered but no plate map. "
+		."Ignoring plate map column and row count.\n";
+	$plate_row_column_count_entered = 0;
+}
+if($plate_size_entered and $plate_row_column_count_entered)
+{
+	print STDERR "Warning: plate map column or row count entered as well as plate size "
+		."entered. Using standard plate size ".$plate_size."; ignoring plate column and row counts.\n";
+	$plate_row_column_count_entered = 0;
+}
 if($minimum_genome_coverage < 0 or $minimum_genome_coverage > 1)
 {
 	print STDERR "Error: minimum genome coverage is not between 0 and 1. Exiting.\n";
@@ -357,6 +398,23 @@ foreach my $plate_map_file(@plate_map_files)
 	{
 		print STDERR "Error: plate map file does not exist:\n\t"
 			.$plate_map_file."\nExiting.\n";
+		die;
+	}
+}
+
+
+# retrieves dimensions of standard plate map size entered
+if($plate_size_entered)
+{
+	if($STANDARD_PLATE_SIZE_TO_NUMBER_COLUMNS{$plate_size})
+	{
+		$plate_number_columns = $STANDARD_PLATE_SIZE_TO_NUMBER_COLUMNS{$plate_size};
+		$plate_number_rows = $plate_size/$plate_number_columns;
+	}
+	else
+	{
+		print STDERR "Error: plate size ".$plate_size." not recognized as standard plate "
+			."size. Exiting.\n";
 		die;
 	}
 }
