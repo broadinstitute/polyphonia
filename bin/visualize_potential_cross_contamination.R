@@ -14,11 +14,6 @@ output_file_path <- args[2]
 number_columns   <- as.numeric(args[3])
 number_rows      <- as.numeric(args[4])
 
-input_file_path = "/Users/lakras/2021_05_19_contamination_detection_from_minor_alleles/2021_06_01_polishing_software/intermediate0/plate_map.txt_potential_cross_contamination_2x3.txt"
-output_file_path = input_file_path
-number_columns = 72
-number_rows = 48
-
 library(ggplot2)
 library(plyr)
 
