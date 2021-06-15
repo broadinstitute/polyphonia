@@ -21,23 +21,18 @@ HEIGHT <- 5
 NUMBER_ROWS <- 12
 NUMBER_COLUMNS <- 8
 
-WELL_CIRCLE_SIZE <- 12
-EXPAND_X <- 0.06
-EXPAND_Y <- 0.08
+scaling_factor <- min(12/NUMBER_ROWS, 8/NUMBER_COLUMNS)
+WELL_CIRCLE_SIZE <- 12 * scaling_factor
+EXPAND_X <- 0.06 * scaling_factor
+EXPAND_Y <- 0.08 * scaling_factor
 
 # reads in input table
 input_table <- read.table(input_file_path, sep="\t", header=TRUE)
 
 # expands input table to include all wells, including wells not included in input table
-well = c(
-  "A1","A2","A3","A4","A5","A6","A7","A8","A9","A10","A11","A12",
-  "B1","B2","B3","B4","B5","B6","B7","B8","B9","B10","B11","B12",
-  "C1","C2","C3","C4","C5","C6","C7","C8","C9","C10","C11","C12",
-  "D1","D2","D3","D4","D5","D6","D7","D8","D9","D10","D11","D12",
-  "E1","E2","E3","E4","E5","E6","E7","E8","E9","E10","E11","E12",
-  "F1","F2","F3","F4","F5","F6","F7","F8","F9","F10","F11","F12",
-  "G1","G2","G3","G4","G5","G6","G7","G8","G9","G10","G11","G12",
-  "H1","H2","H3","H4","H5","H6","H7","H8","H9","H10","H11","H12")
+letters <- LETTERS[1:NUMBER_COLUMNS]
+numbers <- c(1:NUMBER_ROWS)
+well <- paste(rep(letters, each = length(numbers)), numbers, sep = "")
 all_wells <- data.frame(well)
 input_table_all_wells <- merge(x=all_wells, y=input_table, by="well", all=TRUE)
 
@@ -66,7 +61,8 @@ maximum_contamination_volume_text <- paste(100*maximum_contamination_volume, "%"
 plate_figure <- ggplot() +
   geom_point(data=plate_map, aes(x=Column, y=Row, fill=estimated_contamination_volume_sum),
     shape=21, size=WELL_CIRCLE_SIZE, colour="black") +
-  geom_segment(data=input_table, mapping=aes(x=Column0, y=Row0, xend=Column, yend=Row), arrow=arrow()) +
+  geom_segment(data=input_table, mapping=aes(x=Column0, y=Row0, xend=Column, yend=Row),
+    arrow=arrow(type="open", angle=30)) +
   coord_fixed(ratio=1, expand=TRUE, clip="off") +
   scale_y_reverse(breaks=seq(1, NUMBER_COLUMNS), labels=LETTERS[1:NUMBER_COLUMNS], expand=c(EXPAND_Y,EXPAND_Y)) +
   scale_x_continuous(breaks=seq(1, NUMBER_ROWS), position = "top", expand=c(EXPAND_X,EXPAND_X)) +
