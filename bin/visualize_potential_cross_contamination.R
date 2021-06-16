@@ -92,7 +92,15 @@ plate_list <- function(max_row, num_columns)
 # and padding to panel edges
 scaling_factor <- min(12/number_columns, 8/number_rows)
 well_circle_size <- 12 * scaling_factor
+well_circle_line_thickness <- min(0.3 * scaling_factor, 0.5)
 arrow_head_length <- 0.63 * scaling_factor
+arrow_thickness <- 2 * well_circle_line_thickness
+
+text_in_wells_size <- 4 * scaling_factor
+if(scaling_factor < 0.26)
+{
+  text_in_wells_size <- text_in_wells_size * 1.4 # make the within-well text larger
+}
 
 axis_text_size <- max(6, 9 * scaling_factor)
 axis_text_n <- 1 # display every value in axis text
@@ -186,10 +194,11 @@ if(input_file_type == "contamination")
     geom_point(
       data=plate_map,
       aes(x=Column, y=Row, fill=estimated_contamination_volume_sum),
-      shape=21, size=well_circle_size, colour="black") +
+      shape=21, size=well_circle_size, stroke=well_circle_line_thickness, colour="black") +
     geom_segment(
       data=input_table,
       mapping=aes(x=Column0, y=Row0, xend=Column, yend=Row),
+      size=arrow_thickness,
       arrow=arrow(type="open", angle=30, length=unit(arrow_head_length,"cm"))) +
     scale_fill_gradient("Total Estimated Contamination Volume", low="white", high="#CC857E",
       limits=c(0, maximum_contamination_volume),
@@ -216,7 +225,13 @@ if(input_file_type == "isnvs")
     geom_point(
       data=plate_map,
       aes(x=Column, y=Row, fill=iSNVs),
-      shape=21, size=well_circle_size, colour="black") +
+      colour=ifelse(is.na(plate_map$iSNVs), "grey", "black"),
+      shape=21, size=well_circle_size, stroke=well_circle_line_thickness) +
+    geom_text(
+      data=plate_map,
+      aes(x=Column, y=Row, label=ifelse(is.na(iSNVs), "NA", iSNVs)),
+      colour=ifelse(is.na(plate_map$iSNVs), "grey", "black"),
+      size=text_in_wells_size) +
     scale_fill_gradient("Number iSNVs", low="white", high="#CC857E", na.value="#ededed",
       limits=c(0, maximum_iSNVs),
       breaks=c(0, maximum_iSNVs),
