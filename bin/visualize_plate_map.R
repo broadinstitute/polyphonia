@@ -189,13 +189,21 @@ if(input_file_type == "contamination")
   }
   maximum_contamination_volume_text <- paste(signif(100*maximum_contamination_volume, digits=2), "%", sep="")
   
+  # whether or not a well is involved in any detected potential contamination (giving or receiving)
+  plate_map$well_involved <- FALSE
+  for(i in 1:nrow(plate_map))
+  {
+    plate_map$well_involved[i] <- any(input_table$contamination_source_well==plate_map$well[i]) || any(input_table$well==plate_map$well[i])
+  }
+  
   # colors plate map by total potential contamination with arrows from
   # potential sources of contamination to potential contaminated wells
   plate_figure_contamination <- plate_figure_base +
     geom_point(
       data=plate_map,
       aes(x=Column, y=Row, fill=estimated_contamination_volume_sum),
-      shape=21, size=well_circle_size, stroke=well_circle_line_thickness,colour="black") +
+      colour=ifelse(plate_map$well_involved, "black", "darkgrey"),
+      shape=21, size=well_circle_size, stroke=well_circle_line_thickness) +
     geom_segment(
       data=input_table,
       mapping=aes(x=Column0, y=Row0, xend=Column, yend=Row),
