@@ -11,7 +11,7 @@ use Parallel::ForkManager; # download here: https://metacpan.org/pod/Parallel::F
 my $LOFREQ_EXECUTABLE_FILE_PATH = "lofreq";
 my $MAFFT_EXECUTABLE_FILE_PATH = "mafft";
 my $VCF_TO_HETEROZYGOSITY_TABLE_SCRIPT_FILE_PATH = "vcf_file_to_heterozygosity_table.pl";
-my $PLATE_VISUALIZATION_FILE_PATH = "visualize_potential_cross_contamination.R";
+my $PLATE_VISUALIZATION_FILE_PATH = "visualize_plate_map.R";
 
 # plate map input file:
 my $PLATE_MAP_SAMPLE_COLUMN = 0;

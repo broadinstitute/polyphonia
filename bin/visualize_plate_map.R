@@ -15,6 +15,15 @@ number_columns   <- as.numeric(args[3])
 number_rows      <- as.numeric(args[4])
 input_file_type  <- tolower(args[5]) # "isnvs" or "contamination"
 
+input_file_path = "/Users/lakras/2021_05_19_contamination_detection_from_minor_alleles/2021_06_01_polishing_software/intermediate0/plate_map.txt_iSNVs.txt"
+input_file_type <- "isnvs"
+input_file_type <- "contamination"
+input_file_path = "/Users/lakras/2021_05_19_contamination_detection_from_minor_alleles/2021_06_01_polishing_software/intermediate0/plate_map.txt_potential_cross_contamination_2x3.txt"
+output_file_path = input_file_path
+number_columns = 12
+number_rows = 8
+
+
 library(ggplot2)
 library(plyr)
 
@@ -194,7 +203,7 @@ if(input_file_type == "contamination")
     geom_point(
       data=plate_map,
       aes(x=Column, y=Row, fill=estimated_contamination_volume_sum),
-      shape=21, size=well_circle_size, stroke=well_circle_line_thickness, colour="black") +
+      shape=21, size=well_circle_size, stroke=well_circle_line_thickness,colour="black") +
     geom_segment(
       data=input_table,
       mapping=aes(x=Column0, y=Row0, xend=Column, yend=Row),
