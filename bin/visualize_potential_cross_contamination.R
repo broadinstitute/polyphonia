@@ -21,6 +21,7 @@ library(plyr)
 WIDTH <- 7.5
 HEIGHT <- 5
 
+
 # HELPER FUNCTIONS:
 
 # helper function to convert from letter row index to number
@@ -87,7 +88,7 @@ plate_list <- function(max_row, num_columns)
 }
 
 
-# depending on plate size, scales circle sizes, axis label sizes,
+# depending on plate size, scales circle size, axis label size, arrow head size
 # and padding to panel edges
 scaling_factor <- min(12/number_columns, 8/number_rows)
 well_circle_size <- 12 * scaling_factor
@@ -108,6 +109,7 @@ if(number_columns < number_rows)
   expand_y <- 0.06 * scaling_factor
   expand_x <- 0.08 * scaling_factor
 }
+
 
 # reads in input table
 input_table <- read.table(input_file_path, sep="\t", header=TRUE)
@@ -141,6 +143,7 @@ if(input_file_type == "contamination")
   input_table$Column0 <- as.numeric(gsub("[^[:digit:]]", "", input_table$contamination_source_well)) # retrieves digits
 }
 
+
 # generates visualization of plate map (to overlay contamination or iSNVs)
 plate_figure_base <- ggplot() +
   coord_fixed(ratio=1, expand=TRUE, clip="off") +
@@ -164,6 +167,7 @@ plate_figure_base <- ggplot() +
     panel.grid.major=element_blank(),
     panel.grid.minor=element_blank()
   )
+
 
 # generates contamination visualization
 if(input_file_type == "contamination")
@@ -195,6 +199,7 @@ if(input_file_type == "contamination")
   ggsave(paste(output_file_path, ".pdf", sep=""), plate_figure_contamination, width=WIDTH, height=HEIGHT)
   ggsave(paste(output_file_path, ".jpg", sep=""), plate_figure_contamination, width=WIDTH, height=HEIGHT)
 }
+
 
 # generates iSNVs visualization
 if(input_file_type == "isnvs")
