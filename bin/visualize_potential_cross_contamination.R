@@ -90,6 +90,8 @@ plate_list <- function(max_row, num_columns)
 # and padding to panel edges
 scaling_factor <- min(12/number_columns, 8/number_rows)
 well_circle_size <- 12 * scaling_factor
+arrow_head_length <- 0.63 * scaling_factor
+
 axis_text_size <- max(6, 9 * scaling_factor)
 axis_text_n <- 1 # display every value in axis text
 if(scaling_factor < 0.2)
@@ -170,7 +172,7 @@ plate_figure_contamination <- plate_figure_base +
   geom_segment(
     data=input_table,
     mapping=aes(x=Column0, y=Row0, xend=Column, yend=Row),
-    arrow=arrow(type="open", angle=30)) +
+    arrow=arrow(type="open", angle=30, length=unit(arrow_head_length,"cm"))) +
    scale_fill_gradient("Total Estimated Contamination Volume", low="white", high="#CC857E",
     breaks=c(0, maximum_contamination_volume), labels=c(0, maximum_contamination_volume_text))
 
