@@ -870,9 +870,167 @@ if(!$reference_sequence_length)
 }
 
 
+# if plate map provided, counts number positions with heterozygosity (iSNVs) in each
+# sample and generates visualization
+# within-sample diversity files must be pre-processed before this step
+my %plate_map_file_to_plate_iSNV_file = (); # key: plate map file -> value: file with plate iSNVs
+if(scalar @plate_map_files)
+{
+	print STDOUT "generating plate-map iSNV summaries...\n" if $verbose;
+	my %sample_name_to_number_positions_with_heterozygosity = (); # key: sample name -> value: number iSNVs
+	my %sample_examined = (); # key: sample name -> value: 1 if we've counted iSNVs in this sample
+	foreach my $plate_map_file(@plate_map_files)
+	{
+		# reads in plate map
+		%plate_position_to_sample_name = (); # key: position -> value: sample name
+		open PLATE_MAP, "<$plate_map_file" || die "Could not open $plate_map_file to read; terminating =(\n";
+		while(<PLATE_MAP>) # for each line in the file
+		{
+			chomp;
+			my $line = $_;
+			if($line =~ /\S/) # non-empty line
+			{
+				my @items = split($DELIMITER, $line);
+				my $sample_name = $items[$PLATE_MAP_SAMPLE_COLUMN];
+				my $plate_position = uc $items[$PLATE_MAP_POSITION_COLUMN];
+				
+				if($plate_position and $sample_name)
+				{
+					$plate_position_to_sample_name{$plate_position} = $sample_name;
+				}
+			}
+		}
+		close PLATE_MAP;
+
+		# retrieves number iSNVs for each sample on plate map
+		# (excludes previously removed samples without neighbors)
+		foreach my $plate_position(keys %plate_position_to_sample_name)
+		{
+			my $sample = $plate_position_to_sample_name{$plate_position};
+			if($sample_names{$sample}) # if sample not excluded for not having neighbors
+			{
+				# retrieves within-sample diversity file for potential contaminated sample
+				my $within_sample_diversity_file = $sample_name_to_within_sample_diversity_file{$sample};
+				if($within_sample_diversity_file_to_stage{$within_sample_diversity_file} ne "het")
+				{
+					print STDERR "Warning: within-sample diversity file for sample "
+						.$sample." not preprocessed:\n\t".$within_sample_diversity_file."\n"
+						."Processing without parallelization.\n";
+		
+					# if needed, processes within-sample diversity file for this sample
+					$within_sample_diversity_file = process_within_sample_diversity_file_for_sample($sample);
+					$sample_name_to_within_sample_diversity_file{$sample} = $within_sample_diversity_file;
+					$within_sample_diversity_file_to_stage{$within_sample_diversity_file} = "het";
+				}
+			
+				# reads in heterozygosity table generated for within-sample diversity of this sample
+				if(!$sample_examined{$sample})
+				{
+					my %positions_with_heterozygosity = (); # key: position -> value: 1 if position has minor allele
+					my $number_positions_with_heterozygosity = 0;
+					open HETEROZYGOSITY_TABLE, "<$within_sample_diversity_file" || die "Could not open $within_sample_diversity_file to read; terminating =(\n";
+					while(<HETEROZYGOSITY_TABLE>) # for each line in the file
+					{
+						chomp;
+						my $line = $_;
+	
+						# parses this line
+						my @items = split($DELIMITER, $line);
+						my $position = $items[$HETEROZYGOSITY_TABLE_POSITION_COLUMN];
+						my $minor_allele_readcount = $items[$HETEROZYGOSITY_TABLE_MINOR_ALLELE_READCOUNT_COLUMN];
+						my $minor_allele_frequency = $items[$HETEROZYGOSITY_TABLE_MINOR_ALLELE_FREQUENCY_COLUMN];
+	
+						# verifies that input values all make sense
+						if($position !~ /^\d+$/)
+						{
+							print STDERR "Warning: position is not non-zero integer"
+								.$position." in heterozygosity table:\n\t"
+								.$within_sample_diversity_file."\n";
+						}
+						if($minor_allele_readcount !~ /^\d+$/)
+						{
+							print STDERR "Warning: minor allele readcount is not non-zero integer"
+								.$minor_allele_readcount." in heterozygosity table:\n\t"
+								.$within_sample_diversity_file."\n";
+						}
+						if($minor_allele_frequency !~ /^[\de.-]+$/)
+						{
+							print STDERR "Warning: non-numerical minor allele frequency "
+								.$minor_allele_frequency." in heterozygosity table:\n\t"
+								.$within_sample_diversity_file."\n";
+						}
+
+						# only includes positions with minor allele readcount >= 10, minor allele frequency >= 3%
+						# assumes that major allele frequency = 100% - minor allele frequency
+						if($minor_allele_readcount >= $minimum_minor_allele_readcount
+							and $minor_allele_frequency >= $minimum_minor_allele_frequency)
+						{
+							if($positions_with_heterozygosity{$position})
+							{
+								print STDERR "Warning: position appears in more than one line in "
+									."heterozygosity table:\n\t".$within_sample_diversity_file."\n";
+							}
+							else
+							{
+								$positions_with_heterozygosity{$position} = 1;
+								$number_positions_with_heterozygosity++;
+							}
+						}
+					}
+					close HETEROZYGOSITY_TABLE;
+					
+					# saves number iSNVs for this sample
+					$sample_name_to_number_positions_with_heterozygosity{$sample} = $number_positions_with_heterozygosity;
+					$sample_examined{$sample} = 1;
+				}
+			}
+		}
+		
+		
+		# prints copy of plate map with number iSNVs
+		# creates file
+		my $plate_iSNVs_output_file = $temp_intermediate_directory.retrieve_file_name($plate_map_file)."_iSNVs.txt";
+		check_if_file_exists_before_writing($plate_iSNVs_output_file);
+		
+		# prints header line
+		open PLATE_ISNVS_OUT_FILE, ">$plate_iSNVs_output_file" || die "Could not open $plate_iSNVs_output_file to write; terminating =(\n";
+		print PLATE_ISNVS_OUT_FILE "well".$DELIMITER;
+		print PLATE_ISNVS_OUT_FILE "sample".$DELIMITER;
+		print PLATE_ISNVS_OUT_FILE "iSNVs".$NEWLINE;
+		
+		# prints number iSNVs for each sample
+		foreach my $plate_position(keys %plate_position_to_sample_name)
+		{
+			my $sample_name = $plate_position_to_sample_name{$plate_position};
+			my $number_positions_with_heterozygosity = $sample_name_to_number_positions_with_heterozygosity{$sample_name};
+			if(!$sample_names{$sample_name})
+			{
+				$number_positions_with_heterozygosity = $NO_DATA;
+			}
+			
+			print PLATE_ISNVS_OUT_FILE $plate_position.$DELIMITER;
+			print PLATE_ISNVS_OUT_FILE $sample_name.$DELIMITER;
+			print PLATE_ISNVS_OUT_FILE $number_positions_with_heterozygosity.$NEWLINE;
+		}
+
+		# closes output file
+		close PLATE_ISNVS_OUT_FILE;
+		
+		# generates visualization
+		my $plate_iSNV_visualization_output_file = trim_off_file_extension($plate_iSNVs_output_file)."_visualization";
+		check_if_file_exists_before_writing($plate_iSNV_visualization_output_file.".jpg");
+		check_if_file_exists_before_writing($plate_iSNV_visualization_output_file.".pdf");
+		
+		# TODO
+# 		exec("$PLATE_VISUALIZATION_FILE_PATH $plate_iSNVs_output_file $plate_iSNV_visualization_output_file $plate_number_columns $plate_number_rows");
+	}
+}
+
+
 # header line for plate-specific output file
 my $plate_header_line = "";
-$plate_header_line .= "well	sample".$DELIMITER;
+$plate_header_line .= "well".$DELIMITER;
+$plate_header_line .= "sample".$DELIMITER;
 $plate_header_line .= "contamination_source_well".$DELIMITER;
 $plate_header_line .= "contamination_source_sample".$DELIMITER;
 $plate_header_line .= "estimated_contamination_volume";
@@ -893,6 +1051,7 @@ sub
 });
 
 # if plate map(s) provided, compares all neighboring samples
+# within-sample diversity files must be pre-processed before this step
 if(scalar @plate_map_files)
 {
 	print STDOUT "comparing all neighboring samples...\n" if $verbose;
@@ -1099,18 +1258,29 @@ sub detect_potential_contamination_in_sample_pair_both_directions
 
 # prepares and retrieves files for the two input samples; checks if the second sample
 # potentially could have contaminated the first
+# assumes that within-sample diversity file has been pre-processed
 sub detect_potential_contamination_in_sample_pair
 {
 	my $potential_contaminated_sample = $_[0];
 	my $potential_contaminating_sample = $_[1];
 	
-	# if needed, processes within-sample diversity file for potential contaminated sample
-	my $within_sample_diversity_file = process_within_sample_diversity_file_for_sample($potential_contaminated_sample);
-	$sample_name_to_within_sample_diversity_file{$potential_contaminated_sample} = $within_sample_diversity_file;
-	$within_sample_diversity_file_to_stage{$within_sample_diversity_file} = "het";
-	
 	# retrieves within-sample diversity file for potential contaminated sample
 	my $potential_contaminated_within_sample_diversity_file = $sample_name_to_within_sample_diversity_file{$potential_contaminated_sample};
+	if($within_sample_diversity_file_to_stage{$potential_contaminated_within_sample_diversity_file} ne "het")
+	{
+		print STDERR "Warning: within-sample diversity file for sample "
+			.$potential_contaminated_sample." not preprocessed:\n\t"
+			.$potential_contaminated_within_sample_diversity_file."\n";
+		
+			# if needed, processes within-sample diversity file for potential contaminated sample
+			# may cause race conditions and is in general a terrible idea--delete if possible
+			my $within_sample_diversity_file = process_within_sample_diversity_file_for_sample($potential_contaminated_sample);
+			$sample_name_to_within_sample_diversity_file{$potential_contaminated_sample} = $within_sample_diversity_file;
+			$within_sample_diversity_file_to_stage{$within_sample_diversity_file} = "het";
+			
+			# updates value
+			$potential_contaminated_within_sample_diversity_file = $sample_name_to_within_sample_diversity_file{$potential_contaminated_sample};
+	}
 	
 	# reads in heterozygosity table generated for within-sample diversity of potential contaminated sample
 	my %minor_alleles = (); # key: position, allele -> value: 1 if a sample has >=10 reads and >=0.3 MAF at this minor allele at this position
