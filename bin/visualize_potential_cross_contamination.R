@@ -170,6 +170,10 @@ if(input_file_type == "contamination")
 {
   # label for maximum contamination volume in legend
   maximum_contamination_volume <- max(plate_map$estimated_contamination_volume_sum)
+  if(maximum_contamination_volume == 0)
+  {
+    maximum_contamination_volume = 0.01
+  }
   maximum_contamination_volume_text <- paste(signif(100*maximum_contamination_volume, digits=2), "%", sep="")
   
   # colors plate map by total potential contamination with arrows from
@@ -183,8 +187,10 @@ if(input_file_type == "contamination")
       data=input_table,
       mapping=aes(x=Column0, y=Row0, xend=Column, yend=Row),
       arrow=arrow(type="open", angle=30, length=unit(arrow_head_length,"cm"))) +
-     scale_fill_gradient("Total Estimated Contamination Volume", low="white", high="#CC857E",
-      breaks=c(0, maximum_contamination_volume), labels=c(0, maximum_contamination_volume_text))
+    scale_fill_gradient("Total Estimated Contamination Volume", low="white", high="#CC857E",
+      limits=c(0, maximum_contamination_volume),
+      breaks=c(0, maximum_contamination_volume),
+      labels=c(0, maximum_contamination_volume_text))
   
   ggsave(paste(output_file_path, ".pdf", sep=""), plate_figure_contamination, width=WIDTH, height=HEIGHT)
   ggsave(paste(output_file_path, ".jpg", sep=""), plate_figure_contamination, width=WIDTH, height=HEIGHT)
@@ -193,13 +199,23 @@ if(input_file_type == "contamination")
 # generates iSNVs visualization
 if(input_file_type == "isnvs")
 {
+  # label for maximum contamination number iSNVs in legend
+  maximum_iSNVs <- max(plate_map$iSNVs, na.rm=T)
+  if(maximum_iSNVs == 0)
+  {
+    maximum_iSNVs = 1
+  }
+  
   # colors plate map by total number iSNVs
   plate_figure_iSNVs <- plate_figure_base +
     geom_point(
       data=plate_map,
       aes(x=Column, y=Row, fill=iSNVs),
       shape=21, size=well_circle_size, colour="black") +
-    scale_fill_gradient("Number iSNVs", low="white", high="#CC857E")
+    scale_fill_gradient("Number iSNVs", low="white", high="#CC857E", na.value="#ededed",
+      limits=c(0, maximum_iSNVs),
+      breaks=c(0, maximum_iSNVs),
+      labels=c(0, maximum_iSNVs))
   
   ggsave(paste(output_file_path, ".pdf", sep=""), plate_figure_iSNVs, width=WIDTH, height=HEIGHT)
   ggsave(paste(output_file_path, ".jpg", sep=""), plate_figure_iSNVs, width=WIDTH, height=HEIGHT)
