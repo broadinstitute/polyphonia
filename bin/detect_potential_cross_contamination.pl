@@ -1021,8 +1021,7 @@ if(scalar @plate_map_files)
 		check_if_file_exists_before_writing($plate_iSNV_visualization_output_file.".jpg");
 		check_if_file_exists_before_writing($plate_iSNV_visualization_output_file.".pdf");
 		
-		# TODO
-# 		exec("$PLATE_VISUALIZATION_FILE_PATH $plate_iSNVs_output_file $plate_iSNV_visualization_output_file $plate_number_columns $plate_number_rows");
+ 		exec("$PLATE_VISUALIZATION_FILE_PATH $plate_iSNVs_output_file $plate_iSNV_visualization_output_file $plate_number_columns $plate_number_rows isnvs");
 	}
 }
 
@@ -1129,7 +1128,7 @@ if(scalar @plate_map_files)
 			check_if_file_exists_before_writing($plate_visualization_output_file.".jpg");
 			check_if_file_exists_before_writing($plate_visualization_output_file.".pdf");
 			
-			exec("$PLATE_VISUALIZATION_FILE_PATH $plate_output_file $plate_visualization_output_file $plate_number_columns $plate_number_rows");
+			exec("$PLATE_VISUALIZATION_FILE_PATH $plate_output_file $plate_visualization_output_file $plate_number_columns $plate_number_rows contamination");
 		}
 		
 		# clears plate output for next plate map
@@ -1272,14 +1271,14 @@ sub detect_potential_contamination_in_sample_pair
 			.$potential_contaminated_sample." not preprocessed:\n\t"
 			.$potential_contaminated_within_sample_diversity_file."\n";
 		
-			# if needed, processes within-sample diversity file for potential contaminated sample
-			# may cause race conditions and is in general a terrible idea--delete if possible
-			my $within_sample_diversity_file = process_within_sample_diversity_file_for_sample($potential_contaminated_sample);
-			$sample_name_to_within_sample_diversity_file{$potential_contaminated_sample} = $within_sample_diversity_file;
-			$within_sample_diversity_file_to_stage{$within_sample_diversity_file} = "het";
-			
-			# updates value
-			$potential_contaminated_within_sample_diversity_file = $sample_name_to_within_sample_diversity_file{$potential_contaminated_sample};
+		# if needed, processes within-sample diversity file for potential contaminated sample
+		# may cause race conditions and is in general a terrible idea--delete if possible
+		my $within_sample_diversity_file = process_within_sample_diversity_file_for_sample($potential_contaminated_sample);
+		$sample_name_to_within_sample_diversity_file{$potential_contaminated_sample} = $within_sample_diversity_file;
+		$within_sample_diversity_file_to_stage{$within_sample_diversity_file} = "het";
+		
+		# updates value
+		$potential_contaminated_within_sample_diversity_file = $sample_name_to_within_sample_diversity_file{$potential_contaminated_sample};
 	}
 	
 	# reads in heterozygosity table generated for within-sample diversity of potential contaminated sample

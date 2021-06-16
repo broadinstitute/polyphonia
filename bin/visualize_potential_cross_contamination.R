@@ -13,6 +13,7 @@ input_file_path  <- args[1]
 output_file_path <- args[2]
 number_columns   <- as.numeric(args[3])
 number_rows      <- as.numeric(args[4])
+input_file_type  <- tolower(args[5]) # "isnvs" or "contamination"
 
 library(ggplot2)
 library(plyr)
@@ -114,14 +115,17 @@ input_table <- read.table(input_file_path, sep="\t", header=TRUE)
 # expands input table to include all wells, including wells not included in input table
 well <- plate_list(number_rows, number_columns)
 all_wells <- data.frame(well)
-input_table_all_wells <- merge(x=all_wells, y=input_table, by="well", all=TRUE)
+plate_map <- merge(x=all_wells, y=input_table, by="well", all=TRUE)
 
 # calculates sum of estimated contamination volume for each well
 # (in case a well is potentially contaminated by multiple samples)
-volume_summed_by_well <- aggregate(x=input_table_all_wells$estimated_contamination_volume,
-  by=list(input_table_all_wells$well), FUN=sum, na.rm=TRUE)
-colnames(volume_summed_by_well) <- c("well","estimated_contamination_volume_sum")
-plate_map <- volume_summed_by_well
+if(input_file_type == "contamination")
+{
+  volume_summed_by_well <- aggregate(x=plate_map$estimated_contamination_volume,
+    by=list(plate_map$well), FUN=sum, na.rm=TRUE)
+  colnames(volume_summed_by_well) <- c("well","estimated_contamination_volume_sum")
+  plate_map <- volume_summed_by_well
+}
 
 # splits out columns and rows of wells
 # based on https://stackoverflow.com/questions/9756360/split-character-data-into-numbers-and-letters
@@ -131,14 +135,13 @@ plate_map$Column <- as.numeric(gsub("[^[:digit:]]", "", plate_map$well)) # retri
 input_table$Row <- as.numeric(lapply(gsub("[[:digit:]]","",input_table$well), FUN=row_letters_to_row_number)) # retrieves letters, converts to digits
 input_table$Column <- as.numeric(gsub("[^[:digit:]]", "", input_table$well)) # retrieves digits
 
-input_table$Row0 <- as.numeric(lapply(gsub("[[:digit:]]","",input_table$contamination_source_well), FUN=row_letters_to_row_number)) # retrieves letters, converts to digits
-input_table$Column0 <- as.numeric(gsub("[^[:digit:]]", "", input_table$contamination_source_well)) # retrieves digits
+if(input_file_type == "contamination")
+{
+  input_table$Row0 <- as.numeric(lapply(gsub("[[:digit:]]","",input_table$contamination_source_well), FUN=row_letters_to_row_number)) # retrieves letters, converts to digits
+  input_table$Column0 <- as.numeric(gsub("[^[:digit:]]", "", input_table$contamination_source_well)) # retrieves digits
+}
 
-# label for maximum contamination volume in legend
-maximum_contamination_volume <- max(plate_map$estimated_contamination_volume_sum)
-maximum_contamination_volume_text <- paste(signif(100*maximum_contamination_volume, digits=2), "%", sep="")
-
-# generates visualization of plate map (to overlay contamination or heterozygosity)
+# generates visualization of plate map (to overlay contamination or iSNVs)
 plate_figure_base <- ggplot() +
   coord_fixed(ratio=1, expand=TRUE, clip="off") +
   scale_x_continuous(
@@ -162,22 +165,45 @@ plate_figure_base <- ggplot() +
     panel.grid.minor=element_blank()
   )
 
-# colors plate map by total potential contamination with arrows from
-# potential sources of contamination to potential contaminated wells
-plate_figure_contamination <- plate_figure_base +
-  geom_point(
-    data=plate_map,
-    aes(x=Column, y=Row, fill=estimated_contamination_volume_sum),
-    shape=21, size=well_circle_size, colour="black") +
-  geom_segment(
-    data=input_table,
-    mapping=aes(x=Column0, y=Row0, xend=Column, yend=Row),
-    arrow=arrow(type="open", angle=30, length=unit(arrow_head_length,"cm"))) +
-   scale_fill_gradient("Total Estimated Contamination Volume", low="white", high="#CC857E",
-    breaks=c(0, maximum_contamination_volume), labels=c(0, maximum_contamination_volume_text))
+# generates contamination visualization
+if(input_file_type == "contamination")
+{
+  # label for maximum contamination volume in legend
+  maximum_contamination_volume <- max(plate_map$estimated_contamination_volume_sum)
+  maximum_contamination_volume_text <- paste(signif(100*maximum_contamination_volume, digits=2), "%", sep="")
+  
+  # colors plate map by total potential contamination with arrows from
+  # potential sources of contamination to potential contaminated wells
+  plate_figure_contamination <- plate_figure_base +
+    geom_point(
+      data=plate_map,
+      aes(x=Column, y=Row, fill=estimated_contamination_volume_sum),
+      shape=21, size=well_circle_size, colour="black") +
+    geom_segment(
+      data=input_table,
+      mapping=aes(x=Column0, y=Row0, xend=Column, yend=Row),
+      arrow=arrow(type="open", angle=30, length=unit(arrow_head_length,"cm"))) +
+     scale_fill_gradient("Total Estimated Contamination Volume", low="white", high="#CC857E",
+      breaks=c(0, maximum_contamination_volume), labels=c(0, maximum_contamination_volume_text))
+  
+  ggsave(paste(output_file_path, ".pdf", sep=""), plate_figure_contamination, width=WIDTH, height=HEIGHT)
+  ggsave(paste(output_file_path, ".jpg", sep=""), plate_figure_contamination, width=WIDTH, height=HEIGHT)
+}
 
-ggsave(paste(output_file_path, ".pdf", sep=""), plate_figure_contamination, width=WIDTH, height=HEIGHT)
-ggsave(paste(output_file_path, ".jpg", sep=""), plate_figure_contamination, width=WIDTH, height=HEIGHT)
+# generates iSNVs visualization
+if(input_file_type == "isnvs")
+{
+  # colors plate map by total number iSNVs
+  plate_figure_iSNVs <- plate_figure_base +
+    geom_point(
+      data=plate_map,
+      aes(x=Column, y=Row, fill=iSNVs),
+      shape=21, size=well_circle_size, colour="black") +
+    scale_fill_gradient("Number iSNVs", low="white", high="#CC857E")
+  
+  ggsave(paste(output_file_path, ".pdf", sep=""), plate_figure_iSNVs, width=WIDTH, height=HEIGHT)
+  ggsave(paste(output_file_path, ".jpg", sep=""), plate_figure_iSNVs, width=WIDTH, height=HEIGHT)
+}
 
 # May 20, 2021
 # June 9, 2021
