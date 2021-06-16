@@ -1021,7 +1021,7 @@ if(scalar @plate_map_files)
 		check_if_file_exists_before_writing($plate_iSNV_visualization_output_file.".jpg");
 		check_if_file_exists_before_writing($plate_iSNV_visualization_output_file.".pdf");
 		
- 		exec("$PLATE_VISUALIZATION_FILE_PATH $plate_iSNVs_output_file $plate_iSNV_visualization_output_file $plate_number_columns $plate_number_rows isnvs");
+ 		`$PLATE_VISUALIZATION_FILE_PATH $plate_iSNVs_output_file $plate_iSNV_visualization_output_file $plate_number_columns $plate_number_rows isnvs`;
 	}
 }
 
@@ -1128,7 +1128,7 @@ if(scalar @plate_map_files)
 			check_if_file_exists_before_writing($plate_visualization_output_file.".jpg");
 			check_if_file_exists_before_writing($plate_visualization_output_file.".pdf");
 			
-			exec("$PLATE_VISUALIZATION_FILE_PATH $plate_output_file $plate_visualization_output_file $plate_number_columns $plate_number_rows contamination");
+			`$PLATE_VISUALIZATION_FILE_PATH $plate_output_file $plate_visualization_output_file $plate_number_columns $plate_number_rows contamination`;
 		}
 		
 		# clears plate output for next plate map
