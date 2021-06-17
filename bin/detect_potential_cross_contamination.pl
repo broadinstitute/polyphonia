@@ -420,6 +420,83 @@ if($plate_size_entered)
 }
 
 
+# verifies that all positions in plate map fit in entered plate map
+if(scalar @plate_map_files)
+{
+	print STDOUT "verifying entered plate map positions are valid...\n" if $verbose;
+	
+	# retrieves all valid letters for this plate map
+	my %valid_row_letters = (); # key: letter(s) designating valid row on plate -> 1
+	my $first_valid_row_letter = "A";
+	my $last_valid_row_letter = $first_valid_row_letter;
+	$valid_row_letters{$last_valid_row_letter} = 1;
+	my $letter_count = 1;
+	while($letter_count < $plate_number_rows)
+	{
+		$last_valid_row_letter = get_next_letter($last_valid_row_letter);
+		$valid_row_letters{$last_valid_row_letter} = 1;
+		$letter_count++;
+	}
+	
+	# verifies that all plate map positions are within range
+	foreach my $plate_map_file(@plate_map_files)
+	{
+		open PLATE_MAP, "<$plate_map_file" || die "Could not open $plate_map_file to read; terminating =(\n";
+		while(<PLATE_MAP>) # for each line in the file
+		{
+			chomp;
+			my $line = $_;
+			if($line =~ /\S/) # non-empty line
+			{
+				my @items = split($DELIMITER, $line);
+				my $sample_name = $items[$PLATE_MAP_SAMPLE_COLUMN];
+				my $plate_position = uc $items[$PLATE_MAP_POSITION_COLUMN];
+				
+				if($plate_position =~ /^([A-Z]+)\s*(\d+)$/)
+				{
+					my $letter = $1;
+					my $number = $2;
+					
+					# verifies that number is within range
+					if($number < 1 or $number > $plate_number_columns)
+					{
+						print STDERR "Error: plate position ".$plate_position
+							." of sample ".$sample_name." in plate map ".$plate_map_file
+							." contains column number ".$number." outside allowed range of "
+							.$plate_number_columns." columns (allowed column numbers 1-"
+							.$plate_number_columns."). Use --plate-size or --plate-columns "
+							."to set number columns in plate. Exiting.\n";
+						die;
+					}
+					
+					# verifies that letter is within range
+					if(!$valid_row_letters{$letter})
+					{
+						print STDERR "Error: plate position ".$plate_position
+							." of sample ".$sample_name." in plate map ".$plate_map_file
+							." contains row letter ".$letter." outside allowed range of "
+							.$plate_number_rows." rows (allowed row letters "
+							.$first_valid_row_letter."-".$last_valid_row_letter
+							."). Use --plate-size or --plate-rows "
+							."to set number rows in plate. Exiting.\n";
+						die;
+					}
+				}
+				else
+				{
+					print STDERR "Warning: plate map position ".$plate_position
+						." of sample ".$sample_name." on plate map ".$plate_map_file
+						." could not be parsed and will be ignored. Plate map positions "
+						."must be letter(s) (row number) followed by digit(s) (column "
+						."number), e.g., H8.\n";
+				}
+			}
+		}
+		close PLATE_MAP;
+	}
+}
+
+
 # prepares directory for temporary and intermediate files
 # adds / to end of directory path if it isn't already there
 if($temp_intermediate_directory !~ /\/$/) # if doesn't end in /
