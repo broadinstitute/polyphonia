@@ -86,7 +86,7 @@ We use [Docker](https://docs.docker.com/get-started/overview/) to distribute and
 
    `TODO`
 
-   Follow the guide below to learn more about polyphonia's input and output options.
+   Follow the guide below to learn more about polyphonia's input and output options and to run through this example in more detail.
 
 6. Exit. When you are done, destroy your ephemeral file system by typing `exit`. You should see your container disappear from the Docker interface.
 
