@@ -1,0 +1,45 @@
+##fileformat=VCFv4.0
+##fileDate=20210609
+##source=/Users/lakras/2021_05_19_contamination_detection_from_minor_alleles/2021_06_01_polishing_software/software/lofreq_star-2.1.3.1/bin/lofreq call -f /Users/lakras/2021_05_19_contamination_detection_from_minor_alleles/2021_06_01_polishing_software/test_files/NC_045512.2.fasta -o /Users/lakras/2021_05_19_contamination_detection_from_minor_alleles/2021_06_01_polishing_software/intermediate/USA-MA-Broad_CRSP-01315-2021.align_to_ref.trimmed.bam_LoFreq.vcf /Users/lakras/2021_05_19_contamination_detection_from_minor_alleles/2021_06_01_polishing_software/test_files/cross_contamination_pair/USA-MA-Broad_CRSP-01315-2021.align_to_ref.trimmed.bam 
+##reference=/Users/lakras/2021_05_19_contamination_detection_from_minor_alleles/2021_06_01_polishing_software/test_files/NC_045512.2.fasta
+##INFO=<ID=DP,Number=1,Type=Integer,Description="Raw Depth">
+##INFO=<ID=AF,Number=1,Type=Float,Description="Allele Frequency">
+##INFO=<ID=SB,Number=1,Type=Integer,Description="Phred-scaled strand bias at this position">
+##INFO=<ID=DP4,Number=4,Type=Integer,Description="Counts for ref-forward bases, ref-reverse, alt-forward and alt-reverse bases">
+##INFO=<ID=INDEL,Number=0,Type=Flag,Description="Indicates that the variant is an INDEL.">
+##INFO=<ID=CONSVAR,Number=0,Type=Flag,Description="Indicates that the variant is a consensus variant (as opposed to a low frequency variant).">
+##INFO=<ID=HRUN,Number=1,Type=Integer,Description="Homopolymer length to the right of report indel position">
+##FILTER=<ID=min_dp_10,Description="Minimum Coverage 10">
+##FILTER=<ID=sb_fdr,Description="Strand-Bias Multiple Testing Correction: fdr corr. pvalue > 0.001000">
+##FILTER=<ID=min_snvqual_69,Description="Minimum SNV Quality (Phred) 69">
+##FILTER=<ID=min_indelqual_20,Description="Minimum Indel Quality (Phred) 20">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO
+NC_045512.2	241	.	C	T	49314	PASS	DP=2177;AF=0.997244;SB=3;DP4=1,0,1084,1087
+NC_045512.2	1059	.	C	T	49314	PASS	DP=5933;AF=0.995112;SB=5;DP4=17,0,5193,711
+NC_045512.2	3037	.	C	T	49314	PASS	DP=4926;AF=0.996346;SB=0;DP4=0,1,509,4399
+NC_045512.2	3044	.	C	A	49314	PASS	DP=5083;AF=0.995278;SB=8;DP4=0,20,551,4508
+NC_045512.2	6762	.	C	T	49314	PASS	DP=11834;AF=0.639344;SB=30;DP4=990,3254,1564,6002
+NC_045512.2	7348	.	T	A	49314	PASS	DP=2857;AF=0.998950;SB=0;DP4=1,0,1513,1341
+NC_045512.2	8083	.	G	A	49314	PASS	DP=4774;AF=0.990993;SB=3;DP4=32,0,4500,231
+NC_045512.2	10319	.	C	T	49314	PASS	DP=9601;AF=0.992084;SB=19;DP4=3,2,1064,8461
+NC_045512.2	10681	.	C	T	240	PASS	DP=4893;AF=0.013080;SB=11;DP4=880,3945,6,58
+NC_045512.2	13119	.	C	T	49314	PASS	DP=14086;AF=0.995314;SB=1;DP4=32,1,13146,874
+NC_045512.2	14408	.	C	T	49314	PASS	DP=4897;AF=0.993057;SB=36;DP4=15,6,1543,3320
+NC_045512.2	14484	.	C	T	49314	PASS	DP=5454;AF=0.997433;SB=7;DP4=1,1,554,4886
+NC_045512.2	14805	.	C	T	49314	PASS	DP=11082;AF=0.995849;SB=7;DP4=10,15,3114,7922
+NC_045512.2	18131	.	C	T	49314	PASS	DP=4283;AF=0.990427;SB=19;DP4=26,2,3004,1238
+NC_045512.2	18424	.	A	G	49314	PASS	DP=6277;AF=0.997929;SB=0;DP4=0,0,5551,713
+NC_045512.2	19072	.	G	T	49314	PASS	DP=6690;AF=0.996114;SB=3;DP4=6,2,3925,2739
+NC_045512.2	19868	.	C	T	49314	PASS	DP=3918;AF=0.999745;SB=4;DP4=1,0,1352,2565
+NC_045512.2	21203	.	A	G	49314	PASS	DP=3701;AF=0.997298;SB=0;DP4=0,0,2581,1110
+NC_045512.2	21304	.	C	T	49314	PASS	DP=2704;AF=0.996672;SB=14;DP4=2,0,511,2184
+NC_045512.2	23403	.	A	G	49314	PASS	DP=4670;AF=0.998715;SB=6;DP4=1,0,1041,3623
+NC_045512.2	23656	.	A	T	146	PASS	DP=9643;AF=0.008607;SB=149;DP4=3805,5747,69,14
+NC_045512.2	25563	.	G	T	49314	PASS	DP=14529;AF=0.998968;SB=4;DP4=3,7,2459,12055
+NC_045512.2	25907	.	G	T	49314	PASS	DP=1956;AF=0.986708;SB=4;DP4=9,15,553,1377
+NC_045512.2	27964	.	C	T	49314	PASS	DP=7055;AF=0.998299;SB=22;DP4=6,0,3010,4033
+NC_045512.2	28472	.	C	T	49314	PASS	DP=24716;AF=0.997532;SB=86;DP4=51,2,14845,9810
+NC_045512.2	28869	.	C	T	47321	PASS	DP=1401;AF=0.993576;SB=36;DP4=7,0,413,979
+NC_045512.2	28928	.	C	T	874	PASS	DP=1098;AF=0.065574;SB=17;DP4=216,809,24,48
+NC_045512.2	28937	.	C	A	318	PASS	DP=1062;AF=0.037665;SB=22;DP4=226,795,17,23
+NC_045512.2	29360	.	T	C	49314	PASS	DP=1757;AF=0.977234;SB=25;DP4=31,7,1632,85
