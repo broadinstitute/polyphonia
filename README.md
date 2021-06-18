@@ -179,12 +179,19 @@ polyphonia cross_contamination \
 
 (If you run both of these commands in succession, you will run into an error: `Error: file already exists at file path to write to`. Use option `--overwrite TRUE` to allow file overwriting, or `exit` and [regenerate the container](#getting-started) to start over.)
 
-
 #### Output Files
 
-By default, all intermediate and output files are stored in the current working directory. In this example, we saved our output table in `/opt/polyphonia/test/outputs/test1_potential_cross_contamination.txt`, our plate visualizations in the directory `/opt/polyphonia/test/test1_plate_visualizations`, and our intermediate and temporary files in the directory `/opt/polyphonia/test/test1_intermediate_files`.
+By default, all intermediate and output files are stored in the current working directory. In this example, we specified output paths and directories for our output files.
+
+Our output table in is in `/opt/polyphonia/test/outputs/test1_potential_cross_contamination.txt`.
 
 TODO
+
+Our plate visualizations are in the directory `/opt/polyphonia/test/test1_plate_visualizations`.
+
+TODO
+
+Our intermediate and temporary files in the directory `/opt/polyphonia/test/test1_intermediate_files`.
 
 ### With Heterozygosity Tables and Aligned Consensus Genomes
 
