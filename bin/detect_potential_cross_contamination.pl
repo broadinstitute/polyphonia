@@ -2020,7 +2020,7 @@ sub check_if_file_exists_before_writing
 		print STDERR ": file already exists at file path to write to:\n\t".$file_path."\n";
 		if(!$overwrite)
 		{
-			print STDERR "Exiting.\n";
+			print STDERR "To allow file overwriting, use option --overwrite TRUE. Exiting.\n";
 			die;
 		}
 	}
