@@ -593,6 +593,11 @@ if(scalar @plate_map_files)
 		}
 	}
 }
+
+# output
+print STDOUT "OUTPUT:\n" if $verbose;
+print STDOUT "\toutput file: ".$output_file_path."\n" if $verbose;
+print STDOUT "\tintermediate, temporary, and visualization files: ".$temp_intermediate_directory."\n" if $verbose;
 print STDOUT "\n" if $verbose;
 
 
