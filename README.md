@@ -81,13 +81,30 @@ We use [Docker](https://docs.docker.com/get-started/overview/) to distribute and
 
 4. Explore the space. Regardless of your computer's file system, your new, isolated file system is an Ubuntu file system. Type `ls` to look in a directory and `cd` to navigate to it (or `cd ../` to navigate to the parent directory). Polyphonia lives in the directory `opt/polyphonia`. Your own files are in the directory `/mnt/data`.
 
-5. Run polyphonia. Enter `polyphonia cross_contamination`. You should see a description of the software and a list of options. To detect potential cross-contamination in a set of example files included with polyphonia, enter:
+5. Run polyphonia. Enter `polyphonia cross_contamination`. You should see a description of the software and a list of options.
 
-   `TODO`
+   To detect potential cross-contamination in a set of example files included with polyphonia, enter:
+
+   ```
+   polyphonia cross_contamination \
+   --ref /opt/polyphonia/test/input/NC_045512.2.fasta \
+   --vcf /opt/polyphonia/test/input/USA-MA-Broad_CRSP-01315-2021.bam_LoFreq.vcf \
+   --vcf /opt/polyphonia/test/input/USA-MA-Broad_CRSP-01323-2021.bam_LoFreq.vcf \
+   --consensus /opt/polyphonia/test/input/USA-MA-Broad_CRSP-01315-2021.fasta \
+   --consensus /opt/polyphonia/test/input/USA-MA-Broad_CRSP-01323-2021.fasta
+   ```
 
    You can read from or write to files outside the isolated file system by replacing the directory you were in when you created your container with `/mnt/data`. On my computer, my files live in a directory called `/Users/lakras/myfiles`. When I created my container I was in `/Users/lakras`—from the perspective of the container, my files are in `/mnt/data/myfiles`. To detect potential cross-contamination in files on my computer, I would enter:
 
-   `TODO`
+    ```
+   polyphonia cross_contamination \
+   --ref /mnt/data/myfiles/NC_045512.2.fasta \
+   --vcf /mnt/data/myfiles//USA-MA-Broad_CRSP-01315-2021.bam_LoFreq.vcf \
+   --vcf /mnt/data/myfiles//USA-MA-Broad_CRSP-01323-2021.bam_LoFreq.vcf \
+   --consensus /mnt/data/myfiles/USA-MA-Broad_CRSP-01315-2021.fasta \
+   --consensus /mnt/data/myfiles/USA-MA-Broad_CRSP-01323-2021.fasta \
+   --output /mnt/data/myfiles/potential_cross_contamination.txt
+   ```
 
    Follow the guide below to learn more about polyphonia's input and output options and to run through this example in more detail.
 
@@ -111,15 +128,17 @@ TODO
 
 ## Example Run-Throughs
 
-You can practice using polyphonia by detecting cross-contamination between two of our SARS-CoV-2 clinical samples: plate neighbors [USA-MA-Broad_CRSP-01315-2021](https://trace.ncbi.nlm.nih.gov/Traces/sra/?run=SRR13971573) and [USA-MA-Broad_CRSP-01323-2021](https://trace.ncbi.nlm.nih.gov/Traces/sra/?run=SRR13971565). 
+You can practice using polyphonia by detecting cross-contamination between two of our SARS-CoV-2 clinical samples: plate neighbors [USA-MA-Broad_CRSP-01315-2021](https://trace.ncbi.nlm.nih.gov/Traces/sra/?run=SRR13971573) and [USA-MA-Broad_CRSP-01323-2021](https://trace.ncbi.nlm.nih.gov/Traces/sra/?run=SRR13971565).
 
 We will run polyphonia twice: once with vcf files and unaligned consensus genomes as input, once with heterozygosity tables and aligned consensus genomes as input. (After you are done following along, you can run polyphonia with vcf files and *aligned* consensus genomes and with heterozygosity tables and *unaligned* consensus genomes.)
+
+Before we start, follow [Getting Started](#getting-started) Steps 1-4 to set up your container.
 
 ### With VCF Files and Unaligned Consensus Genomes
 
 #### Inputs
 
-The input files we will use for this example are in your directory `/opt/polyphonia/test/input`:
+Inside your container, the input files we will use for this example are in the directory `/opt/polyphonia/test/input`:
 
 - [**NC_045512.2.fasta**](/test/input/NC_045512.2.fasta): the SARS-CoV-2 reference genome, retrieved from [NCBI](https://www.ncbi.nlm.nih.gov/nuccore/NC_045512.2).
 - [**USA-MA-Broad_CRSP-01315-2021.fasta**](/test/input/USA-MA-Broad_CRSP-01315-2021.fasta) and [**USA-MA-Broad_CRSP-01323-2021.fasta**](/test/input/USA-MA-Broad_CRSP-01323-2021.fasta): the SARS-CoV-2 consensus genome assembled from samples USA-MA-Broad_CRSP-01315-2021 and USA-MA-Broad_CRSP-01323-2021.
@@ -128,10 +147,42 @@ The input files we will use for this example are in your directory `/opt/polypho
 
 #### Running Polyphonia
 
-TODO
+To check for potential cross-contamination between USA-MA-Broad_CRSP-01315-2021 and USA-MA-Broad_CRSP-01323-2021, enter:
+
+```
+polyphonia cross_contamination \
+--ref /opt/polyphonia/test/input/NC_045512.2.fasta \
+--vcf /opt/polyphonia/test/input/USA-MA-Broad_CRSP-01315-2021.bam_LoFreq.vcf \
+--vcf /opt/polyphonia/test/input/USA-MA-Broad_CRSP-01323-2021.bam_LoFreq.vcf \
+--consensus /opt/polyphonia/test/input/USA-MA-Broad_CRSP-01315-2021.fasta \
+--consensus /opt/polyphonia/test/input/USA-MA-Broad_CRSP-01323-2021.fasta \
+--plate-map /opt/polyphonia/test/input/USA-MA-Broad_CRSP-01315_23-2021_plate_map.txt \
+--plate-size 96 \
+--directory /opt/polyphonia/test/test1_intermediate_files \
+--plate-vis /opt/polyphonia/test/test1_plate_visualizations \
+--output /opt/polyphonia/test/outputs/test1_potential_cross_contamination.txt
+```
+
+If it is more convenient, we can alternatively enter vcf and consensus input files as one option each:
+
+```
+polyphonia cross_contamination \
+--ref /opt/polyphonia/test/input/NC_045512.2.fasta \
+--vcf /opt/polyphonia/test/input/USA-MA-Broad_CRSP-01315-2021.bam_LoFreq.vcf /opt/polyphonia/test/input/USA-MA-Broad_CRSP-01323-2021.bam_LoFreq.vcf \
+--consensus /opt/polyphonia/test/input/USA-MA-Broad_CRSP-01315-2021.fasta /opt/polyphonia/test/input/USA-MA-Broad_CRSP-01323-2021.fasta \
+--plate-map /opt/polyphonia/test/input/USA-MA-Broad_CRSP-01315_23-2021_plate_map.txt \
+--plate-size 96 \
+--directory /opt/polyphonia/test/test1_intermediate_files \
+--plate-vis /opt/polyphonia/test/test1_plate_visualizations \
+--output /opt/polyphonia/test/outputs/test1_potential_cross_contamination.txt
+```
+
+(If you run both of these commands in succession, you will run into an error: `Error: file already exists at file path to write to`. Use option `--overwrite TRUE` to allow file overwriting, or `exit` and [regenerate the container](#getting-started) to start over.)
 
 
 #### Output Files
+
+By default, all intermediate and output files are stored in the current working directory. In this example, we saved our output table in `/opt/polyphonia/test/outputs/test1_potential_cross_contamination.txt`, our plate visualizations in the directory `/opt/polyphonia/test/test1_plate_visualizations`, and our intermediate and temporary files in the directory `/opt/polyphonia/test/test1_intermediate_files`.
 
 TODO
 
@@ -152,7 +203,7 @@ TODO
 
 #### Output Files
 
-If you look in the directory `TODO`, you should see the same output files as those generated in the previous example.
+You should see the same output files as those generated in the previous example.
 
 ## FAQ
 
