@@ -1280,7 +1280,6 @@ elsif(!-d $output_file_directory)
 {
 	# directory doesn't exist
 	# create directory and all necessary parent directories
-	print STDERR "Creating directory for output file: $output_file_directory\n";
 	`mkdir -p $output_file_directory`;
 }
 
