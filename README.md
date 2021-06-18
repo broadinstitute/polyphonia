@@ -199,7 +199,22 @@ As before, the input files we will use for this example are in your directory `/
 
 #### Running Polyphonia
 
-TODO
+To check for potential cross-contamination between USA-MA-Broad_CRSP-01315-2021 and USA-MA-Broad_CRSP-01323-2021 using these more processed input files, enter:
+
+```
+polyphonia cross_contamination \
+--ref /opt/polyphonia/test/input/NC_045512.2.fasta \
+--het /opt/polyphonia/test/input/USA-MA-Broad_CRSP-01315-2021.bam_LoFreq.vcf_heterozygosity.txt \
+--het /opt/polyphonia/test/input/USA-MA-Broad_CRSP-01323-2021.bam_LoFreq.vcf_heterozygosity.txt \
+--consensus-aligned USA-MA-Broad_CRSP-01315_23-2021_MAFFT_aligned.fasta \
+--plate-map /opt/polyphonia/test/input/USA-MA-Broad_CRSP-01315_23-2021_plate_map.txt \
+--plate-size 96 \
+--output /opt/polyphonia/test/outputs/test2_potential_cross_contamination.txt \
+--out-figures /opt/polyphonia/test/test2_plate_visualizations \
+--out-temp /opt/polyphonia/test/test2_intermediate_files
+```
+
+Like the vcf files in the previous example, we can instead choose to list multiple heterozygosity tables following `--het`. In contrast, we cannot enter multiple aligned fasta files (the single alignment file listed after `--consensus-aligned` must include all of our consensus genomes).
 
 #### Output Files
 
