@@ -129,12 +129,13 @@ if(!scalar @ARGV) # no command line arguments supplied
 	print STDOUT "\t-o | --output FILE\t\tOutput file path [".$default_output_file."]\n";
 	print STDOUT "\t-s | --plate-vis DIRECTORY\tPath of directory to store plate visualization files [".$default_visualizations_directory."]\n";
 	print STDOUT "\t-x | --directory DIRECTORY\tPath of directory to store intermediate and temporary files [".$default_temp_intermediate_files_directory."]\n";
+	print STDOUT "\n";
 	
 	print STDOUT "- Misc:\n";
 	print STDOUT "\t-y | --max-mismatches INT\tMaximum allowed bases in contaminating sample consensus not matching contaminated sample alleles [".$DEFAULT_MAXIMUM_ALLOWED_MISMATCHES."]\n";
 	print STDOUT "\t-p | --cores INT\t\tOptional number of cores to use for preprocessing in parallel [".$DEFAULT_CORES_TO_USE."]\n";
 	print STDOUT "\t-u | --verbose BOOL\t\tPrint progress to STDOUT [".int_to_bool_string($DEFAULT_VERBOSE)."]\n";
-	print STDOUT "\t-j | --overwrite FILE\t\tOverwrite output, intermediate, and temp files at input paths [".int_to_bool_string($DEFAULT_OVERWRITE)."]\n";
+	print STDOUT "\t-j | --overwrite BOOL\t\tOverwrite output, intermediate, and temp files at input paths [".int_to_bool_string($DEFAULT_OVERWRITE)."]\n";
 	print STDOUT "\n\n";
 	exit;
 }
