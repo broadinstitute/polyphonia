@@ -197,7 +197,7 @@ To access these output files on your own system, copy them to `/mnt/data`:
 
 ```
 cp /opt/polyphonia/test/outputs/test1_potential_cross_contamination.txt /mnt/data/test1_potential_cross_contamination.txt
-cp /opt/polyphonia/test/test1_plate_visualizations/* /mnt/data/test1_plate_visualizations
+cp /opt/polyphonia/test/test1_plate_visualizations/* /mnt/data/
 ```
 
 or run polyphonia with output options set to directories in `/mnt/data`:
