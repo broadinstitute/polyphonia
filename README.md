@@ -191,7 +191,22 @@ Our plate visualizations are in the directory `/opt/polyphonia/test/test1_plate_
 
 TODO
 
-Our intermediate and temporary files in the directory `/opt/polyphonia/test/test1_intermediate_files`.
+Our intermediate and temporary files are in the directory `/opt/polyphonia/test/test1_intermediate_files`.
+
+To access these output files on your own system, copy them to `/mnt/data`:
+
+```
+cp /opt/polyphonia/test/outputs/test1_potential_cross_contamination.txt /mnt/data/test1_potential_cross_contamination.txt
+cp /opt/polyphonia/test/test1_plate_visualizations/* /mnt/data/test1_plate_visualizations
+```
+
+or run polyphonia with output options set to directories in `/mnt/data`:
+
+```
+--output /mnt/data/test1_potential_cross_contamination.txt
+--out-figures /mnt/data/test1_plate_visualizations \
+--out-temp /mnt/data/test1_intermediate_files
+```
 
 ### With Heterozygosity Tables and Aligned Consensus Genomes
 
