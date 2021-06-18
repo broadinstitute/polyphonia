@@ -127,8 +127,8 @@ if(!scalar @ARGV) # no command line arguments supplied
 	
 	print STDOUT "- Output:\n";
 	print STDOUT "\t-o | --output FILE\t\tOutput file path [".$default_output_file."]\n";
-	print STDOUT "\t-s | --plate-vis DIRECTORY\tPath of directory to store plate visualization files [".$default_visualizations_directory."]\n";
-	print STDOUT "\t-x | --directory DIRECTORY\tPath of directory to store intermediate and temporary files [".$default_temp_intermediate_files_directory."]\n";
+	print STDOUT "\t-s | --out-figures DIRECTORY\tPath of directory to store plate visualization files [".$default_visualizations_directory."]\n";
+	print STDOUT "\t-x | --out-temp DIRECTORY\tPath of directory to store intermediate and temporary files [".$default_temp_intermediate_files_directory."]\n";
 	print STDOUT "\n";
 	
 	print STDOUT "- Misc:\n";
@@ -191,11 +191,11 @@ for($argument_index = 0; $argument_index <= $#ARGV; $argument_index++)
 	{
 		$output_file_path = $input;
 	}
-	elsif(($input = read_in_input_file_argument("-s", "--plate-vis")) ne "-1")
+	elsif(($input = read_in_input_file_argument("-s", "--out-figures")) ne "-1")
 	{
 		$visualizations_directory = $input;
 	}
-	elsif(($input = read_in_input_file_argument("-x", "--directory")) ne "-1")
+	elsif(($input = read_in_input_file_argument("-x", "--out-temp")) ne "-1")
 	{
 		$temp_intermediate_directory = $input;
 	}
