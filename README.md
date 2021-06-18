@@ -33,8 +33,8 @@ OPTIONS:
 
 - Output:
 	-o | --output FILE		Output file path [current working directory/potential_cross-contamination.txt]
-	-s | --plate-vis DIRECTORY	Path of directory to store plate visualization files [current working directory]
-	-x | --directory DIRECTORY	Path of directory to store intermediate and temporary files [current working directory]
+	-s | --out-figures DIRECTORY	Path of directory to store plate visualization files [current working directory]
+	-x | --out-temp DIRECTORY	Path of directory to store intermediate and temporary files [current working directory]
 
 - Misc:
 	-y | --max-mismatches INT	Maximum allowed bases in contaminating sample consensus not matching contaminated sample alleles [1]
@@ -158,9 +158,9 @@ polyphonia cross_contamination \
 --consensus /opt/polyphonia/test/input/USA-MA-Broad_CRSP-01323-2021.fasta \
 --plate-map /opt/polyphonia/test/input/USA-MA-Broad_CRSP-01315_23-2021_plate_map.txt \
 --plate-size 96 \
---directory /opt/polyphonia/test/test1_intermediate_files \
---plate-vis /opt/polyphonia/test/test1_plate_visualizations \
---output /opt/polyphonia/test/outputs/test1_potential_cross_contamination.txt
+--output /opt/polyphonia/test/outputs/test1_potential_cross_contamination.txt \
+--out-temp /opt/polyphonia/test/test1_intermediate_files \
+--out-figures /opt/polyphonia/test/test1_plate_visualizations
 ```
 
 If it is more convenient, we can alternatively enter vcf and consensus input files as one option each:
@@ -172,9 +172,9 @@ polyphonia cross_contamination \
 --consensus /opt/polyphonia/test/input/USA-MA-Broad_CRSP-01315-2021.fasta /opt/polyphonia/test/input/USA-MA-Broad_CRSP-01323-2021.fasta \
 --plate-map /opt/polyphonia/test/input/USA-MA-Broad_CRSP-01315_23-2021_plate_map.txt \
 --plate-size 96 \
---directory /opt/polyphonia/test/test1_intermediate_files \
---plate-vis /opt/polyphonia/test/test1_plate_visualizations \
---output /opt/polyphonia/test/outputs/test1_potential_cross_contamination.txt
+--output /opt/polyphonia/test/outputs/test1_potential_cross_contamination.txt \
+--out-temp /opt/polyphonia/test/test1_intermediate_files \
+--out-figures /opt/polyphonia/test/test1_plate_visualizations
 ```
 
 (If you run both of these commands in succession, you will run into an error: `Error: file already exists at file path to write to`. Use option `--overwrite TRUE` to allow file overwriting, or `exit` and [regenerate the container](#getting-started) to start over.)
