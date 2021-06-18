@@ -128,7 +128,7 @@ if(!scalar @ARGV) # no command line arguments supplied
 	print STDOUT "\t-a | --max-mismatches INT\tMaximum allowed bases in contaminating sample consensus not matching contaminated sample alleles [".$DEFAULT_MAXIMUM_ALLOWED_MISMATCHES."]\n";
 	print STDOUT "\t-p | --cores INT\t\tOptional number of cores to use for preprocessing in parallel [".$DEFAULT_CORES_TO_USE."]\n";
 	print STDOUT "\t-u | --verbose BOOL\t\tPrint progress to STDOUT [".int_to_bool_string($DEFAULT_VERBOSE)."]\n";
-	print STDOUT "\t-i | --directory DIRECTORY\tPath of directory to store intermediate and temp files [".$default_temp_intermediate_files_directory."]\n";
+	print STDOUT "\t-i | --directory DIRECTORY\tPath of directory to store intermediate, temp, and visualization files [".$default_temp_intermediate_files_directory."]\n";
 	print STDOUT "\t-o | --output FILE\t\tOutput file path [".$default_output_file."]\n";
 	print STDOUT "\t-j | --overwrite FILE\t\tOverwrite output, intermediate, and temp files at input paths [".int_to_bool_string($DEFAULT_OVERWRITE)."]\n";
 	print STDOUT "\n\n";
@@ -528,13 +528,8 @@ else
 
 # prints input files and options entered
 # reference
-if($verbose)
-{
-	print STDOUT "\n";
-	print STDOUT "REFERENCE:\n\t".$reference_genome_file."\n";
-}
-# print STDOUT "\n" if $verbose;
-# print STDOUT "REFERENCE:\n\t".$reference_genome_file."\n" if $verbose;
+print STDOUT "\n" if $verbose;
+print STDOUT "REFERENCE:\n\t".$reference_genome_file."\n" if $verbose;
 
 # consensus genome files
 print STDOUT "CONSENSUS GENOMES:\n" if $verbose;
@@ -555,11 +550,11 @@ foreach my $aligned_and_trimmed_bam_file(@aligned_and_trimmed_bam_files)
 }
 foreach my $vcf_file(@vcf_files)
 {
-	print STDOUT "\tpre-processed vcf files: ".$vcf_file."\n" if $verbose;
+	print STDOUT "\tpre-processed vcf file: ".$vcf_file."\n" if $verbose;
 }
 foreach my $heterozygosity_table(@heterozygosity_tables)
 {
-	print STDOUT "\tfully pre-processed heterozygosity tables: ".$heterozygosity_table."\n" if $verbose;
+	print STDOUT "\tfully pre-processed heterozygosity table: ".$heterozygosity_table."\n" if $verbose;
 }
 
 # optional plate map file(s) and related options
@@ -1276,7 +1271,7 @@ if(scalar @plate_map_files)
 my $output_file_directory = retrieve_file_directory($output_file_path);
 if(!-d $output_file_directory and -e $output_file_directory)
 {
-	# directory already exists and is a file
+	# directory already exists and is a file, not a directory
 	print STDERR "Error: output file directory is a file:\n\t"
 		.$output_file_directory."\nExiting.\n";
 	die;
@@ -1285,6 +1280,7 @@ elsif(!-d $output_file_directory)
 {
 	# directory doesn't exist
 	# create directory and all necessary parent directories
+	print STDERR "Creating directory for output file: $output_file_directory\n";
 	`mkdir -p $output_file_directory`;
 }
 
