@@ -47,8 +47,8 @@ OPTIONS:
 - [Other Options](#other-options)
 - [Output Files](#output-files)
 - [Example Run-Throughs](#example-run-throughs)
-   - [With VCF Files and Unaligned Consensus Genomes as Input](#with-vcf-files-and-unaligned-consensus-genomes-as-input)
-   - [With Heterozygosity Tables and Aligned Consensus Genomes as Input](#with-heterozygosity-tables-and-aligned-consensus-genomes-as-input)
+   - [With VCF Files and Unaligned Consensus Genomes](#with-vcf-files-and-unaligned-consensus-genomes)
+   - [With Heterozygosity Tables and Aligned Consensus Genomes](#with-heterozygosity-tables-and-aligned-consensus-genomes)
 - [FAQ](#faq)
    - [Dependencies](#dependencies)
    - [Name](#name)
@@ -112,7 +112,7 @@ You can practice using polyphonia by detecting cross-contamination between two o
 
 We will run polyphonia twice: once with vcf files and unaligned consensus genomes as input, once with heterozygosity tables and aligned consensus genomes as input. (After you are done following along, you can run polyphonia with vcf files and *aligned* consensus genomes and with heterozygosity tables and *unaligned* consensus genomes.)
 
-### With VCF Files and Unaligned Consensus Genomes as Input
+### With VCF Files and Unaligned Consensus Genomes
 
 #### Inputs
 
@@ -132,7 +132,7 @@ TODO
 
 TODO
 
-### With Heterozygosity Tables and Aligned Consensus Genomes as Input
+### With Heterozygosity Tables and Aligned Consensus Genomes
 
 #### Inputs
 
