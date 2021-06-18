@@ -159,8 +159,8 @@ polyphonia cross_contamination \
 --plate-map /opt/polyphonia/test/input/USA-MA-Broad_CRSP-01315_23-2021_plate_map.txt \
 --plate-size 96 \
 --output /opt/polyphonia/test/outputs/test1_potential_cross_contamination.txt \
---out-temp /opt/polyphonia/test/test1_intermediate_files \
---out-figures /opt/polyphonia/test/test1_plate_visualizations
+--out-figures /opt/polyphonia/test/test1_plate_visualizations \
+--out-temp /opt/polyphonia/test/test1_intermediate_files
 ```
 
 If it is more convenient, we can alternatively enter vcf and consensus input files as one option each:
@@ -173,8 +173,8 @@ polyphonia cross_contamination \
 --plate-map /opt/polyphonia/test/input/USA-MA-Broad_CRSP-01315_23-2021_plate_map.txt \
 --plate-size 96 \
 --output /opt/polyphonia/test/outputs/test1_potential_cross_contamination.txt \
---out-temp /opt/polyphonia/test/test1_intermediate_files \
---out-figures /opt/polyphonia/test/test1_plate_visualizations
+--out-figures /opt/polyphonia/test/test1_plate_visualizations \
+--out-temp /opt/polyphonia/test/test1_intermediate_files
 ```
 
 (If you run both of these commands in succession, you will run into an error: `Error: file already exists at file path to write to`. Use option `--overwrite TRUE` to allow file overwriting, or `exit` and [regenerate the container](#getting-started) to start over.)
