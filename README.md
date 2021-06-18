@@ -22,7 +22,7 @@ OPTIONS:
 
 - Plate map and neighbors (any combination, all optional):
 	-m | --plate-map FILE(S)	Optional plate map (tab-separated, no header: sample name, plate position (e.g., A8)); provides substantial speed-up [null]
-	-z | --plate-size INT		Standard plate size (6-well, 12-well, 24, 48, 96, 384, 1536, 3456) [96]";
+	-z | --plate-size INT		Standard plate size (6-well, 12-well, 24, 48, 96, 384, 1536, 3456) [96]
 	-q | --plate-columns INT	Number columns in plate (e.g., 1, 2, 3, 4) [12]
 	-k | --plate-rows INT		Number rows in plate (e.g., A, B, C, D) [8]
 	-n | --compare-direct BOOL	Compare direct plate neighbors (left, right, top, bottom) [TRUE]
@@ -31,13 +31,16 @@ OPTIONS:
 	-l | --compare-column BOOL	Compare samples in the same column (e.g., column 8) [FALSE]
 	-t | --compare-plate BOOL	Compare all samples in the same plate map [FALSE]
 
+- Output:
+	-o | --output FILE		Output file path [current working directory/potential_cross-contamination.txt]
+	-s | --plate-vis DIRECTORY	Path of directory to store plate visualization files [current working directory]
+	-x | --directory DIRECTORY	Path of directory to store intermediate and temporary files [current working directory]
+
 - Misc:
-	-a | --max-mismatches INT	Maximum allowed bases in contaminating sample consensus not matching contaminated sample alleles [1]
+	-y | --max-mismatches INT	Maximum allowed bases in contaminating sample consensus not matching contaminated sample alleles [1]
 	-p | --cores INT		Optional number of cores to use for preprocessing in parallel [1]
 	-u | --verbose BOOL		Print progress to STDOUT [TRUE]
-	-i | --directory DIRECTORY	Path of directory to store intermediate and temp files [current working directory]
-	-o | --output FILE		Output file path [current working directory/potential_cross-contamination.txt]
-	-j | --overwrite FILE		Overwrite output, intermediate, and temp files at input paths [FALSE]
+	-j | --overwrite BOOL		Overwrite output, intermediate, and temp files at input paths [FALSE]
 ```
 
 ## Contents
