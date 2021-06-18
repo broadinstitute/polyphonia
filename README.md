@@ -47,6 +47,8 @@ OPTIONS:
 - [Other Options](#other-options)
 - [Output Files](#output-files)
 - [Example Run-Throughs](#example-run-throughs)
+   - [VCF File Input](#with-vcf-files-and-unaligned-consensus-genomes-as-input)
+   - [Heterozygosity Table Input](#with-heterozygosity-tables-and-aligned-consensus-genomes-as-input)
 - [FAQ](#faq)
    - [Dependencies](#dependencies)
    - [Name](#name)
@@ -105,6 +107,16 @@ TODO
 TODO
 
 ## Example Run-Throughs
+
+You can practice using polyphonia by detecting cross-contamination between two of our SARS-CoV-2 clinical samples: plate neighbors [USA-MA-Broad_CRSP-01315-2021](https://trace.ncbi.nlm.nih.gov/Traces/sra/?run=SRR13971573) and [USA-MA-Broad_CRSP-01323-2021](https://trace.ncbi.nlm.nih.gov/Traces/sra/?run=SRR13971565). 
+
+We will run polyphonia twice: once with vcf files and unaligned consensus genomes as input, once with heterozygosity tables and aligned consensus genomes as input.
+
+### With VCF Files and Unaligned Consensus Genomes as Input
+
+TODO
+
+### With Heterozygosity Tables and Aligned Consensus Genomes as Input
 
 TODO
 
