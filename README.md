@@ -230,7 +230,7 @@ TODO
 
 Parallelization is used to substantially speed up processing of [within-sample diversity files](#within-sample-diversity-files) and comparison of neighboring samples.
 
-Use `--cores` to specify how many cores are available. By default, polyphonia will use one core.
+Use `--cores` to specify how many cores are available. (For example, I use `--cores 4`.) By default, polyphonia will use one core.
 
 ### Output File Paths
 
