@@ -159,7 +159,7 @@ TODO
 
 `--plate-map`
 
-If you would like, you can include a plate map file, or multiple plate map files using `--plate-map`. Your plate map must contain two columns, tab separated, without a header:
+If you would like, you can include a plate map file, or multiple plate map files, using `--plate-map`. Your plate map must contain two columns, tab separated, without a header:
 1. The name of the sample. Each sample name in a plate map must match a full header line (after the `>`) in the [consensus genome fasta file(s)](#consensus-genomes) and the *name* of a [within-sample diversity file](#within-sample-diversity-files) up to a `.`. (If your within-sample diversity file name contains multiple `.`s, polyphonia will try to match all possible names starting with the longest.) Any sample names that do not have a corresponding consensus genome and a corresponding within-sample diversity file will not be included.
 3. The well the sample is in. Each well must be a letter, denoting the row of the well, followed by a number, denoting the column of the well. Column numbers are 1-indexed: the first column is column 1, the second column is column 2, and so on. The letters are A-Z for the first 26 rows, followed by AA-AZ for the next 26 rows, followed by BA-BZ, and so on.
 
@@ -237,7 +237,6 @@ TODO
 `--out-temp`
 `--overwrite`
 
-
 By default, the main output, the [potential cross-contamination table](#potential-cross-contamination-table), are printed to a file named `potential_cross-contamination.txt` in the current working directory within the container, and all output figures, intermediate files, and temporary files are printed to the current working directory within the container.
 
 You can set the output file path for the [potential cross-contamination table](#potential-cross-contamination-table) using `--output`.
@@ -264,17 +263,23 @@ By default, polyphonia will print updates on its progress to the console. You ca
 
 TODO
 
+You can set the [output file path](#output-file-paths) for the potential cross-contamination table using `--output`.
+
 ### Plate Map Visualization of Potential Cross-Contamination
 
 `--out-figures`
 
 TODO
 
+You can set the [output directory](#output-file-paths) for the plate map visualization of potential cross-contamination using `--out-figures`.
+
 ### Plate Map Visualization of iSNVs
 
 `--out-figures`
 
 TODO
+
+You can set the [output directory](#output-file-paths) for the plate map visualization of iSNVs using `--out-figures`.
 
 ## Example Run-Throughs
 
