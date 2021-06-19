@@ -509,7 +509,10 @@ if(scalar @plate_map_files)
 
 # prepares directories to write to
 $temp_intermediate_directory = prepare_directory($temp_intermediate_directory);
-$visualizations_directory = prepare_directory($visualizations_directory);
+if(scalar @plate_map_files) # visualizations only generated if plate maps are provided
+{
+	$visualizations_directory = prepare_directory($visualizations_directory);
+}
 
 
 # prints input files and options entered
