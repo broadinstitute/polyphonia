@@ -176,6 +176,8 @@ If you are using a different plate layout, you can indicate it using `--plate-co
 
 For example, if you are using a 384-well plate you can describe its size by entering either `--plate-size 384` or `--plate-columns 24 --plate-rows 16`.
 
+*Image from [Wikipedia](https://en.wikipedia.org/wiki/Microplate#/media/File:Microplates.jpg).*
+
 ### Well Comparison Options
 
 TODO
