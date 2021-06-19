@@ -46,7 +46,7 @@ OPTIONS:
 ## Contents
 - [Getting Started](#getting-started)
 - [Under the Hood](#under-the-hood)
-- [Required Input Files](#getting-started)
+- [Required Input Files](#required-input-files)
    - [Reference Genome](#reference-genome)
    - [Consensus Genomes](#consensus-genomes)
    - [Within-Sample Diversity Files](#within-sample-diversity-files)
