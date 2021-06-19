@@ -81,7 +81,8 @@ my $DEFAULT_COMPARE_WHOLE_PLATE_MAP = 0; # false
 
 
 # generates default directory and output file from current working directory
-my $default_temp_intermediate_files_directory = retrieve_current_working_directory(); # "CURRENT WORKING DIRECTORY"; # current working directory
+my $default_temp_intermediate_files_directory = retrieve_current_working_directory(); # current working directory
+my $default_visualizations_directory = retrieve_current_working_directory(); # current working directory
 my $default_output_file = $default_temp_intermediate_files_directory.$DEFAULT_OUTPUT_FILE_NAME;
 
 
@@ -124,13 +125,17 @@ if(!scalar @ARGV) # no command line arguments supplied
 	print STDOUT "\t-t | --compare-plate BOOL\tCompare all samples in the same plate map [".int_to_bool_string($DEFAULT_COMPARE_WHOLE_PLATE_MAP)."]\n";
 	print STDOUT "\n";
 	
+	print STDOUT "- Output:\n";
+	print STDOUT "\t-o | --output FILE\t\tOutput file path [".$default_output_file."]\n";
+	print STDOUT "\t-s | --out-figures DIRECTORY\tPath of directory to store plate visualization files [".$default_visualizations_directory."]\n";
+	print STDOUT "\t-x | --out-temp DIRECTORY\tPath of directory to store intermediate and temporary files [".$default_temp_intermediate_files_directory."]\n";
+	print STDOUT "\n";
+	
 	print STDOUT "- Misc:\n";
-	print STDOUT "\t-a | --max-mismatches INT\tMaximum allowed bases in contaminating sample consensus not matching contaminated sample alleles [".$DEFAULT_MAXIMUM_ALLOWED_MISMATCHES."]\n";
+	print STDOUT "\t-y | --max-mismatches INT\tMaximum allowed bases in contaminating sample consensus not matching contaminated sample alleles [".$DEFAULT_MAXIMUM_ALLOWED_MISMATCHES."]\n";
 	print STDOUT "\t-p | --cores INT\t\tOptional number of cores to use for preprocessing in parallel [".$DEFAULT_CORES_TO_USE."]\n";
 	print STDOUT "\t-u | --verbose BOOL\t\tPrint progress to STDOUT [".int_to_bool_string($DEFAULT_VERBOSE)."]\n";
-	print STDOUT "\t-i | --directory DIRECTORY\tPath of directory to store intermediate and temp files [".$default_temp_intermediate_files_directory."]\n";
-	print STDOUT "\t-o | --output FILE\t\tOutput file path [".$default_output_file."]\n";
-	print STDOUT "\t-j | --overwrite FILE\t\tOverwrite output, intermediate, and temp files at input paths [".int_to_bool_string($DEFAULT_OVERWRITE)."]\n";
+	print STDOUT "\t-j | --overwrite BOOL\t\tOverwrite output, intermediate, and temp files at input paths [".int_to_bool_string($DEFAULT_OVERWRITE)."]\n";
 	print STDOUT "\n\n";
 	exit;
 }
@@ -147,8 +152,9 @@ my @aligned_and_trimmed_bam_files = ();
 my @vcf_files = ();
 my @heterozygosity_tables = ();
 
-my $temp_intermediate_directory = $default_temp_intermediate_files_directory;
 my $output_file_path = $default_output_file;
+my $visualizations_directory = $default_visualizations_directory;
+my $temp_intermediate_directory = $default_temp_intermediate_files_directory;
 
 my $cores_to_use = $DEFAULT_CORES_TO_USE;
 my $overwrite = $DEFAULT_OVERWRITE;
@@ -185,7 +191,11 @@ for($argument_index = 0; $argument_index <= $#ARGV; $argument_index++)
 	{
 		$output_file_path = $input;
 	}
-	elsif(($input = read_in_input_file_argument("-i", "--directory")) ne "-1")
+	elsif(($input = read_in_input_file_argument("-s", "--out-figures")) ne "-1")
+	{
+		$visualizations_directory = $input;
+	}
+	elsif(($input = read_in_input_file_argument("-x", "--out-temp")) ne "-1")
 	{
 		$temp_intermediate_directory = $input;
 	}
@@ -193,7 +203,7 @@ for($argument_index = 0; $argument_index <= $#ARGV; $argument_index++)
 	{
 		$overwrite = $input;
 	}
-	elsif(($input = read_in_positive_integer_argument("-a", "--max-mismatches")) != -1)
+	elsif(($input = read_in_positive_integer_argument("-y", "--max-mismatches")) != -1)
 	{
 		$maximum_allowed_mismatches = $input;
 	}
@@ -497,44 +507,18 @@ if(scalar @plate_map_files)
 }
 
 
-# prepares directory for temporary and intermediate files
-# adds / to end of directory path if it isn't already there
-if($temp_intermediate_directory !~ /\/$/) # if doesn't end in /
+# prepares directories to write to
+$temp_intermediate_directory = prepare_directory($temp_intermediate_directory);
+if(scalar @plate_map_files) # visualizations only generated if plate maps are provided
 {
-	$temp_intermediate_directory .= "/"; # adds / to the end
-}
-
-# creates directory for temporary and intermediate files if it doesn't already exist
-if(-e $temp_intermediate_directory and -d $temp_intermediate_directory)
-{
-	# directory already exists
-	print STDERR "Warning: adding temporary and intermediate files to already existing directory:\n\t"
-		.$temp_intermediate_directory."\n";
-}
-elsif(-e $temp_intermediate_directory)
-{
-	# directory already exists and is a file
-	print STDERR "Error: temporary intermediate directory already exists and is a file:\n\t"
-		.$temp_intermediate_directory."\nExiting.\n";
-	die;
-}
-else
-{
-	# directory doesn't exist
-	# create directory and all necessary parent directories
-	`mkdir -p $temp_intermediate_directory`;
+	$visualizations_directory = prepare_directory($visualizations_directory);
 }
 
 
 # prints input files and options entered
 # reference
-if($verbose)
-{
-	print STDOUT "\n";
-	print STDOUT "REFERENCE:\n\t".$reference_genome_file."\n";
-}
-# print STDOUT "\n" if $verbose;
-# print STDOUT "REFERENCE:\n\t".$reference_genome_file."\n" if $verbose;
+print STDOUT "\n" if $verbose;
+print STDOUT "REFERENCE:\n\t".$reference_genome_file."\n" if $verbose;
 
 # consensus genome files
 print STDOUT "CONSENSUS GENOMES:\n" if $verbose;
@@ -555,11 +539,11 @@ foreach my $aligned_and_trimmed_bam_file(@aligned_and_trimmed_bam_files)
 }
 foreach my $vcf_file(@vcf_files)
 {
-	print STDOUT "\tpre-processed vcf files: ".$vcf_file."\n" if $verbose;
+	print STDOUT "\tpre-processed vcf file: ".$vcf_file."\n" if $verbose;
 }
 foreach my $heterozygosity_table(@heterozygosity_tables)
 {
-	print STDOUT "\tfully pre-processed heterozygosity tables: ".$heterozygosity_table."\n" if $verbose;
+	print STDOUT "\tfully pre-processed heterozygosity table: ".$heterozygosity_table."\n" if $verbose;
 }
 
 # optional plate map file(s) and related options
@@ -598,6 +582,12 @@ if(scalar @plate_map_files)
 		}
 	}
 }
+
+# output
+print STDOUT "OUTPUT:\n" if $verbose;
+print STDOUT "\toutput file: ".$output_file_path."\n" if $verbose;
+print STDOUT "\tplate visualization files: ".$visualizations_directory."\n" if $verbose;
+print STDOUT "\tintermediate and temporary files: ".$temp_intermediate_directory."\n" if $verbose;
 print STDOUT "\n" if $verbose;
 
 
@@ -1066,7 +1056,7 @@ if(scalar @plate_map_files)
 		
 		# prints copy of plate map with number iSNVs
 		# creates file
-		my $plate_iSNVs_output_file = $temp_intermediate_directory.retrieve_file_name($plate_map_file)."_iSNVs.txt";
+		my $plate_iSNVs_output_file = $visualizations_directory.retrieve_file_name($plate_map_file)."_iSNVs.txt";
 		check_if_file_exists_before_writing($plate_iSNVs_output_file);
 		
 		# prints header line
@@ -1182,7 +1172,7 @@ if(scalar @plate_map_files)
 		# prints plate map for this particular plate map
 		if(scalar keys %plate_results)
 		{
-			my $plate_output_file = $temp_intermediate_directory.retrieve_file_name($plate_map_file)."_potential_cross_contamination.txt";
+			my $plate_output_file = $visualizations_directory.retrieve_file_name($plate_map_file)."_potential_cross_contamination.txt";
 			check_if_file_exists_before_writing($plate_output_file);
 			
 			open PLATE_OUT_FILE, ">$plate_output_file" || die "Could not open $plate_output_file to write; terminating =(\n";
@@ -1276,7 +1266,7 @@ if(scalar @plate_map_files)
 my $output_file_directory = retrieve_file_directory($output_file_path);
 if(!-d $output_file_directory and -e $output_file_directory)
 {
-	# directory already exists and is a file
+	# directory already exists and is a file, not a directory
 	print STDERR "Error: output file directory is a file:\n\t"
 		.$output_file_directory."\nExiting.\n";
 	die;
@@ -2033,7 +2023,7 @@ sub check_if_file_exists_before_writing
 		print STDERR ": file already exists at file path to write to:\n\t".$file_path."\n";
 		if(!$overwrite)
 		{
-			print STDERR "Exiting.\n";
+			print STDERR "To allow file overwriting, use option --overwrite TRUE. Exiting.\n";
 			die;
 		}
 	}
@@ -2050,6 +2040,43 @@ sub retrieve_current_working_directory
 		$current_working_directory .= "/"; # adds / to the end
 	}
 	return $current_working_directory;
+}
+
+# prepares directory: adds / to end of path, verifies that directory is not a file,
+# creates directory if it does not already exist
+# returns directory path
+sub prepare_directory
+{
+	my $directory = $_[0];
+
+	# adds / to end of directory path if it isn't already there
+	if($directory !~ /\/$/) # if doesn't end in /
+	{
+		$directory .= "/"; # adds / to the end
+	}
+
+	# creates directory for temporary and intermediate files if it doesn't already exist
+	if(-e $directory and -d $directory)
+	{
+		# directory already exists
+		print STDERR "Warning: adding files to already existing directory:\n\t"
+			.$directory."\n";
+	}
+	elsif(-e $directory)
+	{
+		# directory already exists and is a file
+		print STDERR "Error: directory already exists and is a file:\n\t"
+			.$directory."\nExiting.\n";
+		die;
+	}
+	else
+	{
+		# directory doesn't exist
+		# create directory and all necessary parent directories
+		`mkdir -p $directory`;
+	}
+	
+	return $directory;
 }
 
 
@@ -2095,8 +2122,6 @@ sub add_comma_separators
     $text =~ s/(\d\d\d)(?=\d)(?!\d*\.)/$1,/g;
     return scalar reverse $text;
 }
-
-
 
 
 # HELPER FUNCTIONS FOR HANDING INPUT ARGUMENTS

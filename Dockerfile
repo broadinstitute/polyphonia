@@ -4,6 +4,7 @@ LABEL maintainer "dpark@broadinstitute.org"
 
 ENV \
     POLYPHONIA_PATH="/opt/polyphonia" \
+    TEST_FILES_PATH="/opt/polyphonia/test/input" \
     CONDA_DEFAULT_ENV="default" \
     MINICONDA_PATH="/opt/miniconda"
 ENV \
@@ -20,6 +21,9 @@ RUN /bin/bash -c "set -e; sync; conda install -y --quiet --file /opt/docker/requ
 
 # install actual polyphonia scripts
 COPY bin/* $POLYPHONIA_PATH/
+
+# copy test files
+COPY test/input/* $TEST_FILES_PATH/
 
 # default bash prompt
 CMD ["/bin/bash"]
