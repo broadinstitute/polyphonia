@@ -187,12 +187,17 @@ Our output table in is in `/opt/polyphonia/test/outputs/test1_potential_cross_co
 
 <img width="1435" alt="output_table_screenshot" src="https://user-images.githubusercontent.com/6245320/122626233-3becea80-d077-11eb-97af-dccbb3007b1b.png">
 
+The output table shows that USA-MA-Broad_CRSP-01323-2021, in well H10, is potentially contaminated by USA-MA-Broad_CRSP-01315-2021, in well H9. USA-MA-Broad_CRSP-01323-2021 has 21 positions with intrahost variation. Alleles at all of these positions match the USA-MA-Broad_CRSP-01315-2021 consensus genome—in this case, all matched alleles in positions of heterozygosity are minor alleles, rather than consensus-level alleles. There are no mismatches, or USA-MA-Broad_CRSP-01315-2021 consensus-level alleles not appearing as minor or consensus-level alleles in USA-MA-Broad_CRSP-01323-2021.
+
+The USA-MA-Broad_CRSP-01323-2021 alleles appearing at consensus level in USA-MA-Broad_CRSP-01315-2021 range in frequency from 3.2% to 12.3%, with a median allele frequency of 4.9%. In this case, all potential contaminating alleles appear as minor, rather than consensus-level, alleles in USA-MA-Broad_CRSP-01323-2021.
+
+(A note that indels are ignored: we only examine base substitutions.)
+
 Our plate visualizations are in the directory `/opt/polyphonia/test/test1_plate_visualizations`:
 
 potential cross-contamination visualization | iSNVs visualization
 :-------------------------:|:-------------------------:
 ![USA-MA-Broad_CRSP-01315_23-2021_plate_map txt_potential_cross_contamination_visualization](https://user-images.githubusercontent.com/6245320/122625873-663da880-d075-11eb-975a-0f7c9ddd19f0.jpg)   |   ![USA-MA-Broad_CRSP-01315_23-2021_plate_map txt_iSNVs_visualization](https://user-images.githubusercontent.com/6245320/122625879-6b9af300-d075-11eb-9b5e-dfdf1308b2aa.jpg)
-
 
 Our intermediate and temporary files are in the directory `/opt/polyphonia/test/test1_intermediate_files`.
 
