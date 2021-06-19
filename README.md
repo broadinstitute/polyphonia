@@ -61,6 +61,9 @@ OPTIONS:
    - [Output File Paths](#output-file-paths)
    - [Verbose](#verbose)
 - [Output Files](#output-files)
+   - [Potential Cross-Contamination Table](#potential-cross-contamination-table)
+   - [Plate Map Visualization of Potential Cross-Contamination](#plate-map-visualization-of-potential-cross-contamination)
+   - [Plate Map Visualization of iSNVs](#plate-map-visualization-of-isnvs)
 - [Example Run-Throughs](#example-run-throughs)
    - [With VCF Files and Unaligned Consensus Genomes](#with-vcf-files-and-unaligned-consensus-genomes)
    - [With Heterozygosity Tables and Aligned Consensus Genomes](#with-heterozygosity-tables-and-aligned-consensus-genomes)
@@ -178,6 +181,16 @@ TODO
 
 ## Output Files
 
+### Potential Cross-Contamination Table
+
+TODO
+
+### Plate Map Visualization of Potential Cross-Contamination
+
+TODO
+
+### Plate Map Visualization of iSNVs
+
 TODO
 
 ## Example Run-Throughs
@@ -251,7 +264,7 @@ potential cross-contamination visualization | iSNVs visualization
 :-------------------------:|:-------------------------:
 ![USA-MA-Broad_CRSP-01315_23-2021_plate_map txt_potential_cross_contamination_visualization](https://user-images.githubusercontent.com/6245320/122625873-663da880-d075-11eb-975a-0f7c9ddd19f0.jpg)   |   ![USA-MA-Broad_CRSP-01315_23-2021_plate_map txt_iSNVs_visualization](https://user-images.githubusercontent.com/6245320/122625879-6b9af300-d075-11eb-9b5e-dfdf1308b2aa.jpg)
 
-In the cross-contamination visualization, we see that USA-MA-Broad_CRSP-01323-2021, in well H10, is potentially contaminated by USA-MA-Broad_CRSP-01315-2021, in well H9, and that the median allele frequency of potentially contaminating alleles is 4.9%.
+In the visualization of potential cross-contamination, we see that USA-MA-Broad_CRSP-01323-2021, in well H10, is potentially contaminated by USA-MA-Broad_CRSP-01315-2021, in well H9, and that the median allele frequency of potentially contaminating alleles is 4.9%.
 
 In the iSNVs visualization, we see that USA-MA-Broad_CRSP-01323-2021, in well H10, has 21 positions with intrahost variation (base substitutions only) passing our thresholds, and that USA-MA-Broad_CRSP-01315-2021, in well H9, has 3. We did not examine intrahost variation in the other wells.
 
