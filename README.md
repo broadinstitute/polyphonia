@@ -47,6 +47,9 @@ OPTIONS:
 - [Getting Started](#getting-started)
 - [Under the Hood](#under-the-hood)
 - [Required Input Files](#getting-started)
+   - [Reference Genome](#reference-genome)
+   - [Consensus Genomes](#consensus-genomes)
+   - [Within-Sample Diversity Files](#within-sample-diversity-files)
 - [Optional Plate Map Inputs](#optional-plate-map-inputs)
 - [Other Options](#other-options)
 - [Output Files](#output-files)
@@ -116,6 +119,16 @@ We use [Docker](https://docs.docker.com/get-started/overview/) to distribute and
 TODO
 
 ## Required Input Files
+
+### Reference Genome
+
+TODO
+
+### Consensus Genomes
+
+TODO
+
+### Within-Sample Diversity Files
 
 TODO
 
