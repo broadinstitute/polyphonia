@@ -157,7 +157,17 @@ Any samples without a consensus genome will be excluded.
 `--vcf`
 `--het`
 
-TODO
+You must include a within-sample diversity file for every sample you want to compare. A within-sample diversity file can be a bam file with aligned reads provided through `--bam`, a vcf file provided through `--vcf`, or a heterozygosity table provided through `--het`. It is best for all samples to be processed the same way, but polyphonia does not require all within-sample diversity files to be at the same stage.
+
+If you provide aligned reads through `--bam`, then within-sample diversity (base substitutions only) will be called using `LoFreq call` and the output will be processed into a heterozygosity table. These intermediate files are saved in the [directory](#output-file-paths) provided by `out-temp`.
+
+Processing large bam files can be very slow. `--vcf` can be helpful if you have already processed your bam files using LoFreq, or if you prefer to use GATK or another tool. Polyphonia is set up to process vcf files output by LoFreq or GATK. If you provide a within-sample diversity file through `--vcf`, the file will be processed into a heterozygosity table saved in the [directory](#output-file-paths) provided by `out-temp`. You can view example vcf files here: [USA-MA-Broad_CRSP-01315-2021.bam_LoFreq.vcf](/test/input/USA-MA-Broad_CRSP-01315-2021.bam_LoFreq.vcf) and [USA-MA-Broad_CRSP-01323-2021.bam_LoFreq.vcf](/test/input/USA-MA-Broad_CRSP-01323-2021.bam_LoFreq.vcf).
+
+If polyphonia cannot read your vcf files, or if you have catalogued within-sample diversity using a tool that produces an output in a different format, you can use `--het` to input a heterozygosity table directly. You can view example heterozygosity tables here: [USA-MA-Broad_CRSP-01315-2021.bam_LoFreq.vcf_heterozygosity.txt](/test/input/USA-MA-Broad_CRSP-01315-2021.bam_LoFreq.vcf_heterozygosity.txt) and [USA-MA-Broad_CRSP-01323-2021.bam_LoFreq.vcf_heterozygosity.txt](/test/input/USA-MA-Broad_CRSP-01323-2021.bam_LoFreq.vcf_heterozygosity.txt).
+
+Any samples without a within-sample diversity file will be excluded.
+
+The sample name associated with a within-sample diversity file is retrieved from the *filename*. Polyphonia will try to match the filename of each within-sample diversity file up to a `.` to a sample name (from the [plate map file(s)](#optional-plate-map-inputs) if provided, or from the [consensus genome files](#consensus-genomes) if not). If a within-sample diversity file name contains multiple `.`s, polyphonia will try to match all possible names starting with the longest. Any within-sample diversity file without an associated [consensus genome](#consensus-genomes) is excluded. If you provide a [plate map](#optional-plate-map-inputs) using `--plate-map`, then any sample whose name does not appear in a plate map is also excluded.
 
 If you provide aligned reads through `--bam`, then the reads must be aligned to the same [reference genome](#reference-genome) as that indicated by `--ref`. If you provide a pre-processed within-sample diversity file through `--vcf` or `--het`, then the positions of loci must be relative to the same [reference](#reference-genome) as that indicated by `--ref`.
 
