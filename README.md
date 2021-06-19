@@ -211,7 +211,9 @@ TODO
 
 `--min-covered`
 
-TODO
+Use `--min-covered` to set the minimum proportion of the genome that must be covered in order for a sample to be included. The proportion of the genome covered is calculated by counting the number of unambiguous (`A`, `T`, `C`, or `G`)  bases in the sample's consensus genome provided using `--consensus` or `--consensus-aligned`, then dividing by the total number of unambiguous bases in the reference provided using `--ref`.
+
+By default, ≥98% of the genome must be unambigously covered for a sample to be included. If `--min-covered` is set too low, polyphonia may call potential cross-contamination in or by samples of low coverage.
 
 ### Allele Filtering Thresholds
 
