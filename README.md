@@ -183,13 +183,16 @@ polyphonia cross_contamination \
 
 By default, all intermediate and output files are stored in the current working directory. In this example, we specified output paths and directories for our output files.
 
-Our output table in is in `/opt/polyphonia/test/outputs/test1_potential_cross_contamination.txt`.
+Our output table in is in `/opt/polyphonia/test/outputs/test1_potential_cross_contamination.txt`:
 
-TODO
+<img width="1435" alt="output_table_screenshot" src="https://user-images.githubusercontent.com/6245320/122626233-3becea80-d077-11eb-97af-dccbb3007b1b.png">
 
-Our plate visualizations are in the directory `/opt/polyphonia/test/test1_plate_visualizations`.
+Our plate visualizations are in the directory `/opt/polyphonia/test/test1_plate_visualizations`:
 
-TODO
+potential cross-contamination visualization | iSNVs visualization
+:-------------------------:|:-------------------------:
+![USA-MA-Broad_CRSP-01315_23-2021_plate_map txt_potential_cross_contamination_visualization](https://user-images.githubusercontent.com/6245320/122625873-663da880-d075-11eb-975a-0f7c9ddd19f0.jpg)   |   ![USA-MA-Broad_CRSP-01315_23-2021_plate_map txt_iSNVs_visualization](https://user-images.githubusercontent.com/6245320/122625879-6b9af300-d075-11eb-9b5e-dfdf1308b2aa.jpg)
+
 
 Our intermediate and temporary files are in the directory `/opt/polyphonia/test/test1_intermediate_files`.
 
