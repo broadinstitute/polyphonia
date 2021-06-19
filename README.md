@@ -148,7 +148,15 @@ TODO
 
 ### Plate Map File(s)
 
-TODO
+If you would like, you can include a plate map file, or multiple plate map files. Your plate map must contain two columns, tab separated, without a header:
+1. The name of the sample. Each sample name in a plate map must match a full header line (after the `>`) in the [consensus genome fasta file(s)](#consensus-genomes) and the *name* of a [within-sample diversity file](#within-sample-diversity-files) up to a `.`. (If your within-sample diversity file name contains multiple `.`s, polyphonia will try to match all possible names starting with the longest.) Any sample names that do not have a corresponding consensus genome and a corresponding within-sample diversity file will not be included.
+3. The well the sample is in. Each well must be a letter, denoting the row of the well, followed by a number, denoting the column of the well. Column numbers are 1-indexed: the first column is column 1, the second column is column 2, and so on. The letters are A-Z for the first 26 rows, followed by AA-AZ for the next 26 rows, followed by BA-BZ, and so on.
+
+You can view an example of a plate map here: [USA-MA-Broad_CRSP-01315_23-2021_plate_map.txt](/test/input/USA-MA-Broad_CRSP-01315_23-2021_plate_map.txt).
+
+If you include at least one plate map, the plate map(s) will be used to determine what samples should be compared to what other samples based on the [well comparison options](#well-comparison-options) you enter. Any samples not on a plate map will be excluded from comparison, as will any samples that do not have neighbors based on the [well comparison options](#well-comparison-options) entered.
+
+There are two benefits to including a plate map. First, including a plate map allows polyphonia to generate visualizations of [iSNVs](#plate-map-visualization-of-isnvs) and [potenial cross-contamination](#plate-map-visualization-of-potential-cross-contamination) on the plate. Second, including a plate map can provide substantial speed-up, since it limits the number of comparisons that are needed. If you include a plate map, only neighbors are compared, based on the [well comparison options](#well-comparison-options) entered. If you do not include a plate map, all samples are compared to all other samples. This takes [*O(n²)*](https://rob-bell.net/2009/06/a-beginners-guide-to-big-o-notation) time, scaling with *n* samples entered, which gets very slow very fast.
 
 ### Plate Map Size
 
@@ -160,7 +168,7 @@ TODO
 
 ## Other Options
 
-### Sample Inclusio nThresholds
+### Sample Inclusion Thresholds
 
 TODO
 
