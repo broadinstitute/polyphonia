@@ -51,6 +51,9 @@ OPTIONS:
    - [Consensus Genomes](#consensus-genomes)
    - [Within-Sample Diversity Files](#within-sample-diversity-files)
 - [Optional Plate Map Inputs](#optional-plate-map-inputs)
+   - [Plate Map File(s)](#plate-map-files)
+   - [Plate Map Size](#plate-map-size)
+   - [Well Comparison Options](#well-comparison-options)
 - [Other Options](#other-options)
 - [Output Files](#output-files)
 - [Example Run-Throughs](#example-run-throughs)
@@ -133,6 +136,16 @@ TODO
 TODO
 
 ## Optional Plate Map Inputs
+
+### Plate Map File(s)
+
+TODO
+
+### Plate Map Size
+
+TODO
+
+### Well Comparison Options
 
 TODO
 
