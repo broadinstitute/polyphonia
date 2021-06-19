@@ -55,6 +55,11 @@ OPTIONS:
    - [Plate Map Size](#plate-map-size)
    - [Well Comparison Options](#well-comparison-options)
 - [Other Options](#other-options)
+   - [Allele Filtering Thresholds](#allele-filtering-thresholds)
+   - [Cross-Contamination Detection Thresholds](#cross-contamination-detection-thresholds)
+   - [Parallelization](#parallelization)
+   - [Output File Paths](#output-file-paths)
+   - [Verbose](#verbose)
 - [Output Files](#output-files)
 - [Example Run-Throughs](#example-run-throughs)
    - [With VCF Files and Unaligned Consensus Genomes](#with-vcf-files-and-unaligned-consensus-genomes)
@@ -150,6 +155,24 @@ TODO
 TODO
 
 ## Other Options
+
+### Allele Filtering Thresholds
+
+TODO
+
+### Cross-Contamination Detection Thresholds
+
+TODO
+
+### Parallelization
+
+TODO
+
+### Output File Paths
+
+TODO
+
+### Verbose
 
 TODO
 
