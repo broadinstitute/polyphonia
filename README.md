@@ -134,19 +134,30 @@ TODO
 
 ### Reference Genome
 
+`--ref`
+
 TODO
 
 ### Consensus Genomes
 
+`--consensus`
+`--consensus-aligned`
+
 TODO
 
 ### Within-Sample Diversity Files
+
+`--bam`
+`--vcf`
+`--het`
 
 TODO
 
 ## Optional Plate Map Inputs
 
 ### Plate Map File(s)
+
+`--plate-map`
 
 If you would like, you can include a plate map file, or multiple plate map files using `--plate-map`. Your plate map must contain two columns, tab separated, without a header:
 1. The name of the sample. Each sample name in a plate map must match a full header line (after the `>`) in the [consensus genome fasta file(s)](#consensus-genomes) and the *name* of a [within-sample diversity file](#within-sample-diversity-files) up to a `.`. (If your within-sample diversity file name contains multiple `.`s, polyphonia will try to match all possible names starting with the longest.) Any sample names that do not have a corresponding consensus genome and a corresponding within-sample diversity file will not be included.
@@ -159,6 +170,10 @@ If you include at least one plate map, the plate map(s) will be used to determin
 There are two benefits to including a plate map. First, including a plate map allows polyphonia to generate visualizations of [iSNVs](#plate-map-visualization-of-isnvs) and [potenial cross-contamination](#plate-map-visualization-of-potential-cross-contamination) on the plate. Second, including a plate map can provide substantial speed-up, since it limits the number of comparisons that are needed. If you include a plate map, only neighbors are compared, based on the [well comparison options](#well-comparison-options) entered. If you do not include a plate map, all samples are compared to all other samples. This takes [*O(n²)*](https://rob-bell.net/2009/06/a-beginners-guide-to-big-o-notation) time, scaling with *n* samples entered, which gets very slow very fast.
 
 ### Plate Map Size
+
+`--plate-size`
+`--plate-columns`
+`--plate-rows`
 
 <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Microplates.jpg/2560px-Microplates.jpg" alt="plate maps" width="500" align="right" />
 
@@ -180,45 +195,84 @@ For example, if you are using a 384-well plate you can describe its size by ente
 
 ### Well Comparison Options
 
+`--compare-direct`
+`--compare-diagonal`
+`--compare-row`
+`--compare-column`
+`--compare-plate`
+
 TODO
 
 ## Other Options
 
 ### Sample Inclusion Thresholds
 
+`--min-covered`
+
 TODO
 
 ### Allele Filtering Thresholds
+
+`--min-readcount`
+`--min-maf`
 
 TODO
 
 ### Cross-Contamination Detection Thresholds
 
+`--max-mismatches`
+
 TODO
 
 ### Parallelization
+
+`--cores`
 
 TODO
 
 ### Output File Paths
 
-TODO
+`--output`
+`--out-figures`
+`--out-temp`
+`--overwrite`
+
+
+By default, the main output, the [potential cross-contamination table](#potential-cross-contamination-table), are printed to a file named `potential_cross-contamination.txt` in the current working directory within the container, and all output figures, intermediate files, and temporary files are printed to the current working directory within the container.
+
+You can set the output file path for the [potential cross-contamination table](#potential-cross-contamination-table) using `--output`.
+
+If you include a [plate map](#optional-plate-map-inputs), you can set the directory for plate map visualizations of [potential cross-contamination](#plate-map-visualization-of-potential-cross-contamination) and [iSNVs](#plate-map-visualization-of-isnvs) using `--out-figures`.
+
+You can set the output directory for temporary and intermediate files using `--out-temp`.
+
+If an output directory does not already exist, polyphonia will create it.
+
+By default, polyphonia will not overwrite an existing file. You can allow overwriting using `--overwrite TRUE`.
 
 ### Verbose
 
-TODO
+`--verbose`
+
+By default, polyphonia will print updates on its progress to the console. You can silence most updates using `--verbose FALSE`.
 
 ## Output Files
 
 ### Potential Cross-Contamination Table
 
+`--output`
+
 TODO
 
 ### Plate Map Visualization of Potential Cross-Contamination
 
+`--out-figures`
+
 TODO
 
 ### Plate Map Visualization of iSNVs
+
+`--out-figures`
 
 TODO
 
