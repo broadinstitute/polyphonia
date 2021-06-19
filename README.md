@@ -45,6 +45,7 @@ OPTIONS:
 
 ## Contents
 - [Getting Started](#getting-started)
+- [Under the Hood](#under-the-hood)
 - [Required Input Files](#getting-started)
 - [Optional Plate Map Inputs](#optional-plate-map-inputs)
 - [Other Options](#other-options)
@@ -109,6 +110,10 @@ We use [Docker](https://docs.docker.com/get-started/overview/) to distribute and
    Follow the guide below to learn more about polyphonia's input and output options and to run through this example in more detail.
 
 6. Exit. When you are done, destroy your ephemeral file system by typing `exit`. You should see your container disappear from the Docker interface.
+
+## Under the Hood
+
+TODO
 
 ## Required Input Files
 
