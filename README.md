@@ -209,7 +209,19 @@ For example, if you are using a 384-well plate you can describe its size by ente
 `--compare-column`
 `--compare-plate`
 
-TODO
+If you enter `--compare-direct TRUE`, then each sample will be compared to its direct plate neighbors in the wells to the left, right, top, and bottom.
+
+If you enter `--compare-diagonal TRUE`, then each sample will be compared to its diagonal plate neighbors in the wells to the top-right, bottom-right, top-left, and bottom-left.
+
+If you enter `--compare-row TRUE`, then each sample will be compared to all other samples in the same row.
+
+If you enter `--compare-column TRUE`, then each sample will be compared to all other samples in the same column.
+
+If you enter `--compare-plate TRUE`, then each sample will be compared to all other samples on the plate.
+
+By default, samples are compared only to their direct plate neighbors to the left, right, top, and bottom: `--compare-direct` is set to `TRUE` and all other options are set to `FALSE`.
+
+You can mix and match well comparison options. For example, `--compare-direct TRUE --compare-diagonal TRUE` will compare each sample to the samples in all the wells that surround it: left, right, top, bottom, top-right, bottom-right, top-left, and bottom-left.
 
 ## Other Options
 
