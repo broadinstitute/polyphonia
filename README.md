@@ -147,9 +147,9 @@ The reference genome input using `--ref` must match that used in other input fil
 
 You must include a consensus genome for every sample you want to compare. You can either enter unaligned consensus genomes in one or more fasta files using `--consensus` (in which case they and the [reference](#reference-genome) provided using `--ref` will be aligned using MAFFT), or you can input all consensus genomes aligned to the reference in a single aligned fasta file using `--consensus-aligned`. If you provide aligned consensus genomes using `--consensus-aligned`, then the first sequence in the fasta file must match the [reference genome](#reference-genome) input using `--ref`.
 
-The sample name must occupy the full header line after the `>`. The provided sample name must match the *filename* of a [within-sample diversity file](#within-sample-diversity-files) up to a `.` (if your within-sample diversity file name contains multiple `.`s, polyphonia will try to match all possible names starting with the longest); any samples without a matching within-sample diversity file will be excluded. If you provide a [plate map](#optional-plate-map-inputs) using `--plate-map`, then sample names not appearing in a plate map will be excluded.
+The sample name must occupy the full header line after the `>`. The provided sample name must match the *filename* of a [within-sample diversity file](#within-sample-diversity-files) up to a `.` (if your within-sample diversity file name contains multiple `.`s, polyphonia will try to match all possible names starting with the longest); any sample without a matching within-sample diversity file will be excluded. If you provide a [plate map](#optional-plate-map-inputs) using `--plate-map`, then sample names not appearing in a plate map will be excluded.
 
-Any samples without a consensus genome will be excluded.
+Any sample without a consensus genome will be excluded.
 
 ### Within-Sample Diversity Files
 
@@ -163,9 +163,21 @@ If you provide aligned reads through `--bam`, then within-sample diversity (base
 
 Processing large bam files can be very slow. `--vcf` can be helpful if you have already processed your bam files using LoFreq, or if you prefer to use GATK or another tool. Polyphonia is set up to process vcf files output by LoFreq or GATK. If you provide a within-sample diversity file through `--vcf`, the file will be processed into a heterozygosity table saved in the [directory](#output-file-paths) provided by `out-temp`. You can view example vcf files here: [USA-MA-Broad_CRSP-01315-2021.bam_LoFreq.vcf](/test/input/USA-MA-Broad_CRSP-01315-2021.bam_LoFreq.vcf) and [USA-MA-Broad_CRSP-01323-2021.bam_LoFreq.vcf](/test/input/USA-MA-Broad_CRSP-01323-2021.bam_LoFreq.vcf).
 
-If polyphonia cannot read your vcf files, or if you have catalogued within-sample diversity using a tool that produces an output in a different format, you can use `--het` to input a heterozygosity table directly. You can view example heterozygosity tables here: [USA-MA-Broad_CRSP-01315-2021.bam_LoFreq.vcf_heterozygosity.txt](/test/input/USA-MA-Broad_CRSP-01315-2021.bam_LoFreq.vcf_heterozygosity.txt) and [USA-MA-Broad_CRSP-01323-2021.bam_LoFreq.vcf_heterozygosity.txt](/test/input/USA-MA-Broad_CRSP-01323-2021.bam_LoFreq.vcf_heterozygosity.txt).
+If polyphonia cannot read your vcf files, or if you have catalogued within-sample diversity using a tool that produces an output in a different format, you can use `--het` to input a heterozygosity table directly. Each line a heterozygosity table summarizes the minor and major alleles at a locus with heteroyzgosity (base substitutions only). A heterozysity table contains the following columns, tab separated, without a header line:
+1. reference genome name (e.g., NC_045512.2)
+2. position of locus relative to reference genome, 1-indexed (e.g., 28928)
+3. major allele at that position (e.g., C)
+4. major allele readcount (e.g., 1026)
+5. major allele frequency (e.g., 0.934426)
+6. minor allele at that position (e.g., T)
+7. minor allele readcount (e.g., 72)
+8. minor allele frequency (e.g., 0.065574)
 
-Any samples without a within-sample diversity file will be excluded.
+Note that the loci listed in the heterozygosity table will be filtered according to the [allele filtering thresholds](#allele-filtering-thresholds) provided by `--min-readcount` and `--min-maf`. Not all rows will be included in sample comparisons.
+
+You can view example heterozygosity tables here: [USA-MA-Broad_CRSP-01315-2021.bam_LoFreq.vcf_heterozygosity.txt](/test/input/USA-MA-Broad_CRSP-01315-2021.bam_LoFreq.vcf_heterozygosity.txt) and [USA-MA-Broad_CRSP-01323-2021.bam_LoFreq.vcf_heterozygosity.txt](/test/input/USA-MA-Broad_CRSP-01323-2021.bam_LoFreq.vcf_heterozygosity.txt).
+
+Any sample without a within-sample diversity file will be excluded.
 
 The sample name associated with a within-sample diversity file is retrieved from the *filename*. Polyphonia will try to match the filename of each within-sample diversity file up to a `.` to a sample name (from the [plate map file(s)](#optional-plate-map-inputs) if provided, or from the [consensus genome files](#consensus-genomes) if not). If a within-sample diversity file name contains multiple `.`s, polyphonia will try to match all possible names starting with the longest. Any within-sample diversity file without an associated [consensus genome](#consensus-genomes) is excluded. If you provide a [plate map](#optional-plate-map-inputs) using `--plate-map`, then any sample whose name does not appear in a plate map is also excluded.
 
