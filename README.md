@@ -145,9 +145,11 @@ The reference genome input using `--ref` must match that used in other input fil
 `--consensus`
 `--consensus-aligned`
 
-TODO
+You must include a consensus genome for every sample you want to compare. You can either enter unaligned consensus genomes in one or more fasta files using `--consensus` (in which case they and the [reference](#reference-genome) provided using `--ref` will be aligned using MAFFT), or you can input all consensus genomes aligned to the reference in a single aligned fasta file using `--consensus-aligned`. If you provide aligned consensus genomes using `--consensus-aligned`, then the first sequence in the fasta file must match the [reference genome](#reference-genome) input using `--ref`.
 
-If you provide aligned consensus genomes using `--consensus-aligned`, then the first sequence in the fasta file must match the [reference genome](#reference-genome) input using `--ref`.
+The sample name must occupy the full header line after the `>`. The provided sample name must match the *filename* of a [within-sample diversity file](#within-sample-diversity-files) up to a `.` (if your within-sample diversity file name contains multiple `.`s, polyphonia will try to match all possible names starting with the longest); any samples without a matching within-sample diversity file will be excluded. If you provide a [plate map](#optional-plate-map-inputs) using `--plate-map`, then sample names not appearing in a plate map will be excluded.
+
+Any samples without a consensus genome will be excluded.
 
 ### Within-Sample Diversity Files
 
