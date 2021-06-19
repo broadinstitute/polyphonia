@@ -226,7 +226,9 @@ By default, polyphonia does not include all alleles called by `LoFreq call`. We 
 
 `--max-mismatches`
 
-TODO
+By default, a sample is considered potentially contaminated if at most 1 contaminating consensus-level allele does not appear as a minor or consensus-level allele in the contaminated sample. You can allow for more sequencing errors or missed minor allele calls by specifying a larger threshold using `--max-mismatches`. A too-large `--max-mismatches` will result in many erroneous cross-contamination calls.
+
+(A note that insertions and deletions are ignored: we only include base substitutions.)
 
 ### Parallelization
 
@@ -360,7 +362,7 @@ potential cross-contamination visualization | iSNVs visualization
 
 In the visualization of potential cross-contamination, we see that USA-MA-Broad_CRSP-01323-2021, in well H10, is potentially contaminated by USA-MA-Broad_CRSP-01315-2021, in well H9, and that the median allele frequency of potentially contaminating alleles is 4.9%.
 
-In the iSNVs visualization, we see that USA-MA-Broad_CRSP-01323-2021, in well H10, has 21 positions with intrahost variation (base substitutions only) passing our thresholds, and that USA-MA-Broad_CRSP-01315-2021, in well H9, has 3. We did not examine intrahost variation in the other wells.
+In the iSNVs visualization, we see that USA-MA-Broad_CRSP-01323-2021, in well H10, has 21 positions with intrahost variation (base substitutions only) passing our thresholds, and that USA-MA-Broad_CRSP-01315-2021, in well H9, has 3. We did not examine intrahost variation in any of the other wells.
 
 Our intermediate and temporary files are in the directory `/opt/polyphonia/test/test1_intermediate_files`.
 
