@@ -148,7 +148,7 @@ TODO
 
 ### Plate Map File(s)
 
-If you would like, you can include a plate map file, or multiple plate map files. Your plate map must contain two columns, tab separated, without a header:
+If you would like, you can include a plate map file, or multiple plate map files using `--plate-map`. Your plate map must contain two columns, tab separated, without a header:
 1. The name of the sample. Each sample name in a plate map must match a full header line (after the `>`) in the [consensus genome fasta file(s)](#consensus-genomes) and the *name* of a [within-sample diversity file](#within-sample-diversity-files) up to a `.`. (If your within-sample diversity file name contains multiple `.`s, polyphonia will try to match all possible names starting with the longest.) Any sample names that do not have a corresponding consensus genome and a corresponding within-sample diversity file will not be included.
 3. The well the sample is in. Each well must be a letter, denoting the row of the well, followed by a number, denoting the column of the well. Column numbers are 1-indexed: the first column is column 1, the second column is column 2, and so on. The letters are A-Z for the first 26 rows, followed by AA-AZ for the next 26 rows, followed by BA-BZ, and so on.
 
@@ -160,7 +160,21 @@ There are two benefits to including a plate map. First, including a plate map al
 
 ### Plate Map Size
 
-TODO
+<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Microplates.jpg/2560px-Microplates.jpg" alt="plate maps" width="500" align="right" />
+
+By default, polyphonia will assume you have a 96-well plate. You can use `--plate-size` to indicate that your plate is any of the following standard plate layouts:
+- 6-well plate: 3 columns (A, B, C) x 2 rows (1, 2)
+- 12-well plate: 4 columns x 3 rows
+- 24-well plate: 6 columns x 4 rows
+- 48-well plate: 8 columns x 6 rows
+- 96-well plate: 12 columns x 8 rows
+- 384-well plate: 24 columns x 16 rows
+- 1536-well plate: 48 columns x 32 rows
+- 3456-well plate: 72 columns x 48 rows
+
+If you are using a different plate layout, you can indicate it using `--plate-columns` and `--plate-rows`.
+
+For example, if you are using a 384-well plate you can describe its size by entering either `--plate-size 384` or `--plate-columns 24 --plate-rows 16`.
 
 ### Well Comparison Options
 
