@@ -55,7 +55,7 @@ OPTIONS:
    - [Plate Map Size](#plate-map-size)
    - [Well Comparison Options](#well-comparison-options)
 - [Other Options](#other-options)
-   - [Sample Inclusion](#sample-inclusion)
+   - [Sample Inclusion Thresholds](#sample-inclusion-thresholds)
    - [Allele Filtering Thresholds](#allele-filtering-thresholds)
    - [Cross-Contamination Detection Thresholds](#cross-contamination-detection-thresholds)
    - [Parallelization](#parallelization)
@@ -160,7 +160,7 @@ TODO
 
 ## Other Options
 
-### Sample Inclusion
+### Sample Inclusio nThresholds
 
 TODO
 
