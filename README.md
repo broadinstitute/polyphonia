@@ -138,7 +138,7 @@ TODO
 
 You must include a reference genome in fasta format. For SARS-CoV-2 samples, we use [NC_045512.2](https://www.ncbi.nlm.nih.gov/nuccore/NC_045512.2).
 
-The reference genome input using `--ref` must match that used in other input files. If you provide aligned consensus genomes using `--consensus-aligned`, then the reference genome indicated by `--ref` must match the first sequence in the fasta file. If you provide aligned reads through `--bam`, then the reads must be aligned to the same reference genome as that indicated by `--ref`. If you provide a pre-processed within-sample diversity file through `--vcf` or `--het`, then the positions of loci must be relative to the same reference as that indicated by `--ref`.
+The reference genome input using `--ref` must match that used in other input files. If you provide aligned [consensus genomes](#consensus-genomes) using `--consensus-aligned`, then the reference genome indicated by `--ref` must match the first sequence in the fasta file. If you provide [aligned reads](#within-sample-diversity-files) through `--bam`, then the reads must be aligned to the same reference genome as that indicated by `--ref`. If you provide a pre-processed [within-sample diversity file](#within-sample-diversity-files) through `--vcf` or `--het`, then the positions of loci must be relative to the same reference as that indicated by `--ref`.
 
 ### Consensus Genomes
 
@@ -147,6 +147,8 @@ The reference genome input using `--ref` must match that used in other input fil
 
 TODO
 
+If you provide aligned consensus genomes using `--consensus-aligned`, then the first sequence in the fasta file must match the [reference genome](#reference-genome) input using `--ref`.
+
 ### Within-Sample Diversity Files
 
 `--bam`
@@ -154,6 +156,8 @@ TODO
 `--het`
 
 TODO
+
+If you provide aligned reads through `--bam`, then the reads must be aligned to the same [reference genome](#reference-genome) as that indicated by `--ref`. If you provide a pre-processed within-sample diversity file through `--vcf` or `--het`, then the positions of loci must be relative to the same [reference](#reference-genome) as that indicated by `--ref`.
 
 ## Optional Plate Map Inputs
 
