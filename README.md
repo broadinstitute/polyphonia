@@ -139,6 +139,8 @@ If [consensus genomes](#consensus-genomes) are not already aligned, they are ali
 
 TODO
 
+If at least one plate map is provided, samples are compared to samples in neighboring wells as determined by provided [well comparison options](#well-comparison-options). If no plate map is provided, all samples are compared to all other samples. (As the number of samples increases, comparing all samples to all other samples very quickly becomes a large and intractably slow task.) If possible, comparisons are made [in parallel](#parallelization).
+
 Depending on availability of material and the stage at which contamination occurred, contaminated samples could be resequenced or subjected to other follow-up. It is important to critically examine flagged potential cross-contamination and consider [alternative explanations](#important-caveats) for shared alleles: not all flagged sample pairs will be true instances of cross-contamination or require resequencing.
 
 ## Important Caveats
