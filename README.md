@@ -131,8 +131,6 @@ We use [Docker](https://docs.docker.com/get-started/overview/) to distribute and
 
 <p align="center"><img src="https://user-images.githubusercontent.com/6245320/122773294-3c9f9f80-d276-11eb-849b-72a53f8d1643.png" alt="process flowchart" width="700"></p>
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque maximus, lacus congue vehicula vestibulum, massa dui scelerisque metus, vitae tincidunt nisl dui ac ipsum. Nulla mollis pellentesque massa semper blandit. Donec congue sollicitudin eleifend. Ut tincidunt maximus felis, vitae finibus nunc. Praesent cursus erat eu libero facilisis, at vestibulum lectus semper. Cras tempor mauris in luctus iaculis. Aenean posuere felis vel urna efficitur ultrices.
-
 TODO
 
 ## Important Caveats
