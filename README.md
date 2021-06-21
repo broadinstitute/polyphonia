@@ -129,7 +129,7 @@ We use [Docker](https://docs.docker.com/get-started/overview/) to distribute and
 
 ## Under the Hood
 
-<p align="center"><img src="https://user-images.githubusercontent.com/6245320/122773294-3c9f9f80-d276-11eb-849b-72a53f8d1643.png" alt="process flowchart" width="700"></p>
+<p align="center"><img src="https://user-images.githubusercontent.com/6245320/122775196-e29fd980-d277-11eb-80b9-2b2ffb4fa3ae.png" alt="process flowchart" width="700"></p>
 
 TODO
 
