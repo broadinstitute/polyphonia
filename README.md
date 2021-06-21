@@ -141,6 +141,8 @@ Pairs of samples are then compared to detect potential cross-contamination. A sa
 
 If at least one plate map is provided, each sample is compared to the samples in neighboring wells as determined by provided [well comparison options](#well-comparison-options). If no plate map is provided, all samples are compared to all other samples. (As the number of samples increases, comparing all samples to all other samples very quickly becomes a large and intractably slow task.) If possible, comparisons are made [in parallel](#parallelization).
 
+The primary output is [a table describing potential instances of cross-contamination](#potential-cross-contamination-table). If at least one plate map is provided, visualizations of [potential cross-contamination](#plate-map-visualization-of-potential-cross-contamination) and of [intrahost variation](#plate-map-visualization-of-isnvs) are also produced for each plate.
+
 The rest is up to you. Depending on availability of material and the stage at which contamination occurred, contaminated samples could be resequenced or subjected to other follow-up. It is important to critically examine flagged potential cross-contamination and consider [alternative explanations](#important-caveats) for shared alleles: not all flagged sample pairs will be true instances of cross-contamination or require resequencing.
 
 ## Important Caveats
