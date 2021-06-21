@@ -920,7 +920,7 @@ if(scalar keys %sample_names < 2)
 if(!$consensus_genomes_aligned_file)
 {
 	# reads in all consensus genomes
-	print STDERR "retrieving included consensus genomes...\n";
+	print STDERR "retrieving included consensus genomes...\n" if $verbose;
 	my %sequence_name_to_consensus = (); # key: sequence name -> value: consensus sequence, including gaps froms alignment
 	foreach my $consensus_genome_fasta_file(@consensus_genome_files, $consensus_genomes_aligned_file)
 	{
@@ -956,7 +956,8 @@ if(!$consensus_genomes_aligned_file)
 		close FASTA_FILE;
 	}
 	
-	# generates output file
+	# generates concatenated consensus genomes file
+	print STDERR "generating concatenated consensus genomes fasta file...\n" if $verbose;
 	my $all_consensus_genomes_file = $temp_intermediate_directory."all_consensus_genomes_concat.fasta";
 	check_if_file_exists_before_writing($all_consensus_genomes_file);
 	open CONSENSUS_GENOMES, ">$all_consensus_genomes_file" || die "Could not open $all_consensus_genomes_file to write; terminating =(\n";
@@ -974,6 +975,7 @@ if(!$consensus_genomes_aligned_file)
 	close CONSENSUS_GENOMES;
 	
 	# aligns all consensus genomes
+	print STDERR "aligning consensus genomes...\n" if $verbose;
 	$consensus_genomes_aligned_file = $temp_intermediate_directory."all_consensus_genomes_MAFFT_aligned.fasta";
 	check_if_file_exists_before_writing($consensus_genomes_aligned_file);
 	`$MAFFT_EXECUTABLE_FILE_PATH $all_consensus_genomes_file > $consensus_genomes_aligned_file`;
