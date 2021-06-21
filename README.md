@@ -412,11 +412,9 @@ The output table shows that USA-MA-Broad_CRSP-01323-2021, in well H10, is potent
 
 The USA-MA-Broad_CRSP-01323-2021 alleles appearing at consensus level in USA-MA-Broad_CRSP-01315-2021 range in frequency from 3.2% to 12.3%, with a median allele frequency of 4.9%. In this case, all potential contaminating alleles appear as minor, rather than consensus-level, alleles in USA-MA-Broad_CRSP-01323-2021.
 
-Our plate visualizations are in the directory `/opt/polyphonia/test/test1_plate_visualizations`:
+Our plate visualizations are in the directory `/opt/polyphonia/test/test1_plate_visualizations`, `USA-MA-Broad_CRSP-01315_23-2021_plate_map.txt_potential_cross_contamination_visualization.jpg` and `USA-MA-Broad_CRSP-01315_23-2021_plate_map.txt_iSNVs_visualization.jpg`:
 
-potential cross-contamination visualization | iSNVs visualization
-:-------------------------:|:-------------------------:
-![USA-MA-Broad_CRSP-01315_23-2021_plate_map txt_potential_cross_contamination_visualization](https://user-images.githubusercontent.com/6245320/122625873-663da880-d075-11eb-975a-0f7c9ddd19f0.jpg)   |   ![USA-MA-Broad_CRSP-01315_23-2021_plate_map txt_iSNVs_visualization](https://user-images.githubusercontent.com/6245320/122625879-6b9af300-d075-11eb-9b5e-dfdf1308b2aa.jpg)
+<p align="center"><img src="https://user-images.githubusercontent.com/6245320/122625873-663da880-d075-11eb-975a-0f7c9ddd19f0.jpg" width="480"> <img src="https://user-images.githubusercontent.com/6245320/122625879-6b9af300-d075-11eb-9b5e-dfdf1308b2aa.jpg" width="480"></p>
 
 In the visualization of potential cross-contamination, we see that USA-MA-Broad_CRSP-01323-2021, in well H10, is potentially contaminated by USA-MA-Broad_CRSP-01315-2021, in well H9, and that the median allele frequency of potentially contaminating alleles is 4.9%.
 
@@ -479,7 +477,7 @@ You should see the same output files as those generated in the previous example.
 
 If you are using polyphonia through Docker, you do not need to worry about dependencies.
 
-You can view the software polyphonia uses in `requirements-conda.txt`:
+You can view the software polyphonia uses in [`requirements-conda.txt`](https://github.com/broadinstitute/polyphonia/blob/main/requirements-conda.txt):
 - Scripts are written in [Perl 5](https://www.perl.org/get.html).
    - Output float values are rounded using [Math::Round](https://metacpan.org/pod/Math::Round) ≥0.07.
    - Parallelization is performed using [Parallel::ForkManager](https://metacpan.org/pod/Parallel::ForkManager) ≥2.02.
