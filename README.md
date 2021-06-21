@@ -133,6 +133,8 @@ We use [Docker](https://docs.docker.com/get-started/overview/) to distribute and
 
 TODO
 
+Depending on availability of material and the stage at which contamination occurred, contaminated samples could be resequenced or subjected to other follow-up. It is important to critically examine flagged potential cross-contamination and consider [alternative explanations](#important-caveats) for shared alleles: not all flagged sample pairs will be true instances of cross-contamination or require resequencing.
+
 ## Important Caveats
 
 Not all potential cross-contamination flagged by polyphonia will be true cross-contamination. You should examine and verify any potential cross-contamination that polyphonia flags.
