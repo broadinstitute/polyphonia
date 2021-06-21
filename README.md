@@ -249,23 +249,23 @@ For example, if you are using a 384-well plate you can describe its size by ente
 `--compare-column`
 `--compare-plate`
 
-If you enter `--compare-direct TRUE`, then each sample will be compared to its direct plate neighbors in the wells to the left, right, top, and bottom. This option is on by default.
+If you enter `--compare-direct TRUE`, then each sample will be compared to its direct plate neighbors in the wells to the left, right, top, and bottom. This option is on (`TRUE`) by default and unless otherwise specified using `--compare-direct FALSE`.
 
 <p align="center"><img src="https://user-images.githubusercontent.com/6245320/122707970-17387480-d229-11eb-9da0-4f84909341ff.png" alt="compare-direct" width=400></p>
 
-If you enter `--compare-diagonal TRUE`, then each sample will be compared to its diagonal plate neighbors in the wells to the top-right, bottom-right, top-left, and bottom-left. This option is off by default.
+If you enter `--compare-diagonal TRUE`, then each sample will be compared to its diagonal plate neighbors in the wells to the top-right, bottom-right, top-left, and bottom-left. This option is off (`FALSE`) by default.
 
 <p align="center"><img src="https://user-images.githubusercontent.com/6245320/122708126-70080d00-d229-11eb-838f-635b8cde4609.png" alt="compare-diagonal" width=400></p>
 
-If you enter `--compare-row TRUE`, then each sample will be compared to all other samples in the same row. This option is off by default.
+If you enter `--compare-row TRUE`, then each sample will be compared to all other samples in the same row. This option is off (`FALSE`) by default.
 
 <p align="center"><img src="https://user-images.githubusercontent.com/6245320/122708147-79917500-d229-11eb-98db-8d52c91d33ea.png" alt="compare-row " width=400></p>
 
-If you enter `--compare-column TRUE`, then each sample will be compared to all other samples in the same column. This option is off by default.
+If you enter `--compare-column TRUE`, then each sample will be compared to all other samples in the same column. This option is off (`FALSE`) by default.
 
 <p align="center"><img src="https://user-images.githubusercontent.com/6245320/122708153-7dbd9280-d229-11eb-8845-c4ccd703dbe9.png" alt="compare-column" width=400></p>
 
-If you enter `--compare-plate TRUE`, then each sample will be compared to all other samples on the plate. This option is off by default.
+If you enter `--compare-plate TRUE`, then each sample will be compared to all other samples on the plate. This option is off (`FALSE`) by default.
 
 <p align="center"><img src="https://user-images.githubusercontent.com/6245320/122708159-81511980-d229-11eb-83ad-144cb6191441.png" alt="compare-plate" width=400></p>
 
