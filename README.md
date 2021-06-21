@@ -404,7 +404,7 @@ polyphonia cross_contamination \
 
 By default, all intermediate and output files are stored in the current working directory. In this example, we specified output paths and directories for our output files.
 
-Our output table in is in `/opt/polyphonia/test/outputs/test1_potential_cross_contamination.txt`:
+Our output table is in `/opt/polyphonia/test/outputs/test1_potential_cross_contamination.txt`:
 
 <img width="1435" alt="output_table_screenshot" src="https://user-images.githubusercontent.com/6245320/122626233-3becea80-d077-11eb-97af-dccbb3007b1b.png">
 
@@ -414,7 +414,7 @@ The USA-MA-Broad_CRSP-01323-2021 alleles appearing at consensus level in USA-MA-
 
 Our plate visualizations are in the directory `/opt/polyphonia/test/test1_plate_visualizations`, `USA-MA-Broad_CRSP-01315_23-2021_plate_map.txt_potential_cross_contamination_visualization.jpg` and `USA-MA-Broad_CRSP-01315_23-2021_plate_map.txt_iSNVs_visualization.jpg`:
 
-<p align="center"><img src="https://user-images.githubusercontent.com/6245320/122625873-663da880-d075-11eb-975a-0f7c9ddd19f0.jpg" width="49%"> <img src="https://user-images.githubusercontent.com/6245320/122625879-6b9af300-d075-11eb-9b5e-dfdf1308b2aa.jpg" width="49%"></p>
+<p align="center"><img src="https://user-images.githubusercontent.com/6245320/122625873-663da880-d075-11eb-975a-0f7c9ddd19f0.jpg" width="450"> <img src="https://user-images.githubusercontent.com/6245320/122625879-6b9af300-d075-11eb-9b5e-dfdf1308b2aa.jpg" width="450"></p>
 
 In the visualization of potential cross-contamination, we see that USA-MA-Broad_CRSP-01323-2021, in well H10, is potentially contaminated by USA-MA-Broad_CRSP-01315-2021, in well H9, and that the median allele frequency of potentially contaminating alleles is 4.9%.
 
