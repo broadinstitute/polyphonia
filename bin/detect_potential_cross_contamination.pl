@@ -733,6 +733,92 @@ foreach my $sample_name(keys %sample_names)
 print STDOUT (keys %sample_names)." samples remain...\n" if $verbose;
 
 
+# reads in reference sequence
+open REFERENCE_FASTA, "<$reference_genome_file" || die "Could not open $reference_genome_file to read; terminating =(\n";
+my $reference_sequence = "";
+while(<REFERENCE_FASTA>) # for each line in the file
+{
+	chomp;
+	if($_ !~ /^>(.*)/) # not header line
+	{
+		$reference_sequence .= $_;
+	}
+}
+close REFERENCE_FASTA;
+
+# counts unambiguous bases in reference
+my $reference_sequence_length = count_unambiguous_bases_in_sequence(split(//, $reference_sequence));
+if(!$reference_sequence_length)
+{
+	print STDERR "Error: reference sequence in consensus genome alignment contains no "
+		."unambiguous (A, T, C, G) bases:\n\t".$consensus_genomes_aligned_file
+		."\nExiting.\n";
+	die;
+}
+
+
+# reads in consensus genomes; removes samples that do not have sufficiently complete genomes
+if($minimum_genome_coverage)
+{
+	print STDERR "reading in consensus genomes...\n";
+	my %sequence_name_to_consensus = (); # key: sequence name -> value: consensus sequence, including gaps froms alignment
+	foreach my $consensus_genome_fasta_file(@consensus_genome_files, $consensus_genomes_aligned_file)
+	{
+		open FASTA_FILE, "<$consensus_genome_fasta_file" || die "Could not open $consensus_genome_fasta_file to read; terminating =(\n";
+		my $sequence = "";
+		my $sample_name = "";
+		while(<FASTA_FILE>) # for each line in the file
+		{
+			chomp;
+			if($_ =~ /^>(.*)/) # header line
+			{
+				# process previous sequence
+				$sequence = uc($sequence);
+				if($sequence and $sample_name and $sample_names{$sample_name})
+				{
+					$sequence_name_to_consensus{$sample_name} = $sequence;
+				}
+	
+				# prepare for next sequence
+				$sequence = "";
+				$sample_name = $1;
+			}
+			else
+			{
+				$sequence .= $_;
+			}
+		}
+		# process final sequence
+		if($sequence and $sample_name and $sample_names{$sample_name})
+		{
+			$sequence_name_to_consensus{$sample_name} = uc($sequence);
+		}
+		close FASTA_FILE;
+	}
+	
+	print STDOUT "removing sample names without at least ".($minimum_genome_coverage*100)."% coverage...\n" if $verbose;
+	foreach my $sample_name(keys %sample_names)
+	{
+		# retrieves consensus genome bases
+		my $consensus = $sequence_name_to_consensus{$sample_name};
+		my @consensus_values = split(//, $consensus);
+
+		# counts unambiguous bases in consensus genome
+		my $consensus_unambig_bases = count_unambiguous_bases_in_sequence(@consensus_values);
+		my $consensus_percent_covered = $consensus_unambig_bases / $reference_sequence_length;
+
+		# removes sample name if sample does not have minimum genome coverage
+		if($consensus_percent_covered < $minimum_genome_coverage)
+		{
+			delete $sample_names{$sample_name};
+		}
+	}
+	
+	# prints number of samples remaining
+	print STDOUT (keys %sample_names)." samples remain...\n" if $verbose;
+}
+
+
 # if a plate map is provided, removes any samples that do not have neighbors
 # reads in plate map positions of all samples
 my %sample_name_to_all_plate_positions = (); # key: sample name -> value: string including all plate positions the sample appears in
@@ -823,6 +909,10 @@ if(scalar keys %sample_names < 2)
 # aligns consensus genomes if they aren't already aligned
 if(!$consensus_genomes_aligned_file)
 {
+	# retrieves subset of consensus genomes that are still included, to avoid wasting time
+	# aligning genomes we aren't including
+	# TODO
+
 	# makes temp file with just a newline
 	my $newline_temp_file = $temp_intermediate_directory."newline_temp.fasta";
 	check_if_file_exists_before_writing($newline_temp_file);
@@ -924,17 +1014,6 @@ if($sequence and $sample_name and $sample_names{$sample_name})
 	$sequence_name_to_consensus{$sample_name} = uc($sequence);
 }
 close ALIGNED_CONSENSUS_GENOMES;
-
-
-# counts unambiguous bases in reference
-my $reference_sequence_length = count_unambiguous_bases_in_sequence(split(//, $reference_sequence));
-if(!$reference_sequence_length)
-{
-	print STDERR "Error: reference sequence in consensus genome alignment contains no "
-		."unambiguous (A, T, C, G) bases:\n\t".$consensus_genomes_aligned_file
-		."\nExiting.\n";
-	die;
-}
 
 
 # if plate map provided, counts number positions with heterozygosity (iSNVs) in each
