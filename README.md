@@ -347,9 +347,11 @@ You can set the [output file path](#output-file-paths) for the potential cross-c
 
 `--out-figures`
 
-If you enter at least one plate map file, then polyphonia will generate a visualization of any cross-contamination on each plate map entered. Each potentially contaminated well is colored by the median contaminating allele frequency. In cases where a sample is proposed to be contaminated by multiple sources of contamination, each potentially contaminated well is colored by the sum of the median contaminating allele frequency from each proposed source contamination. This metric is labelled the total estimated contamination volume. Proposed contamination events are shown by arrows from proposed contamination source to proposed contaminated well. Wells proposed to be either contaminated or sources of contamination have a black border, while all other wells have a grey border. Note that sample comparisons are made only according to the entered [Well Comparison Options](#well-comparison-options)—other contamination events would not be detected.
+If you enter at least one plate map file, polyphonia will generate a visualization of potential cross-contamination detected on each plate map entered. Each potentially contaminated well is colored by the median contaminating allele frequency. In cases where a sample is proposed to be contaminated by multiple sources of contamination, each potentially contaminated well is colored by the sum of the median contaminating allele frequency from each proposed source of contamination. This metric is labelled the total estimated contamination volume. Proposed contamination events are shown by arrows to each potentially contaminated well from the proposed source(s) of contamination. Wells proposed to be either contaminated or sources of contamination have a black border, while all other wells have a grey border. Note that sample comparisons are made only according to the entered [well comparison options](#well-comparison-options)—other contamination events would not be detected.
 
-You can view an example of a plate map visualization of potential cross-contamination at the [end](#output-files-1) of the [example run-through](#example-run-throughs).
+You can view an example of a plate map visualization of potential cross-contamination at the [end](#output-files-1) of the [example run-through](#example-run-throughs):
+
+<p align="center"><img src="https://user-images.githubusercontent.com/6245320/122625873-663da880-d075-11eb-975a-0f7c9ddd19f0.jpg" width="418"></p>
 
 You can set the [output directory](#output-file-paths) for the plate map visualization of potential cross-contamination using `--out-figures`.
 
@@ -357,7 +359,11 @@ You can set the [output directory](#output-file-paths) for the plate map visuali
 
 `--out-figures`
 
-TODO
+If you enter at least one plate map file, polyphonia will generate a visualization of the plate with each well colored by and labelled with the number of iSNVs, or positions with intrahost variation (base substitutions only) passing our [allele filtering thresholds](#allele-filtering-thresholds). You might notice that some or even many wells are grey and labelled "NA," or "no data," even if the well had been mapped to a sample in a plate map. This is because processing [within-sample diversity files](#within-sample-diversity-files) can be very slow, and we only do it if a sample has passed [sample inclusion thresholds](#sample-inclusion-thresholds) and has at least one neighbor (which also passes [sample inclusion thresholds](#sample-inclusion-thresholds)) according to the entered [well comparison options](#well-comparison-options). If you would like to include all wells mapped to samples passing [sample inclusion thresholds](#sample-inclusion-thresholds), you can opt to compare all samples ona  plate by entering [`--compare-plate`](#well-comparison-options).
+
+You can view an example of a plate map visualization of iSNVs at the [end](#output-files-1) of the [example run-through](#example-run-throughs):
+
+<p align="center"><img src="https://user-images.githubusercontent.com/6245320/122625879-6b9af300-d075-11eb-9b5e-dfdf1308b2aa.jpg" width="418"></p>
 
 You can set the [output directory](#output-file-paths) for the plate map visualization of iSNVs using `--out-figures`.
 
@@ -432,7 +438,7 @@ Our plate visualizations are in the directory `/opt/polyphonia/test/test1_plate_
 
 In the visualization of potential cross-contamination, we see that USA-MA-Broad_CRSP-01323-2021, in well H10, is potentially contaminated by USA-MA-Broad_CRSP-01315-2021, in well H9, and that the median allele frequency of potentially contaminating alleles is 4.9%.
 
-In the iSNVs visualization, we see that USA-MA-Broad_CRSP-01323-2021, in well H10, has 21 positions with intrahost variation (base substitutions only) passing our thresholds, and that USA-MA-Broad_CRSP-01315-2021, in well H9, has 3. We did not examine intrahost variation in any of the other wells.
+In the iSNVs visualization, we see that USA-MA-Broad_CRSP-01323-2021, in well H10, has 21 positions with intrahost variation (base substitutions only) passing our [allele filtering thresholds](#allele-filtering-thresholds), and that USA-MA-Broad_CRSP-01315-2021, in well H9, has 3. We did not examine intrahost variation in any of the other wells.
 
 Our intermediate and temporary files are in the directory `/opt/polyphonia/test/test1_intermediate_files`.
 
