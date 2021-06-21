@@ -129,21 +129,7 @@ We use [Docker](https://docs.docker.com/get-started/overview/) to distribute and
 
 ## Under the Hood
 
-Wide option:
-
-![process flowchart](https://user-images.githubusercontent.com/6245320/122768719-de70bd80-d271-11eb-9821-453314e60c93.png)
-
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque maximus, lacus congue vehicula vestibulum, massa dui scelerisque metus, vitae tincidunt nisl dui ac ipsum. Nulla mollis pellentesque massa semper blandit. Donec congue sollicitudin eleifend. Ut tincidunt maximus felis, vitae finibus nunc. Praesent cursus erat eu libero facilisis, at vestibulum lectus semper. Cras tempor mauris in luctus iaculis. Aenean posuere felis vel urna efficitur ultrices.
-
-Mobile-friendly option 1:
-
-![process flowchart](https://user-images.githubusercontent.com/6245320/122772277-36f58a00-d275-11eb-88a3-d617a96cfc0e.png)
-
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque maximus, lacus congue vehicula vestibulum, massa dui scelerisque metus, vitae tincidunt nisl dui ac ipsum. Nulla mollis pellentesque massa semper blandit. Donec congue sollicitudin eleifend. Ut tincidunt maximus felis, vitae finibus nunc. Praesent cursus erat eu libero facilisis, at vestibulum lectus semper. Cras tempor mauris in luctus iaculis. Aenean posuere felis vel urna efficitur ultrices.
-
-Mobile-friendly option 2:
-
-![process flowchart](https://user-images.githubusercontent.com/6245320/122770317-54c1ef80-d273-11eb-9d5d-97bab50b9dd0.png)
+<p align="center"><img src="https://user-images.githubusercontent.com/6245320/122773294-3c9f9f80-d276-11eb-849b-72a53f8d1643.png" alt="process flowchart" width="700"></p>
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque maximus, lacus congue vehicula vestibulum, massa dui scelerisque metus, vitae tincidunt nisl dui ac ipsum. Nulla mollis pellentesque massa semper blandit. Donec congue sollicitudin eleifend. Ut tincidunt maximus felis, vitae finibus nunc. Praesent cursus erat eu libero facilisis, at vestibulum lectus semper. Cras tempor mauris in luctus iaculis. Aenean posuere felis vel urna efficitur ultrices.
 
