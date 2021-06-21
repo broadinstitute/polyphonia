@@ -135,6 +135,7 @@ if(input_file_type == "contamination")
   volume_summed_by_well <- aggregate(x=plate_map$estimated_contamination_volume,
     by=list(plate_map$well), FUN=sum, na.rm=TRUE)
   colnames(volume_summed_by_well) <- c("well","estimated_contamination_volume_sum")
+  volume_summed_by_well$estimated_contamination_volume_sum <- sapply(volume_summed_by_well$estimated_contamination_volume_sum, function(x) min(x,1)) # caps volume at 100%
   plate_map <- volume_summed_by_well
 }
 
