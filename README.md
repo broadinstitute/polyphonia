@@ -249,19 +249,31 @@ For example, if you are using a 384-well plate you can describe its size by ente
 `--compare-column`
 `--compare-plate`
 
-If you enter `--compare-direct TRUE`, then each sample will be compared to its direct plate neighbors in the wells to the left, right, top, and bottom.
+If you enter `--compare-direct TRUE`, then each sample will be compared to its direct plate neighbors in the wells to the left, right, top, and bottom. This option is on by default.
 
-If you enter `--compare-diagonal TRUE`, then each sample will be compared to its diagonal plate neighbors in the wells to the top-right, bottom-right, top-left, and bottom-left.
+<p align="center"><img src="https://user-images.githubusercontent.com/6245320/122707970-17387480-d229-11eb-9da0-4f84909341ff.png" alt="compare-direct" width=400></p>
 
-If you enter `--compare-row TRUE`, then each sample will be compared to all other samples in the same row.
+If you enter `--compare-diagonal TRUE`, then each sample will be compared to its diagonal plate neighbors in the wells to the top-right, bottom-right, top-left, and bottom-left. This option is off by default.
 
-If you enter `--compare-column TRUE`, then each sample will be compared to all other samples in the same column.
+<p align="center"><img src="https://user-images.githubusercontent.com/6245320/122708126-70080d00-d229-11eb-838f-635b8cde4609.png" alt="compare-diagonal" width=400></p>
 
-If you enter `--compare-plate TRUE`, then each sample will be compared to all other samples on the plate.
+If you enter `--compare-row TRUE`, then each sample will be compared to all other samples in the same row. This option is off by default.
 
-By default, samples are compared only to their direct plate neighbors to the left, right, top, and bottom: `--compare-direct` is set to `TRUE` and all other options are set to `FALSE`.
+<p align="center"><img src="https://user-images.githubusercontent.com/6245320/122708147-79917500-d229-11eb-98db-8d52c91d33ea.png" alt="compare-row " width=400></p>
+
+If you enter `--compare-column TRUE`, then each sample will be compared to all other samples in the same column. This option is off by default.
+
+<p align="center"><img src="https://user-images.githubusercontent.com/6245320/122708153-7dbd9280-d229-11eb-8845-c4ccd703dbe9.png" alt="compare-column" width=400></p>
+
+If you enter `--compare-plate TRUE`, then each sample will be compared to all other samples on the plate. This option is off by default.
+
+<p align="center"><img src="https://user-images.githubusercontent.com/6245320/122708159-81511980-d229-11eb-83ad-144cb6191441.png" alt="compare-plate" width=400></p>
 
 You can mix and match well comparison options. For example, `--compare-direct TRUE --compare-diagonal TRUE` will compare each sample to the samples in all the wells that surround it: left, right, top, bottom, top-right, bottom-right, top-left, and bottom-left.
+
+<p align="center"><img src="https://user-images.githubusercontent.com/6245320/122708120-6a122c00-d229-11eb-8b98-e4b845a48b73.png" alt="compare-direct and compare-diagonal" width=400></p>
+
+By default, samples are compared only to their direct plate neighbors to the left, right, top, and bottom: `--compare-direct` is set to `TRUE` and all other options are set to `FALSE`. Even if another option is set to `TRUE`, `--compare-direct` is only set to `FALSE` if `--compare-direct FALSE` is explicitly entered.
 
 ## Other Options
 
