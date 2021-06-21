@@ -129,6 +129,9 @@ We use [Docker](https://docs.docker.com/get-started/overview/) to distribute and
 
 ## Under the Hood
 
+![process flowchart](https://user-images.githubusercontent.com/6245320/122768719-de70bd80-d271-11eb-9821-453314e60c93.png)
+
+
 TODO
 
 ## Important Caveats
