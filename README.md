@@ -131,6 +131,12 @@ We use [Docker](https://docs.docker.com/get-started/overview/) to distribute and
 
 <p align="center"><img src="https://user-images.githubusercontent.com/6245320/122775196-e29fd980-d277-11eb-80b9-2b2ffb4fa3ae.png" alt="process flowchart" width="750"></p>
 
+Polyphonia starts off by verifying and printing input options and preparing a list of samples to analyze. Samples without a [consensus genome](#consensus-genomes) or [within-sample diversity file](#within-sample-diversity-files) are excluded from analysis. If at least one [optional plate map](#optional-plate-map-inputs) is provided, samples not appearing in any plate map are excluded from analysis. Samples not passing [sample inclusion thresholds](#sample-inclusion-thresholds) are excluded from analysis. To save time, samples without any plate neighbors as specified by provided [well comparison options](#well-comparison-options) are excluded.
+
+If [consensus genomes](#consensus-genomes) are not already aligned, they are aligned using `MAFFT`.
+
+[Within-sample diversity files](#within-sample-diversity-files) are pre-processed depending on their stage in processing, [in parallel](#parallelization) if possible. If aligned reads are provided in a bam file, they are processed using `LoFreq call` into a vcf file, which is in turn processed into a heterozygosity table cataloguing within-sample diversity (base substitutions only). If the aligned reads bam file is large, processing it can take a long time. If a vcf file is provided, it is processed into a heterozygosity table. If a heterozygosity table is provided, it does not need to be processed.
+
 TODO
 
 Depending on availability of material and the stage at which contamination occurred, contaminated samples could be resequenced or subjected to other follow-up. It is important to critically examine flagged potential cross-contamination and consider [alternative explanations](#important-caveats) for shared alleles: not all flagged sample pairs will be true instances of cross-contamination or require resequencing.
