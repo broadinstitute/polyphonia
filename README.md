@@ -273,7 +273,7 @@ You can mix and match well comparison options. For example, `--compare-direct TR
 
 <p align="center"><img src="https://user-images.githubusercontent.com/6245320/122708120-6a122c00-d229-11eb-8b98-e4b845a48b73.png" alt="compare-direct and compare-diagonal" width=400></p>
 
-By default, samples are compared only to their direct plate neighbors to the left, right, top, and bottom: `--compare-direct` is set to `TRUE` and all other options are set to `FALSE`. Even if another option is set to `TRUE`, `--compare-direct` is only set to `FALSE` if `--compare-direct FALSE` is explicitly entered.
+By default, samples are compared only to their direct plate neighbors to the left, right, top, and bottom: `--compare-direct` is set to `TRUE` and all other options are set to `FALSE`. Note that even if another option is set to `TRUE`, `--compare-direct` is only set to `FALSE` if `--compare-direct FALSE` is explicitly entered.
 
 ## Other Options
 
