@@ -351,7 +351,7 @@ If you enter at least one plate map file, polyphonia will generate a visualizati
 
 You can view an example of a plate map visualization of potential cross-contamination at the [end](#output-files-1) of the [example run-through](#example-run-throughs):
 
-<p align="center"><img src="https://user-images.githubusercontent.com/6245320/122625873-663da880-d075-11eb-975a-0f7c9ddd19f0.jpg" width="418"></p>
+<p align="center"><img src="https://user-images.githubusercontent.com/6245320/122625873-663da880-d075-11eb-975a-0f7c9ddd19f0.jpg" width="550"></p>
 
 You can set the [output directory](#output-file-paths) for the plate map visualization of potential cross-contamination using `--out-figures`.
 
@@ -363,7 +363,7 @@ If you enter at least one plate map file, polyphonia will generate a visualizati
 
 You can view an example of a plate map visualization of iSNVs at the [end](#output-files-1) of the [example run-through](#example-run-throughs):
 
-<p align="center"><img src="https://user-images.githubusercontent.com/6245320/122625879-6b9af300-d075-11eb-9b5e-dfdf1308b2aa.jpg" width="418"></p>
+<p align="center"><img src="https://user-images.githubusercontent.com/6245320/122625879-6b9af300-d075-11eb-9b5e-dfdf1308b2aa.jpg" width="550"></p>
 
 You can set the [output directory](#output-file-paths) for the plate map visualization of iSNVs using `--out-figures`.
 
