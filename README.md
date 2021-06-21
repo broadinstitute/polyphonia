@@ -347,7 +347,9 @@ You can set the [output file path](#output-file-paths) for the potential cross-c
 
 `--out-figures`
 
-TODO
+If you enter at least one plate map file, then polyphonia will generate a visualization of any cross-contamination on each plate map entered. Each potentially contaminated well is colored by the median contaminating allele frequency. In cases where a sample is proposed to be contaminated by multiple sources of contamination, each potentially contaminated well is colored by the sum of the median contaminating allele frequency from each proposed source contamination. This metric is labelled the total estimated contamination volume. Proposed contamination events are shown by arrows from proposed contamination source to proposed contaminated well. Wells proposed to be either contaminated or sources of contamination have a black border, while all other wells have a grey border. Note that sample comparisons are made only according to the entered [Well Comparison Options](#well-comparison-options)—other contamination events would not be detected.
+
+You can view an example of a plate map visualization of potential cross-contamination at the [end](#output-files-1) of the [example run-through](#example-run-throughs).
 
 You can set the [output directory](#output-file-paths) for the plate map visualization of potential cross-contamination using `--out-figures`.
 
