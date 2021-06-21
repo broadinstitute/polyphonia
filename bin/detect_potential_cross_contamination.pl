@@ -736,10 +736,20 @@ print STDOUT (keys %sample_names)." samples remain...\n" if $verbose;
 # reads in reference sequence
 open REFERENCE_FASTA, "<$reference_genome_file" || die "Could not open $reference_genome_file to read; terminating =(\n";
 my $reference_sequence = "";
+my $reference_sequence_name = "";
 while(<REFERENCE_FASTA>) # for each line in the file
 {
 	chomp;
-	if($_ !~ /^>(.*)/) # not header line
+	if($_ =~ /^>(.*)/) # header line
+	{
+		if($reference_sequence_name)
+		{
+			print STDERR "Error: more than one sequence in reference sequence. Exiting.\n";
+			die;
+		}
+		$reference_sequence_name = $1;
+	}
+	else # sequence
 	{
 		$reference_sequence .= $_;
 	}
@@ -909,28 +919,59 @@ if(scalar keys %sample_names < 2)
 # aligns consensus genomes if they aren't already aligned
 if(!$consensus_genomes_aligned_file)
 {
-	# retrieves subset of consensus genomes that are still included, to avoid wasting time
-	# aligning genomes we aren't including
-	# TODO
-
-	# makes temp file with just a newline
-	my $newline_temp_file = $temp_intermediate_directory."newline_temp.fasta";
-	check_if_file_exists_before_writing($newline_temp_file);
-	`echo "" > $newline_temp_file`;
-
-	# puts together command to concatenate reference genome and all consensus genome fasta files
+	# reads in all consensus genomes
+	print STDERR "retrieving included consensus genomes...\n";
+	my %sequence_name_to_consensus = (); # key: sequence name -> value: consensus sequence, including gaps froms alignment
+	foreach my $consensus_genome_fasta_file(@consensus_genome_files, $consensus_genomes_aligned_file)
+	{
+		open FASTA_FILE, "<$consensus_genome_fasta_file" || die "Could not open $consensus_genome_fasta_file to read; terminating =(\n";
+		my $sequence = "";
+		my $sample_name = "";
+		while(<FASTA_FILE>) # for each line in the file
+		{
+			chomp;
+			if($_ =~ /^>(.*)/) # header line
+			{
+				# process previous sequence
+				$sequence = uc($sequence);
+				if($sequence and $sample_name and $sample_names{$sample_name})
+				{
+					$sequence_name_to_consensus{$sample_name} = $sequence;
+				}
+	
+				# prepare for next sequence
+				$sequence = "";
+				$sample_name = $1;
+			}
+			else
+			{
+				$sequence .= $_;
+			}
+		}
+		# process final sequence
+		if($sequence and $sample_name and $sample_names{$sample_name})
+		{
+			$sequence_name_to_consensus{$sample_name} = uc($sequence);
+		}
+		close FASTA_FILE;
+	}
+	
+	# generates output file
 	my $all_consensus_genomes_file = $temp_intermediate_directory."all_consensus_genomes_concat.fasta";
 	check_if_file_exists_before_writing($all_consensus_genomes_file);
-	my $cat_command = "cat ".$reference_genome_file." ";
-	foreach my $consensus_genome_file(@consensus_genome_files)
-	{
-		$cat_command .= $consensus_genome_file." $newline_temp_file ";
-	}
-	$cat_command .= "> ".$all_consensus_genomes_file;
-	# cat k.txt <(echo) h.txt > new.txt
+	open CONSENSUS_GENOMES, ">$all_consensus_genomes_file" || die "Could not open $all_consensus_genomes_file to write; terminating =(\n";
 	
-	# concatenates reference genome and all consensus genome fasta files
-	`$cat_command`;
+	# prints reference sequence
+	print CONSENSUS_GENOMES ">".$reference_sequence_name.$NEWLINE;
+	print CONSENSUS_GENOMES $reference_sequence.$NEWLINE;
+	
+	# prints included consensus genomes
+	foreach my $sample_name(keys %sample_names)
+	{
+		print CONSENSUS_GENOMES ">".$sample_name.$NEWLINE;
+		print CONSENSUS_GENOMES $sequence_name_to_consensus{$sample_name}.$NEWLINE;
+	}
+	close CONSENSUS_GENOMES;
 	
 	# aligns all consensus genomes
 	$consensus_genomes_aligned_file = $temp_intermediate_directory."all_consensus_genomes_MAFFT_aligned.fasta";
@@ -938,7 +979,6 @@ if(!$consensus_genomes_aligned_file)
 	`$MAFFT_EXECUTABLE_FILE_PATH $all_consensus_genomes_file > $consensus_genomes_aligned_file`;
 	
 	# removes temp files
-	`rm $newline_temp_file`;
 	`rm $all_consensus_genomes_file`;
 }
 
