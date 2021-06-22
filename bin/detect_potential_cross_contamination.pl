@@ -1021,7 +1021,7 @@ foreach my $sample(keys %updated_within_sample_diversity_files)
 print STDERR "reading in aligned consensus genomes...\n";
 open ALIGNED_CONSENSUS_GENOMES, "<$consensus_genomes_aligned_file" || die "Could not open $consensus_genomes_aligned_file to read; terminating =(\n";
 my %sequence_name_to_consensus = (); # key: sequence name -> value: consensus sequence, including gaps froms alignment
-my $reference_sequence = ""; # first sequence in alignment
+$reference_sequence = ""; # first sequence in alignment
 
 my $sequence = "";
 my $sample_name = "";
