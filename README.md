@@ -21,7 +21,7 @@ OPTIONS:
 	-i | --min-maf FLOAT		Minimum minor allele frequency for position to be considered heterozygous [0.03]
 
 - Plate map and neighbors (any combination, all optional):
-	-m | --plate-map FILE(S)	Optional plate map (tab-separated, no header: sample name, plate position (e.g., A8)); provides substantial speed-up [null]
+	-m | --plate-map FILE(S)	Optional plate map(s) (tab-separated, no header: sample name, plate position (e.g., A8)); provides substantial speed-up [null]
 	-z | --plate-size INT		Standard plate size (6-well, 12-well, 24, 48, 96, 384, 1536, 3456) [96]
 	-q | --plate-columns INT	Number columns in plate (e.g., 1, 2, 3, 4) [12]
 	-k | --plate-rows INT		Number rows in plate (e.g., A, B, C, D) [8]

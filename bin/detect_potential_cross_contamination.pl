@@ -114,7 +114,7 @@ if(!scalar @ARGV) # no command line arguments supplied
 	print STDOUT "\n";
 	
 	print STDOUT "- Plate map and neighbors (any combination, all optional):\n";
-	print STDOUT "\t-m | --plate-map FILE(S)\tOptional plate map (tab-separated, no header: sample name, plate position (e.g., A8)); provides substantial speed-up [null]\n";
+	print STDOUT "\t-m | --plate-map FILE(S)\tOptional plate map(s) (tab-separated, no header: sample name, plate position (e.g., A8)); provides substantial speed-up [null]\n";
 	print STDOUT "\t-z | --plate-size INT\t\tStandard plate size (6-well, 12-well, 24, 48, 96, 384, 1536, 3456) [".$DEFAULT_PLATE_SIZE."]\n";
 	print STDOUT "\t-q | --plate-columns INT\tNumber columns in plate (e.g., 1, 2, 3, 4) [".$DEFAULT_PLATE_NUMBER_COLUMNS."]\n";
 	print STDOUT "\t-k | --plate-rows INT\t\tNumber rows in plate (e.g., A, B, C, D) [".$DEFAULT_PLATE_NUMBER_ROWS."]\n";
