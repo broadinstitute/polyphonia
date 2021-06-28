@@ -370,7 +370,7 @@ foreach my $consensus_genome_file(@consensus_genome_files)
 		die;
 	}
 }
-if($consensus_genomes_aligned_file and !-e $reference_genome_file)
+if($consensus_genomes_aligned_file and !-e $consensus_genomes_aligned_file)
 {
 	print STDERR "Error: aligned consensus genomes file does not exist:\n\t"
 		.$consensus_genomes_aligned_file."\nExiting.\n";
@@ -409,6 +409,61 @@ foreach my $plate_map_file(@plate_map_files)
 		print STDERR "Error: plate map file does not exist:\n\t"
 			.$plate_map_file."\nExiting.\n";
 		die;
+	}
+}
+
+
+# verifies that all input files are non-empty
+if(-z $reference_genome_file)
+{
+	print STDERR "Error: reference genome file is empty:\n\t"
+		.$reference_genome_file."\nExiting.\n";
+	die;
+}
+foreach my $consensus_genome_file(@consensus_genome_files)
+{
+	if(-z $consensus_genome_file)
+	{
+		print STDERR "Error: consensus genome file is empty:\n\t"
+			.$consensus_genome_file."\nExiting.\n";
+		die;
+	}
+}
+if($consensus_genomes_aligned_file and -z $consensus_genomes_aligned_file)
+{
+	print STDERR "Error: aligned consensus genomes file is empty:\n\t"
+		.$consensus_genomes_aligned_file."\nExiting.\n";
+	die;
+}
+foreach my $aligned_and_trimmed_bam_file(@aligned_and_trimmed_bam_files)
+{
+	if(-z $aligned_and_trimmed_bam_file)
+	{
+		print STDERR "Warning: aligned and trimmed bam file is empty:\n\t"
+			.$aligned_and_trimmed_bam_file."\nExiting.\n";
+	}
+}
+foreach my $vcf_file(@vcf_files)
+{
+	if(-z $vcf_file)
+	{
+		print STDERR "Warning: vcf file is empty:\n\t".$vcf_file."\nExiting.\n";
+	}
+}
+foreach my $heterozygosity_table(@heterozygosity_tables)
+{
+	if(-z $heterozygosity_table)
+	{
+		print STDERR "Warning: heterozygosity table is empty:\n\t"
+			.$heterozygosity_table."\nExiting.\n";
+	}
+}
+foreach my $plate_map_file(@plate_map_files)
+{
+	if(-z $plate_map_file)
+	{
+		print STDERR "Warning: plate map file is empty:\n\t"
+			.$plate_map_file."\nExiting.\n";
 	}
 }
 
