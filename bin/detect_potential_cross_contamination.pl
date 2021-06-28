@@ -760,9 +760,8 @@ close REFERENCE_FASTA;
 my $reference_sequence_length = count_unambiguous_bases_in_sequence(split(//, $reference_sequence));
 if(!$reference_sequence_length)
 {
-	print STDERR "Error: reference sequence in consensus genome alignment contains no "
-		."unambiguous (A, T, C, G) bases:\n\t".$consensus_genomes_aligned_file
-		."\nExiting.\n";
+	print STDERR "Error: reference sequence contains no unambiguous (A, T, C, G) bases:\n\t"
+		.$reference_genome_file."\nExiting.\n";
 	die;
 }
 
