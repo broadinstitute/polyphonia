@@ -888,8 +888,8 @@ if($minimum_genome_coverage)
 my %sample_name_to_all_plate_positions = (); # key: sample name -> value: string including all plate positions the sample appears in
 my %sample_name_to_all_plates = (); # key: sample name -> value: string including all plates the sample appears in
 
-my %plate_position_to_sample_name = (); # key: plate position -> value: sample name
-my %sample_name_to_plate_position = (); # key: sample name -> value: plate position
+my %plate_position_to_sample_name = (); # key: plate map file -> plate position -> value: sample name
+my %sample_name_to_plate_position = (); # key: plate map file -> sample name -> value: plate position
 
 if(scalar @plate_map_files)
 {
@@ -911,8 +911,8 @@ if(scalar @plate_map_files)
 				
 				if($position and $sample_name and $sample_names{$sample_name})
 				{
-					$plate_position_to_sample_name{$position} = $sample_name;
-					$sample_name_to_plate_position{$sample_name} = $position;
+					$plate_position_to_sample_name{$plate_map_file}{$position} = $sample_name;
+					$sample_name_to_plate_position{$plate_map_file}{$sample_name} = $position;
 					
 					# adds plate map position to string
 					if($sample_name_to_all_plate_positions{$sample_name})
@@ -936,10 +936,10 @@ if(scalar @plate_map_files)
 		close PLATE_MAP;
 		
 		# checks if each sample has at least one neighbor
-		foreach my $plate_position(keys %plate_position_to_sample_name)
+		foreach my $plate_position(keys %{$plate_position_to_sample_name{$plate_map_file}})
 		{
-			my $sample_name = $plate_position_to_sample_name{$plate_position};
-			my @neighboring_samples = retrieve_samples_neighboring_plate_position($plate_position, $sample_name);
+			my $sample_name = $plate_position_to_sample_name{$plate_map_file}{$plate_position};
+			my @neighboring_samples = retrieve_samples_neighboring_plate_position($plate_position, $sample_name, $plate_map_file);
 			
 			if(scalar @neighboring_samples)
 			{
@@ -1124,7 +1124,6 @@ if(scalar @plate_map_files)
 	foreach my $plate_map_file(@plate_map_files)
 	{
 		# reads in plate map
-		%plate_position_to_sample_name = (); # key: position -> value: sample name
 		open PLATE_MAP, "<$plate_map_file" || die "Could not open $plate_map_file to read; terminating =(\n";
 		while(<PLATE_MAP>) # for each line in the file
 		{
@@ -1138,7 +1137,8 @@ if(scalar @plate_map_files)
 				
 				if($plate_position and $sample_name)
 				{
-					$plate_position_to_sample_name{$plate_position} = $sample_name;
+					$plate_position_to_sample_name{$plate_map_file}{$plate_position} = $sample_name;
+					$sample_name_to_plate_position{$plate_map_file}{$sample_name} = $plate_position;
 				}
 			}
 		}
@@ -1146,9 +1146,9 @@ if(scalar @plate_map_files)
 
 		# retrieves number iSNVs for each sample on plate map
 		# (excludes previously removed samples without neighbors)
-		foreach my $plate_position(keys %plate_position_to_sample_name)
+		foreach my $plate_position(keys %{$plate_position_to_sample_name{$plate_map_file}})
 		{
-			my $sample = $plate_position_to_sample_name{$plate_position};
+			my $sample = $plate_position_to_sample_name{$plate_map_file}{$plate_position};
 			if($sample_names{$sample}) # if sample not excluded for not having neighbors
 			{
 				# retrieves within-sample diversity file for potential contaminated sample
@@ -1241,9 +1241,9 @@ if(scalar @plate_map_files)
 		print PLATE_ISNVS_OUT_FILE "iSNVs".$NEWLINE;
 		
 		# prints number iSNVs for each sample
-		foreach my $plate_position(keys %plate_position_to_sample_name)
+		foreach my $plate_position(keys %{$plate_position_to_sample_name{$plate_map_file}})
 		{
-			my $sample_name = $plate_position_to_sample_name{$plate_position};
+			my $sample_name = $plate_position_to_sample_name{$plate_map_file}{$plate_position};
 			my $number_positions_with_heterozygosity = $sample_name_to_number_positions_with_heterozygosity{$sample_name};
 			if(!$sample_names{$sample_name})
 			{
@@ -1268,15 +1268,6 @@ if(scalar @plate_map_files)
 }
 
 
-# header line for plate-specific output file
-my $plate_header_line = "";
-$plate_header_line .= "well".$DELIMITER;
-$plate_header_line .= "sample".$DELIMITER;
-$plate_header_line .= "contamination_source_well".$DELIMITER;
-$plate_header_line .= "contamination_source_sample".$DELIMITER;
-$plate_header_line .= "estimated_contamination_volume";
-
-
 # prepares to process sample pairs in parallel
 # parallelization based on https://perlmaven.com/speed-up-calculation-by-running-in-parallel
 my %results = ();
@@ -1286,9 +1277,15 @@ $pm -> run_on_finish(
 sub
 {
 	my ($pid, $exit_code, $ident, $exit_signal, $core_dump, $data_structure_reference) = @_;
-	my $q = $data_structure_reference -> {input};
-	$results{$q} = $data_structure_reference -> {result};
-	$plate_results{$q} = $data_structure_reference -> {plate_result};
+
+	my $sample_1 = $data_structure_reference -> {sample_1};
+	my $sample_2 = $data_structure_reference -> {sample_2};
+	
+	$results{$sample_1}{$sample_2} = $data_structure_reference -> {result_a};
+	$plate_results{$sample_1}{$sample_2} = $data_structure_reference -> {plate_result_a};
+
+	$results{$sample_2}{$sample_1} = $data_structure_reference -> {result_b};
+	$plate_results{$sample_2}{$sample_1} = $data_structure_reference -> {plate_result_b};
 });
 
 # if plate map(s) provided, compares all neighboring samples
@@ -1300,7 +1297,6 @@ if(scalar @plate_map_files)
 	foreach my $plate_map_file(@plate_map_files)
 	{
 		# reads in plate map
-		%plate_position_to_sample_name = (); # key: position -> value: sample name
 		open PLATE_MAP, "<$plate_map_file" || die "Could not open $plate_map_file to read; terminating =(\n";
 		while(<PLATE_MAP>) # for each line in the file
 		{
@@ -1314,21 +1310,22 @@ if(scalar @plate_map_files)
 				
 				if($plate_position and $sample_name and $sample_names{$sample_name})
 				{
-					$plate_position_to_sample_name{$plate_position} = $sample_name;
+					$plate_position_to_sample_name{$plate_map_file}{$plate_position} = $sample_name;
+					$sample_name_to_plate_position{$plate_map_file}{$sample_name} = $plate_position;
 				}
 			}
 		}
 		close PLATE_MAP;
 		
 		# compares all pairs of samples that are neighbors
-		foreach my $plate_position(keys %plate_position_to_sample_name)
+		foreach my $plate_position(keys %{$plate_position_to_sample_name{$plate_map_file}})
 		{
-			my $sample_1 = $plate_position_to_sample_name{$plate_position};
-			my @neighboring_samples = retrieve_samples_neighboring_plate_position($plate_position, $sample_1);
+			my $sample_1 = $plate_position_to_sample_name{$plate_map_file}{$plate_position};
+			my @neighboring_samples = retrieve_samples_neighboring_plate_position($plate_position, $sample_1, $plate_map_file);
 			
 			foreach my $sample_2(@neighboring_samples)
 			{
-				my $neighboring_plate_position = $sample_name_to_plate_position{$sample_2};
+				my $neighboring_plate_position = $sample_name_to_plate_position{$plate_map_file}{$sample_2};
 				if(!$sample_pair_compared{$sample_1}{$sample_2}) # this pair of samples not already compared
 				{
 					# records that we are comparing this pair (to avoid comparing it again)
@@ -1337,44 +1334,67 @@ if(scalar @plate_map_files)
 				
 					# tests sample 1 contaminating sample 2 and vice versa
 					my $pid = $pm -> start and next;
-					my ($res, $plate_res) = detect_potential_contamination_in_sample_pair_both_directions($sample_1, $sample_2);
-					$pm -> finish(0, {result => $res, plate_result => $plate_res, input => $sample_1."__".$sample_2});
+					
+					my ($result_a, $plate_result_a) = detect_potential_contamination_in_sample_pair($sample_1, $sample_2);
+					my ($result_b, $plate_result_b) = detect_potential_contamination_in_sample_pair($sample_2, $sample_1);
+					
+					$pm -> finish(0, {sample_1 => $sample_1, sample_2 => $sample_2,
+						result_a => $result_a, plate_result_a => $plate_result_a,
+						result_b => $result_b, plate_result_b => $plate_result_b});
 				}
 			}
 		}
 		$pm -> wait_all_children;
 		
-		# prints plate map for this particular plate map
-		if(scalar keys %plate_results)
+		
+		# creates cross contamination table
+		my $plate_output_file = $visualizations_directory.retrieve_file_name($plate_map_file)."_potential_cross_contamination.txt";
+		check_if_file_exists_before_writing($plate_output_file);
+		open PLATE_OUT_FILE, ">$plate_output_file" || die "Could not open $plate_output_file to write; terminating =(\n";
+		
+		# prints header line
+		print PLATE_OUT_FILE "well".$DELIMITER;
+		print PLATE_OUT_FILE "contamination_source_well".$DELIMITER;
+		print PLATE_OUT_FILE "sample".$DELIMITER;
+		print PLATE_OUT_FILE "contamination_source_sample".$DELIMITER;
+		print PLATE_OUT_FILE "estimated_contamination_volume".$NEWLINE;
+		
+		# prints cross contamination table
+		my $anything_printed = 0;
+		foreach my $sample_1(sort keys %plate_results)
 		{
-			my $plate_output_file = $visualizations_directory.retrieve_file_name($plate_map_file)."_potential_cross_contamination.txt";
-			check_if_file_exists_before_writing($plate_output_file);
-			
-			open PLATE_OUT_FILE, ">$plate_output_file" || die "Could not open $plate_output_file to write; terminating =(\n";
-			print PLATE_OUT_FILE $plate_header_line.$NEWLINE;
-
-			# prints output line for each pair of samples with potential contamination
-			foreach my $output_line(values %plate_results)
+			if($sample_name_to_plate_position{$plate_map_file}{$sample_1}) # if sample_1 appears on this plate
 			{
-				if($output_line)
+				foreach my $sample_2(sort keys %{$plate_results{$sample_1}})
 				{
-					print PLATE_OUT_FILE $output_line.$NEWLINE;
+					if($sample_name_to_plate_position{$plate_map_file}{$sample_2}) # if sample_2 appears on this plate
+					{
+						if($plate_results{$sample_1}{$sample_2})
+						{
+							print PLATE_OUT_FILE $sample_name_to_plate_position{$plate_map_file}{$sample_1}.$DELIMITER;
+							print PLATE_OUT_FILE $sample_name_to_plate_position{$plate_map_file}{$sample_2}.$DELIMITER;
+							print PLATE_OUT_FILE $plate_results{$sample_1}{$sample_2};
+							print PLATE_OUT_FILE $NEWLINE;
+							
+							$anything_printed = 1;
+						}
+					}
 				}
 			}
-
-			# closes output file
-			close PLATE_OUT_FILE;
-			
-			# generates visualization
+		}
+		
+		# closes output file
+		close PLATE_OUT_FILE;
+		
+		# generates visualization
+		if($anything_printed)
+		{
 			my $plate_visualization_output_file = trim_off_file_extension($plate_output_file)."_visualization";
 			check_if_file_exists_before_writing($plate_visualization_output_file.".jpg");
 			check_if_file_exists_before_writing($plate_visualization_output_file.".pdf");
-			
+		
 			`$PLATE_VISUALIZATION_FILE_PATH $plate_output_file $plate_visualization_output_file $plate_number_columns $plate_number_rows contamination`;
 		}
-		
-		# clears plate output for next plate map
-		my %plate_results = ();
 	}
 }
 
@@ -1392,50 +1412,18 @@ else
 			
 			# tests sample 1 contaminating sample 2 and vice versa
 			my $pid = $pm -> start and next;
-			my ($res, $plate_res) = detect_potential_contamination_in_sample_pair_both_directions($sample_1, $sample_2);
-			$pm -> finish(0, {result => $res, input => $sample_1."__".$sample_2});
+
+			my ($result_a, $plate_result_a) = detect_potential_contamination_in_sample_pair($sample_1, $sample_2);
+			my ($result_b, $plate_result_b) = detect_potential_contamination_in_sample_pair($sample_2, $sample_1);
+			
+			$pm -> finish(0, {sample_1 => $sample_1, sample_2 => $sample_2,
+				result_a => $result_a, plate_result_a => $plate_result_a,
+				result_b => $result_b, plate_result_b => $plate_result_b});
 		}
 	}
 	$pm -> wait_all_children;
 }
 
-
-# header line for output
-my $header_line = "";
-$header_line .= "potential_contaminated_sample".$DELIMITER;
-$header_line .= "potential_contaminated_sample_unambiguous_bases".$DELIMITER;
-$header_line .= "potential_contaminated_sample_genome_covered".$DELIMITER;
-$header_line .= "num_positions_with_heterozygosity".$DELIMITER;
-$header_line .= "alleles_at_positions_with_heterozygosity".$DELIMITER;
-
-$header_line .= "potential_contaminating_sample".$DELIMITER;
-$header_line .= "potential_contaminating_sample_unambiguous_bases".$DELIMITER;
-$header_line .= "potential_contaminating_sample_genome_covered".$DELIMITER;
-$header_line .= "minor_alleles_matched".$DELIMITER;
-$header_line .= "major_alleles_matched".$DELIMITER;
-$header_line .= "heterozygous_positions_matched".$DELIMITER;
-$header_line .= "alleles_matched".$DELIMITER;
-$header_line .= "num_mismatches".$DELIMITER;
-$header_line .= "mismatches".$DELIMITER;
-
-$header_line .= "appearance_of_potential_contamination".$DELIMITER;
-$header_line .= "estimated_contamination_volume".$DELIMITER;
-$header_line .= "contaminating_allele_frequency_range".$DELIMITER;
-$header_line .= "contaminating_allele_frequencies";
-
-if(scalar @plate_map_files)
-{
-	$header_line .= $DELIMITER;
-	$header_line .= "potential_contaminated_sample_plate_position".$DELIMITER;
-	$header_line .= "potential_contaminating_sample_plate_position";
-	if(scalar @plate_map_files > 1)
-	{
-		$header_line .= $DELIMITER;
-		$header_line .= "potential_contaminated_sample_plate";
-		$header_line .= $DELIMITER;
-		$header_line .= "potential_contaminating_sample_plate";
-	}
-}
 
 # creates directory for output file if it does not already exist
 my $output_file_directory = retrieve_file_directory($output_file_path);
@@ -1453,18 +1441,58 @@ elsif(!-d $output_file_directory)
 	`mkdir -p $output_file_directory`;
 }
 
-# opens output file and prints header line to output file or to console
+# opens output file
 check_if_file_exists_before_writing($output_file_path);
 open OUT_FILE, ">$output_file_path" || die "Could not open $output_file_path to write; terminating =(\n";
-print OUT_FILE $header_line.$NEWLINE;
+
+# prints header line
+print OUT_FILE "potential_contaminated_sample".$DELIMITER;
+print OUT_FILE "potential_contaminated_sample_unambiguous_bases".$DELIMITER;
+print OUT_FILE "potential_contaminated_sample_genome_covered".$DELIMITER;
+print OUT_FILE "num_positions_with_heterozygosity".$DELIMITER;
+print OUT_FILE "alleles_at_positions_with_heterozygosity".$DELIMITER;
+
+print OUT_FILE "potential_contaminating_sample".$DELIMITER;
+print OUT_FILE "potential_contaminating_sample_unambiguous_bases".$DELIMITER;
+print OUT_FILE "potential_contaminating_sample_genome_covered".$DELIMITER;
+print OUT_FILE "minor_alleles_matched".$DELIMITER;
+print OUT_FILE "major_alleles_matched".$DELIMITER;
+print OUT_FILE "heterozygous_positions_matched".$DELIMITER;
+print OUT_FILE "alleles_matched".$DELIMITER;
+print OUT_FILE "num_mismatches".$DELIMITER;
+print OUT_FILE "mismatches".$DELIMITER;
+
+print OUT_FILE "appearance_of_potential_contamination".$DELIMITER;
+print OUT_FILE "estimated_contamination_volume".$DELIMITER;
+print OUT_FILE "contaminating_allele_frequency_range".$DELIMITER;
+print OUT_FILE "contaminating_allele_frequencies";
+
+if(scalar @plate_map_files)
+{
+	print OUT_FILE $DELIMITER;
+	print OUT_FILE "potential_contaminated_sample_plate_position".$DELIMITER;
+	print OUT_FILE "potential_contaminating_sample_plate_position";
+	if(scalar @plate_map_files > 1)
+	{
+		print OUT_FILE $DELIMITER;
+		print OUT_FILE "potential_contaminated_sample_plate";
+		print OUT_FILE $DELIMITER;
+		print OUT_FILE "potential_contaminating_sample_plate";
+	}
+}
+print OUT_FILE $NEWLINE;
 
 # prints output line for each pair of samples with potential contamination
-foreach my $output_line(values %results)
+foreach my $sample_1(sort keys %results)
 {
-	if($output_line)
-	{
-		print OUT_FILE $output_line.$NEWLINE;
-	}
+    foreach my $sample_2(sort keys %{$results{$sample_1}})
+    {
+    	if($results{$sample_1}{$sample_2})
+    	{
+			print OUT_FILE $results{$sample_1}{$sample_2};
+			print OUT_FILE $NEWLINE;
+    	}
+    }
 }
 
 # closes output file
@@ -1865,9 +1893,7 @@ sub detect_potential_contamination_in_sample_pair
 		}
 		
 		# for plate map-specific output file
-		$output_line_plate .= $sample_name_to_all_plate_positions{$potential_contaminated_sample}.$DELIMITER;
 		$output_line_plate .= $potential_contaminated_sample.$DELIMITER;
-		$output_line_plate .= $sample_name_to_all_plate_positions{$potential_contaminating_sample}.$DELIMITER;
 		$output_line_plate .= $potential_contaminating_sample.$DELIMITER;
 		$output_line_plate .= $median_frequency;
 	}
@@ -1961,6 +1987,7 @@ sub is_unambiguous_base
 
 # retrieves samples neighboring given plate position
 # assumes that %plate_position_to_sample_name and %sample_name_to_plate_position have been read in
+# for this particular plate
 # input: plate position (example input: H9)
 # output: list of neighboring plate positions
 # (example output: sample at H8, sample at H10, sample at G9, sample at I9)
@@ -1968,6 +1995,7 @@ sub retrieve_samples_neighboring_plate_position
 {
 	my $plate_position = $_[0];
 	my $plate_position_sample_name = $_[1];
+	my $plate_map_file = $_[2];
 	
 	my @neighbors = ();
 	if($plate_position =~ /^([A-Z]+)(\s*)(\d+)$/)
@@ -1987,7 +2015,7 @@ sub retrieve_samples_neighboring_plate_position
 		if($compare_whole_plate_map)
 		{
 			# retrieves all samples on plate
-			foreach my $sample_name(keys %sample_name_to_plate_position)
+			foreach my $sample_name(keys %{$sample_name_to_plate_position{$plate_map_file}})
 			{
 				push(@neighbors, $sample_name);
 			}
@@ -2016,9 +2044,9 @@ sub retrieve_samples_neighboring_plate_position
 				# retrieves neighbors belonging to neighbor positions
 				foreach my $neighbor_position(@neighbor_positions)
 				{
-					if($plate_position_to_sample_name{$neighbor_position})
+					if($plate_position_to_sample_name{$plate_map_file}{$neighbor_position})
 					{
-						push(@neighbors, $plate_position_to_sample_name{$neighbor_position});
+						push(@neighbors, $plate_position_to_sample_name{$plate_map_file}{$neighbor_position});
 					}
 				}
 			}
@@ -2027,9 +2055,9 @@ sub retrieve_samples_neighboring_plate_position
 			{
 				# retrieves all samples on same row (e.g., row A) on plate
 				# compares this plate position's letter to letters of all plate positions
-				foreach my $sample_name(keys %sample_name_to_plate_position)
+				foreach my $sample_name(keys %{$sample_name_to_plate_position{$plate_map_file}})
 				{
-					my $plate_position_option = $sample_name_to_plate_position{$sample_name};
+					my $plate_position_option = $sample_name_to_plate_position{$plate_map_file}{$sample_name};
 					if($plate_position_option =~ /^([A-Z+])\s*\d+$/)
 					{
 						my $plate_position_option_letter = $1;
@@ -2045,9 +2073,9 @@ sub retrieve_samples_neighboring_plate_position
 			{
 				# retrieves all samples on same column (e.g., column 8) on plate
 				# compares this plate position's number to number of all plate positions
-				foreach my $sample_name(keys %sample_name_to_plate_position)
+				foreach my $sample_name(keys %{$sample_name_to_plate_position{$plate_map_file}})
 				{
-					my $plate_position_option = $sample_name_to_plate_position{$sample_name};
+					my $plate_position_option = $sample_name_to_plate_position{$plate_map_file}{$sample_name};
 					if($plate_position_option =~ /^([A-Z]+)\s*\d+$/)
 					{
 						my $plate_position_option_number = $1;
