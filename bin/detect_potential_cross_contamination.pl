@@ -312,7 +312,7 @@ if(scalar @consensus_genome_files and $consensus_genomes_aligned_file)
 }
 if(!scalar @vcf_files and !scalar @aligned_and_trimmed_bam_files and !scalar @heterozygosity_tables)
 {
-	print STDERR "Error: no minor allele files provided. Exiting.\n";
+	print STDERR "Error: no within-sample diversity files provided. Exiting.\n";
 	die;
 }
 if(!scalar @plate_map_files and !$compare_direct_neighbors and !$compare_diagonal_neighbors
