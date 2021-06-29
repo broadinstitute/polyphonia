@@ -354,117 +354,31 @@ if($minimum_genome_coverage < 0 or $minimum_genome_coverage > 1)
 }
 
 
-# verifies that all input files exist
-if($reference_genome_file and !-e $reference_genome_file)
-{
-	print STDERR "Error: reference genome file does not exist:\n\t"
-		.$reference_genome_file."\nExiting.\n";
-	die;
-}
+# verifies that all input files exist and are not empty
+verify_input_file_exists_and_is_nonempty($reference_genome_file, "reference genome file", 1, 1);
 foreach my $consensus_genome_file(@consensus_genome_files)
 {
-	if($consensus_genome_file and !-e $consensus_genome_file)
-	{
-		print STDERR "Error: consensus genome file does not exist:\n\t"
-			.$consensus_genome_file."\nExiting.\n";
-		die;
-	}
+	verify_input_file_exists_and_is_nonempty($consensus_genome_file, "consensus genome file", 1, 1);
 }
-if($consensus_genomes_aligned_file and !-e $consensus_genomes_aligned_file)
+if($consensus_genomes_aligned_file)
 {
-	print STDERR "Error: aligned consensus genomes file does not exist:\n\t"
-		.$consensus_genomes_aligned_file."\nExiting.\n";
-	die;
+	verify_input_file_exists_and_is_nonempty($consensus_genomes_aligned_file, "aligned consensus genomes file", 1, 1);
 }
 foreach my $aligned_and_trimmed_bam_file(@aligned_and_trimmed_bam_files)
 {
-	if($aligned_and_trimmed_bam_file and !-e $aligned_and_trimmed_bam_file)
-	{
-		print STDERR "Error: aligned and trimmed bam file does not exist:\n\t"
-			.$aligned_and_trimmed_bam_file."\nExiting.\n";
-		die;
-	}
+	verify_input_file_exists_and_is_nonempty($aligned_and_trimmed_bam_file, "aligned and trimmed bam file", 1, 0);
 }
 foreach my $vcf_file(@vcf_files)
 {
-	if($vcf_file and !-e $vcf_file)
-	{
-		print STDERR "Error: vcf file does not exist:\n\t".$vcf_file."\nExiting.\n";
-		die;
-	}
+	verify_input_file_exists_and_is_nonempty($vcf_file, "vcf file", 1, 0);
 }
 foreach my $heterozygosity_table(@heterozygosity_tables)
 {
-	if($heterozygosity_table and !-e $heterozygosity_table)
-	{
-		print STDERR "Error: heterozygosity table does not exist:\n\t"
-			.$heterozygosity_table."\nExiting.\n";
-		die;
-	}
+	verify_input_file_exists_and_is_nonempty($heterozygosity_table, "heterozygosity table", 1, 0);
 }
 foreach my $plate_map_file(@plate_map_files)
 {
-	if($plate_map_file and !-e $plate_map_file)
-	{
-		print STDERR "Error: plate map file does not exist:\n\t"
-			.$plate_map_file."\nExiting.\n";
-		die;
-	}
-}
-
-
-# verifies that all input files are non-empty
-if(-z $reference_genome_file)
-{
-	print STDERR "Error: reference genome file is empty:\n\t"
-		.$reference_genome_file."\nExiting.\n";
-	die;
-}
-foreach my $consensus_genome_file(@consensus_genome_files)
-{
-	if(-z $consensus_genome_file)
-	{
-		print STDERR "Error: consensus genome file is empty:\n\t"
-			.$consensus_genome_file."\nExiting.\n";
-		die;
-	}
-}
-if($consensus_genomes_aligned_file and -z $consensus_genomes_aligned_file)
-{
-	print STDERR "Error: aligned consensus genomes file is empty:\n\t"
-		.$consensus_genomes_aligned_file."\nExiting.\n";
-	die;
-}
-foreach my $aligned_and_trimmed_bam_file(@aligned_and_trimmed_bam_files)
-{
-	if(-z $aligned_and_trimmed_bam_file)
-	{
-		print STDERR "Warning: aligned and trimmed bam file is empty:\n\t"
-			.$aligned_and_trimmed_bam_file."\nExiting.\n";
-	}
-}
-foreach my $vcf_file(@vcf_files)
-{
-	if(-z $vcf_file)
-	{
-		print STDERR "Warning: vcf file is empty:\n\t".$vcf_file."\nExiting.\n";
-	}
-}
-foreach my $heterozygosity_table(@heterozygosity_tables)
-{
-	if(-z $heterozygosity_table)
-	{
-		print STDERR "Warning: heterozygosity table is empty:\n\t"
-			.$heterozygosity_table."\nExiting.\n";
-	}
-}
-foreach my $plate_map_file(@plate_map_files)
-{
-	if(-z $plate_map_file)
-	{
-		print STDERR "Warning: plate map file is empty:\n\t"
-			.$plate_map_file."\nExiting.\n";
-	}
+	verify_input_file_exists_and_is_nonempty($plate_map_file, "plate map file", 1, 0);
 }
 
 
@@ -2473,6 +2387,55 @@ sub int_to_bool_string
 		return "TRUE";
 	}
 	return "FALSE";
+}
+
+# prints error or warning if input file does not exist or is empty
+# if exit_if_nonexistent is true (1), exits if input file does not exist
+# if exit_if_empty is true (1), exits if input file is empty
+sub verify_input_file_exists_and_is_nonempty
+{
+	my $input_file_path = $_[0]; # must be non-empty
+	my $input_file_name = $_[1]; # for printing error to console
+	my $exit_if_nonexistent = $_[2]; # if 1, prints error and exits if file does not exist; if 0, prints warning and does not exit
+	my $exit_if_empty = $_[3]; # if 1, prints error and exits if file is empty; if 0, prints warning and does not exit
+	
+	# verifies that input file exists
+	if(!-e $input_file_path)
+	{
+		if($exit_if_nonexistent)
+		{
+			print STDERR "Error: ";
+		}
+		else
+		{
+			print STDERR "Warning: ";
+		}
+		print STDERR $input_file_name." does not exist:\n\t".$input_file_path."\n";
+		if($exit_if_nonexistent)
+		{
+			print STDERR "Exiting.\n";
+			die;
+		}
+	}
+	
+	# verifies that input file is non-empty
+	if(-z $input_file_path)
+	{
+		if($exit_if_empty)
+		{
+			print STDERR "Error: ";
+		}
+		else
+		{
+			print STDERR "Warning: ";
+		}
+		print STDERR $input_file_name." is empty:\n\t".$input_file_path."\n";
+		if($exit_if_empty)
+		{
+			print STDERR "Exiting.\n";
+			die;
+		}
+	}
 }
 
 # June 1, 2021
