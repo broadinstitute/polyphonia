@@ -1259,54 +1259,58 @@ if(scalar @plate_map_files)
 			}
 		}
 		$pm -> wait_all_children;
-		
-		
-		# creates cross contamination table
-		my $plate_output_file = $visualizations_directory.retrieve_file_name($plate_map_file)."_potential_cross_contamination.txt";
-		check_if_file_exists_before_writing($plate_output_file);
-		open PLATE_OUT_FILE, ">$plate_output_file" || die "Could not open $plate_output_file to write; terminating =(\n";
-		
-		# prints header line
-		print PLATE_OUT_FILE "well".$DELIMITER;
-		print PLATE_OUT_FILE "contamination_source_well".$DELIMITER;
-		print PLATE_OUT_FILE "sample".$DELIMITER;
-		print PLATE_OUT_FILE "contamination_source_sample".$DELIMITER;
-		print PLATE_OUT_FILE "estimated_contamination_volume".$NEWLINE;
-		
-		# prints cross contamination table
-		my $anything_printed = 0;
-		foreach my $sample_1(sort keys %plate_results)
+	}
+	
+	# collects outputs for each individual plate map
+	my %plate_map_file_to_output = (); # key: plate map file -> value: plate-specific cross-contamination output to print
+	foreach my $sample_1(sort keys %plate_results)
+	{
+		foreach my $sample_2(sort keys %{$plate_results{$sample_1}})
 		{
-			if($sample_name_to_plate_position{$plate_map_file}{$sample_1}) # if sample_1 appears on this plate
+			if($plate_results{$sample_1}{$sample_2})
 			{
-				foreach my $sample_2(sort keys %{$plate_results{$sample_1}})
+				foreach my $plate_map_file(@plate_map_files)
 				{
-					if($sample_name_to_plate_position{$plate_map_file}{$sample_2}) # if sample_2 appears on this plate
+					if($sample_name_to_plate_position{$plate_map_file}{$sample_1}
+						and $sample_name_to_plate_position{$plate_map_file}{$sample_2})
 					{
-						if($plate_results{$sample_1}{$sample_2})
-						{
-							print PLATE_OUT_FILE $sample_name_to_plate_position{$plate_map_file}{$sample_1}.$DELIMITER;
-							print PLATE_OUT_FILE $sample_name_to_plate_position{$plate_map_file}{$sample_2}.$DELIMITER;
-							print PLATE_OUT_FILE $plate_results{$sample_1}{$sample_2};
-							print PLATE_OUT_FILE $NEWLINE;
-							
-							$anything_printed = 1;
-						}
+						$plate_map_file_to_output{$plate_map_file} .= $sample_name_to_plate_position{$plate_map_file}{$sample_1}.$DELIMITER;
+						$plate_map_file_to_output{$plate_map_file} .= $sample_name_to_plate_position{$plate_map_file}{$sample_2}.$DELIMITER;
+						$plate_map_file_to_output{$plate_map_file} .= $plate_results{$sample_1}{$sample_2};
+						$plate_map_file_to_output{$plate_map_file} .= $NEWLINE;
 					}
 				}
 			}
 		}
-		
-		# closes output file
-		close PLATE_OUT_FILE;
-		
-		# generates visualization
-		if($anything_printed)
+	}
+	
+	# creates cross contamination table and visualization for each individual plate map
+	foreach my $plate_map_file(@plate_map_files)
+	{
+		if($plate_map_file_to_output{$plate_map_file}) # if there is anything to print
 		{
+			my $plate_output_file = $visualizations_directory.retrieve_file_name($plate_map_file)."_potential_cross_contamination.txt";
+			check_if_file_exists_before_writing($plate_output_file);
+			open PLATE_OUT_FILE, ">$plate_output_file" || die "Could not open $plate_output_file to write; terminating =(\n";
+	
+			# prints header line
+			print PLATE_OUT_FILE "well".$DELIMITER;
+			print PLATE_OUT_FILE "contamination_source_well".$DELIMITER;
+			print PLATE_OUT_FILE "sample".$DELIMITER;
+			print PLATE_OUT_FILE "contamination_source_sample".$DELIMITER;
+			print PLATE_OUT_FILE "estimated_contamination_volume".$NEWLINE;
+	
+			# prints cross contamination table
+			print PLATE_OUT_FILE $plate_map_file_to_output{$plate_map_file};
+	
+			# closes output file
+			close PLATE_OUT_FILE;
+	
+			# generates visualization
 			my $plate_visualization_output_file = trim_off_file_extension($plate_output_file)."_visualization";
 			check_if_file_exists_before_writing($plate_visualization_output_file.".jpg");
 			check_if_file_exists_before_writing($plate_visualization_output_file.".pdf");
-		
+
 			`$PLATE_VISUALIZATION_FILE_PATH $plate_output_file $plate_visualization_output_file $plate_number_columns $plate_number_rows contamination`;
 		}
 	}
