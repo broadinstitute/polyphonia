@@ -358,7 +358,7 @@ if($minimum_genome_coverage < 0 or $minimum_genome_coverage > 1)
 verify_input_file_exists_and_is_nonempty($reference_genome_file, "reference genome file", 1, 1);
 foreach my $consensus_genome_file(@consensus_genome_files)
 {
-	verify_input_file_exists_and_is_nonempty($consensus_genome_file, "consensus genome file", 1, 1);
+	verify_input_file_exists_and_is_nonempty($consensus_genome_file, "consensus genome file", 1, 0);
 }
 if($consensus_genomes_aligned_file)
 {
