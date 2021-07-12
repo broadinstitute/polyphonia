@@ -612,19 +612,13 @@ if(scalar @plate_map_files)
 	print STDOUT (keys %sample_names)." samples remain...\n" if $verbose;
 	
 	# removes any sample names that don't have a consensus genome
-	my %updated_sample_names = ();
 	foreach my $sample_name(keys %sample_names)
 	{
-# 		if(!$sample_name_has_consensus_genome{$sample_name})
-# 		{
-# 			delete $sample_names{$sample_name};
-# 		}
-		if($sample_name_has_consensus_genome{$sample_name})
+		if(!$sample_name_has_consensus_genome{$sample_name})
 		{
-			$updated_sample_names{$sample_name} = 1;
+			delete $sample_names{$sample_name};
 		}
 	}
-	%sample_names = %updated_sample_names;
 }
 
 # if no plate map, retrieves sample names from consensus genome fasta files
@@ -696,19 +690,13 @@ foreach my $file_path(@aligned_and_trimmed_bam_files, @vcf_files, @heterozygosit
 
 # removes any sample names that don't have a within-sample diversity file
 print STDOUT "removing names of samples without within-sample diversity file...\n" if $verbose;
-my %updated_sample_names = ();
 foreach my $sample_name(keys %sample_names)
 {
-# 	if(!$sample_name_to_within_sample_diversity_file{$sample_name})
-# 	{
-# 		delete $sample_names{$sample_name};
-# 	}
-	if($sample_name_to_within_sample_diversity_file{$sample_name})
+	if(!$sample_name_to_within_sample_diversity_file{$sample_name})
 	{
-		$updated_sample_names{$sample_name} = 1;
+		delete $sample_names{$sample_name};
 	}
 }
-%sample_names = %updated_sample_names;
 
 # prints number of samples remaining
 print STDOUT (keys %sample_names)." samples remain...\n" if $verbose;
@@ -788,7 +776,6 @@ if($minimum_genome_coverage)
 	
 	print STDOUT "removing names of samples without at least ".($minimum_genome_coverage*100)
 		."% coverage ("."of ".$reference_sequence_length." total bases)...\n" if $verbose;
-	my %updated_sample_names = ();
 	foreach my $sample_name(keys %sample_names)
 	{
 		# retrieves consensus genome bases
@@ -800,18 +787,13 @@ if($minimum_genome_coverage)
 		my $consensus_percent_covered = $consensus_unambig_bases / $reference_sequence_length;
 
 		# removes sample name if sample does not have minimum genome coverage
-# 		if($consensus_percent_covered < $minimum_genome_coverage)
-# 		{
-# 			delete $sample_names{$sample_name};
-# 		}
-		if($consensus_percent_covered >= $minimum_genome_coverage)
+		if($consensus_percent_covered < $minimum_genome_coverage)
 		{
-			$updated_sample_names{$sample_name} = 1;
+			delete $sample_names{$sample_name};
 		}
 	}
 	
 	# prints number of samples remaining
-	%sample_names = %updated_sample_names;
 	print STDOUT (keys %sample_names)." samples remain...\n" if $verbose;
 }
 
@@ -882,19 +864,13 @@ if(scalar @plate_map_files)
 	}
 	
 	# removes any sample names that don't have at least one plate neighbor
-	my %updated_sample_names = ();
 	foreach my $sample_name(keys %sample_names)
 	{
-# 		if(!$sample_has_plate_neighbors{$sample_name})
-# 		{
-# 			delete $sample_names{$sample_name};
-# 		}
-		if($sample_has_plate_neighbors{$sample_name})
+		if(!$sample_has_plate_neighbors{$sample_name})
 		{
-			$updated_sample_names{$sample_name} = 1;
+			delete $sample_names{$sample_name};
 		}
 	}
-	%sample_names = %updated_sample_names;
 }
 
 # prints number of samples remaining
