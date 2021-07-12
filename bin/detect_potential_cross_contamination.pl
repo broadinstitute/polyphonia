@@ -795,7 +795,7 @@ if($minimum_genome_coverage)
 		}
 	}
 	
-	print STDOUT "removing names of samples without at least ".($minimum_genome_coverage*100)."% coverage...\n" if $verbose;
+	print STDOUT "removing names of samples without at least ".($minimum_genome_coverage*100)."% coverage ("."of ".$reference_sequence_length." total bases)...\n" if $verbose;
 	my %updated_sample_names = ();
 	foreach my $sample_name(keys %sample_names)
 	{
