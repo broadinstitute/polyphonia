@@ -595,20 +595,17 @@ if(scalar @plate_map_files)
 	my %sample_name_has_consensus_genome = (); # key: sample name -> value: 1 if sample has associated consensus genome
 	foreach my $consensus_genome_fasta_file(@consensus_genome_files, $consensus_genomes_aligned_file)
 	{
-		if(input_file_exists_and_is_nonempty($consensus_genome_fasta_file))
+		open FASTA_FILE, "<$consensus_genome_fasta_file" || die "Could not open $consensus_genome_fasta_file to read; terminating =(\n";
+		while(<FASTA_FILE>) # for each line in the file
 		{
-			open FASTA_FILE, "<$consensus_genome_fasta_file" || die "Could not open $consensus_genome_fasta_file to read; terminating =(\n";
-			while(<FASTA_FILE>) # for each line in the file
+			chomp;
+			if($_ =~ /^>(.*)/) # header line
 			{
-				chomp;
-				if($_ =~ /^>(.*)/) # header line
-				{
-					my $sample_name = $1;
-					$sample_name_has_consensus_genome{$sample_name} = 1;
-				}
+				my $sample_name = $1;
+				$sample_name_has_consensus_genome{$sample_name} = 1;
 			}
-			close FASTA_FILE;
 		}
+		close FASTA_FILE;
 	}
 	
 	# prints number of samples remaining
@@ -636,20 +633,17 @@ else
 	print STDOUT "retrieving sample names from consensus genome fasta file(s)...\n" if $verbose;
 	foreach my $consensus_genome_fasta_file(@consensus_genome_files, $consensus_genomes_aligned_file)
 	{
-		if(input_file_exists_and_is_nonempty($consensus_genome_fasta_file))
+		open FASTA_FILE, "<$consensus_genome_fasta_file" || die "Could not open $consensus_genome_fasta_file to read; terminating =(\n";
+		while(<FASTA_FILE>) # for each line in the file
 		{
-			open FASTA_FILE, "<$consensus_genome_fasta_file" || die "Could not open $consensus_genome_fasta_file to read; terminating =(\n";
-			while(<FASTA_FILE>) # for each line in the file
+			chomp;
+			if($_ =~ /^>(.*)/) # header line
 			{
-				chomp;
-				if($_ =~ /^>(.*)/) # header line
-				{
-					my $sample_name = $1;
-					$sample_names{$sample_name} = 1;
-				}
+				my $sample_name = $1;
+				$sample_names{$sample_name} = 1;
 			}
-			close FASTA_FILE;
 		}
+		close FASTA_FILE;
 	}
 	
 	# prints number of samples remaining
@@ -760,42 +754,40 @@ if($minimum_genome_coverage)
 	my %sequence_name_to_consensus = (); # key: sequence name -> value: consensus sequence, including gaps froms alignment
 	foreach my $consensus_genome_fasta_file(@consensus_genome_files, $consensus_genomes_aligned_file)
 	{
-		if(input_file_exists_and_is_nonempty($consensus_genome_fasta_file))
+		open FASTA_FILE, "<$consensus_genome_fasta_file" || die "Could not open $consensus_genome_fasta_file to read; terminating =(\n";
+		my $sequence = "";
+		my $sample_name = "";
+		while(<FASTA_FILE>) # for each line in the file
 		{
-			open FASTA_FILE, "<$consensus_genome_fasta_file" || die "Could not open $consensus_genome_fasta_file to read; terminating =(\n";
-			my $sequence = "";
-			my $sample_name = "";
-			while(<FASTA_FILE>) # for each line in the file
+			chomp;
+			if($_ =~ /^>(.*)/) # header line
 			{
-				chomp;
-				if($_ =~ /^>(.*)/) # header line
+				# process previous sequence
+				$sequence = uc($sequence);
+				if($sequence and $sample_name and $sample_names{$sample_name})
 				{
-					# process previous sequence
-					$sequence = uc($sequence);
-					if($sequence and $sample_name and $sample_names{$sample_name})
-					{
-						$sequence_name_to_consensus{$sample_name} = $sequence;
-					}
-	
-					# prepare for next sequence
-					$sequence = "";
-					$sample_name = $1;
+					$sequence_name_to_consensus{$sample_name} = $sequence;
 				}
-				else
-				{
-					$sequence .= $_;
-				}
+
+				# prepare for next sequence
+				$sequence = "";
+				$sample_name = $1;
 			}
-			# process final sequence
-			if($sequence and $sample_name and $sample_names{$sample_name})
+			else
 			{
-				$sequence_name_to_consensus{$sample_name} = uc($sequence);
+				$sequence .= $_;
 			}
-			close FASTA_FILE;
 		}
+		# process final sequence
+		if($sequence and $sample_name and $sample_names{$sample_name})
+		{
+			$sequence_name_to_consensus{$sample_name} = uc($sequence);
+		}
+		close FASTA_FILE;
 	}
 	
-	print STDOUT "removing names of samples without at least ".($minimum_genome_coverage*100)."% coverage ("."of ".$reference_sequence_length." total bases)...\n" if $verbose;
+	print STDOUT "removing names of samples without at least ".($minimum_genome_coverage*100)
+		."% coverage ("."of ".$reference_sequence_length." total bases)...\n" if $verbose;
 	my %updated_sample_names = ();
 	foreach my $sample_name(keys %sample_names)
 	{
@@ -925,39 +917,36 @@ if(!$consensus_genomes_aligned_file)
 	my %sequence_name_to_consensus = (); # key: sequence name -> value: consensus sequence, including gaps froms alignment
 	foreach my $consensus_genome_fasta_file(@consensus_genome_files, $consensus_genomes_aligned_file)
 	{
-		if(input_file_exists_and_is_nonempty($consensus_genome_fasta_file))
+		open FASTA_FILE, "<$consensus_genome_fasta_file" || die "Could not open $consensus_genome_fasta_file to read; terminating =(\n";
+		my $sequence = "";
+		my $sample_name = "";
+		while(<FASTA_FILE>) # for each line in the file
 		{
-			open FASTA_FILE, "<$consensus_genome_fasta_file" || die "Could not open $consensus_genome_fasta_file to read; terminating =(\n";
-			my $sequence = "";
-			my $sample_name = "";
-			while(<FASTA_FILE>) # for each line in the file
+			chomp;
+			if($_ =~ /^>(.*)/) # header line
 			{
-				chomp;
-				if($_ =~ /^>(.*)/) # header line
+				# process previous sequence
+				$sequence = uc($sequence);
+				if($sequence and $sample_name and $sample_names{$sample_name})
 				{
-					# process previous sequence
-					$sequence = uc($sequence);
-					if($sequence and $sample_name and $sample_names{$sample_name})
-					{
-						$sequence_name_to_consensus{$sample_name} = $sequence;
-					}
-	
-					# prepare for next sequence
-					$sequence = "";
-					$sample_name = $1;
+					$sequence_name_to_consensus{$sample_name} = $sequence;
 				}
-				else
-				{
-					$sequence .= $_;
-				}
+
+				# prepare for next sequence
+				$sequence = "";
+				$sample_name = $1;
 			}
-			# process final sequence
-			if($sequence and $sample_name and $sample_names{$sample_name})
+			else
 			{
-				$sequence_name_to_consensus{$sample_name} = uc($sequence);
+				$sequence .= $_;
 			}
-			close FASTA_FILE;
 		}
+		# process final sequence
+		if($sequence and $sample_name and $sample_names{$sample_name})
+		{
+			$sequence_name_to_consensus{$sample_name} = uc($sequence);
+		}
+		close FASTA_FILE;
 	}
 	
 	# generates concatenated consensus genomes file
@@ -2476,31 +2465,6 @@ sub verify_input_file_exists_and_is_nonempty
 			die;
 		}
 	}
-}
-
-# returns 1 if input file exists and is non-empty; returns 0 if input file does not exist
-# or is empty
-# does not print any warnings or errors and does not cause the script to exit
-sub input_file_exists_and_is_nonempty
-{
-	my $input_file_path = $_[0]; # must be non-empty string
-	
-	# verifies that input file exists
-	if(!-e $input_file_path)
-	{
-		# input file does not exist--return 0
-		return 0;
-	}
-	
-	# verifies that input file is non-empty
-	if(-z $input_file_path)
-	{
-		# input file is empty--return 0
-		return 0;
-	}
-	
-	# input file exists and is non-empty--return 1
-	return 1;
 }
 
 # June 1, 2021
