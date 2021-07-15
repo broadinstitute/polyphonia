@@ -10,7 +10,7 @@ OPTIONS:
 
 - Consensus genomes (aligned or not aligned, not both; at least one file required):
 	-c | --consensus FILE(S)	Unaligned consensus genome or genomes [null]
-	-a | --consensus-aligned FILE	Consensus genomes pre-aligned to reference as fasta alignment; reference provided by --ref must be first [null]
+	-a | --consensus-aligned FILE	Consensus genomes pre-aligned to reference as fasta alignment; reference provided by --ref must appear first [null]
 	-g | --min-covered FLOAT	Minimum proportion genome covered for a sample to be included [0.98]
 
 - Within-sample diversity (any combination; at least one file required):
@@ -22,14 +22,14 @@ OPTIONS:
 
 - Plate map and neighbors (any combination, all optional):
 	-m | --plate-map FILE(S)	Optional plate map(s) (tab-separated, no header: sample name, plate position (e.g., A8)); provides substantial speed-up [null]
-	-z | --plate-size INT		Standard plate size (6-well, 12-well, 24, 48, 96, 384, 1536, 3456) [96]
+	-z | --plate-size INT		Standard plate size (6-well, 12-well, 24, 48, 96, 384, 1536, or 3456) [96]
 	-q | --plate-columns INT	Number columns in plate (e.g., 1, 2, 3, 4) [12]
 	-k | --plate-rows INT		Number rows in plate (e.g., A, B, C, D) [8]
 	-n | --compare-direct BOOL	Compare direct plate neighbors (left, right, top, bottom) [TRUE]
 	-d | --compare-diagonal BOOL	Compare diagonal plate neighbors (top-right, bottom-right, top-left, bottom-left) [FALSE]
 	-w | --compare-row BOOL		Compare samples in the same row (e.g., row A) [FALSE]
 	-l | --compare-column BOOL	Compare samples in the same column (e.g., column 8) [FALSE]
-	-t | --compare-plate BOOL	Compare all samples in the same plate map [FALSE]
+	-t | --compare-plate BOOL	Compare all samples in each plate map [FALSE]
 
 - Output:
 	-o | --output FILE		Output file path [current working directory/potential_cross-contamination.txt]
@@ -37,10 +37,10 @@ OPTIONS:
 	-x | --out-temp DIRECTORY	Path of directory to store intermediate and temporary files [current working directory]
 
 - Misc:
-	-y | --max-mismatches INT	Maximum allowed bases in contaminating sample consensus not matching contaminated sample alleles [1]
+	-y | --max-mismatches INT	Maximum allowed unambiguous bases in contaminating sample consensus not matching contaminated sample alleles [1]
 	-p | --cores INT		Optional number of cores to use for preprocessing in parallel [1]
-	-u | --verbose BOOL		Print progress to STDOUT [TRUE]
-	-j | --overwrite BOOL		Overwrite output, intermediate, and temp files at input paths [FALSE]
+	-u | --verbose BOOL		Print progress updates to STDOUT [TRUE]
+	-j | --overwrite BOOL		Overwrite files that already exist at output, intermediate, and temp files paths [FALSE]
 ```
 
 ## Contents
