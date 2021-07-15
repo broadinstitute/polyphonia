@@ -45,6 +45,9 @@ OPTIONS:
 
 ## Contents
 - [Getting Started](#getting-started)
+   - [Docker](#docker)
+   - [Bioconda](#bioconda)
+   - [Dockstore](#dockstore)
 - [Under the Hood](#under-the-hood)
 - [Important Caveats](#important-caveats)
 - [Required Input Files](#required-input-files)
@@ -129,6 +132,12 @@ We use [Docker](https://docs.docker.com/get-started/overview/) to distribute and
 
 6. Exit. When you are done, destroy your ephemeral file system by typing `exit`. You should see your container disappear from the Docker interface.
 
+### Bioconda
+
+While Docker runs polyphonia together with dependencies in an isolated environment, bioconda solves the same problem by installing all dependencies on your machine.
+
+Polyphonia will be available as a [bioconda](https://bioconda.github.io/) package soon.
+
 ### Dockstore
 
 Polyphonia is available through the following [WDL](https://github.com/openwdl/wdl) workflows and tasks included in [broadinstitute/viral-pipelines](https://github.com/broadinstitute/viral-pipelines):
@@ -137,10 +146,6 @@ Polyphonia is available through the following [WDL](https://github.com/openwdl/w
     - [`detect_cross_contamination_precalled_vcfs`](https://github.com/broadinstitute/viral-pipelines/blob/master/pipes/WDL/workflows/detect_cross_contamination_precalled_vcfs.wdl): available [on Dockstore](https://dockstore.org/workflows/github.com/broadinstitute/viral-pipelines/detect_cross_contamination_precalled_vcfs:master?tab=info)
 - Tasks:
     [`detect_cross_contamination`](https://github.com/broadinstitute/viral-pipelines/blob/master/pipes/WDL/tasks/tasks_intrahost.wdl)
-
-### Bioconda
-
-Polyphonia will be available as a [bioconda](https://bioconda.github.io/) package soon.
 
 ## Under the Hood
 
