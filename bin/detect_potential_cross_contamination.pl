@@ -100,7 +100,7 @@ if(!scalar @ARGV) # no command line arguments supplied
 	
 	print STDOUT "- Consensus genomes (aligned or not aligned, not both; at least one file required):\n";
 	print STDOUT "\t-c | --consensus FILE(S)\tUnaligned consensus genome or genomes [null]\n";
-	print STDOUT "\t-a | --consensus-aligned FILE\tConsensus genomes pre-aligned to reference as fasta alignment; reference provided by --ref must be first [null]\n";
+	print STDOUT "\t-a | --consensus-aligned FILE\tConsensus genomes pre-aligned to reference as fasta alignment; reference provided by --ref must appear first [null]\n";
 	print STDOUT "\t-g | --min-covered FLOAT\tMinimum proportion genome covered for a sample to be included [".$DEFAULT_MINIMUM_GENOME_COVERAGE."]\n";
 	print STDOUT "\n";
 	
@@ -115,14 +115,14 @@ if(!scalar @ARGV) # no command line arguments supplied
 	
 	print STDOUT "- Plate map and neighbors (any combination, all optional):\n";
 	print STDOUT "\t-m | --plate-map FILE(S)\tOptional plate map(s) (tab-separated, no header: sample name, plate position (e.g., A8)); provides substantial speed-up [null]\n";
-	print STDOUT "\t-z | --plate-size INT\t\tStandard plate size (6-well, 12-well, 24, 48, 96, 384, 1536, 3456) [".$DEFAULT_PLATE_SIZE."]\n";
+	print STDOUT "\t-z | --plate-size INT\t\tStandard plate size (6-well, 12-well, 24, 48, 96, 384, 1536, or 3456) [".$DEFAULT_PLATE_SIZE."]\n";
 	print STDOUT "\t-q | --plate-columns INT\tNumber columns in plate (e.g., 1, 2, 3, 4) [".$DEFAULT_PLATE_NUMBER_COLUMNS."]\n";
 	print STDOUT "\t-k | --plate-rows INT\t\tNumber rows in plate (e.g., A, B, C, D) [".$DEFAULT_PLATE_NUMBER_ROWS."]\n";
 	print STDOUT "\t-n | --compare-direct BOOL\tCompare direct plate neighbors (left, right, top, bottom) [".int_to_bool_string($DEFAULT_COMPARE_DIRECT_NEIGHBORS)."]\n";
 	print STDOUT "\t-d | --compare-diagonal BOOL\tCompare diagonal plate neighbors (top-right, bottom-right, top-left, bottom-left) [".int_to_bool_string($DEFAULT_COMPARE_DIAGONAL_NEIGHBORS)."]\n";
 	print STDOUT "\t-w | --compare-row BOOL\t\tCompare samples in the same row (e.g., row A) [".int_to_bool_string($DEFAULT_COMPARE_ROW)."]\n";
 	print STDOUT "\t-l | --compare-column BOOL\tCompare samples in the same column (e.g., column 8) [".int_to_bool_string($DEFAULT_COMPARE_COLUMN)."]\n";
-	print STDOUT "\t-t | --compare-plate BOOL\tCompare all samples in the same plate map [".int_to_bool_string($DEFAULT_COMPARE_WHOLE_PLATE_MAP)."]\n";
+	print STDOUT "\t-t | --compare-plate BOOL\tCompare all samples in each plate map [".int_to_bool_string($DEFAULT_COMPARE_WHOLE_PLATE_MAP)."]\n";
 	print STDOUT "\n";
 	
 	print STDOUT "- Output:\n";
@@ -132,10 +132,10 @@ if(!scalar @ARGV) # no command line arguments supplied
 	print STDOUT "\n";
 	
 	print STDOUT "- Misc:\n";
-	print STDOUT "\t-y | --max-mismatches INT\tMaximum allowed bases in contaminating sample consensus not matching contaminated sample alleles [".$DEFAULT_MAXIMUM_ALLOWED_MISMATCHES."]\n";
+	print STDOUT "\t-y | --max-mismatches INT\tMaximum allowed unambiguous bases in contaminating sample consensus not matching contaminated sample alleles [".$DEFAULT_MAXIMUM_ALLOWED_MISMATCHES."]\n";
 	print STDOUT "\t-p | --cores INT\t\tOptional number of cores to use for preprocessing in parallel [".$DEFAULT_CORES_TO_USE."]\n";
-	print STDOUT "\t-u | --verbose BOOL\t\tPrint progress to STDOUT [".int_to_bool_string($DEFAULT_VERBOSE)."]\n";
-	print STDOUT "\t-j | --overwrite BOOL\t\tOverwrite output, intermediate, and temp files at input paths [".int_to_bool_string($DEFAULT_OVERWRITE)."]\n";
+	print STDOUT "\t-u | --verbose BOOL\t\tPrint progress updates to STDOUT [".int_to_bool_string($DEFAULT_VERBOSE)."]\n";
+	print STDOUT "\t-j | --overwrite BOOL\t\tOverwrite files that already exist at output, intermediate, and temp files paths [".int_to_bool_string($DEFAULT_OVERWRITE)."]\n";
 	print STDOUT "\n\n";
 	exit;
 }
