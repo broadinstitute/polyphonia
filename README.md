@@ -76,6 +76,8 @@ OPTIONS:
 
 ## Getting Started
 
+### Docker
+
 We use [Docker](https://docs.docker.com/get-started/overview/) to distribute and run polyphonia pre-packaged in an isolated environment with the software it depends on. Using Docker will allow you to run polyphonia on your computer, on the cloud, or elsewhere without worrying about dependencies. If you are new to Docker, you can learn more about it [here](https://docs.docker.com/get-started/).
 
 
@@ -126,6 +128,19 @@ We use [Docker](https://docs.docker.com/get-started/overview/) to distribute and
    Follow the guide below to learn more about polyphonia's input and output options and to run through this example in more detail.
 
 6. Exit. When you are done, destroy your ephemeral file system by typing `exit`. You should see your container disappear from the Docker interface.
+
+### Dockstore
+
+Polyphonia is available through the following [WDL](https://github.com/openwdl/wdl) workflows and tasks included in [broadinstitute/viral-pipelines](https://github.com/broadinstitute/viral-pipelines):
+- Workflows:
+    - [`detect_cross_contamination`](https://github.com/broadinstitute/viral-pipelines/blob/master/pipes/WDL/workflows/detect_cross_contamination.wdl): available [on Dockstore](https://dockstore.org/workflows/github.com/broadinstitute/viral-pipelines/detect_cross_contamination:master?tab=info) for execution on [Terra](https://terra.bio/), [DNAnexus](https://www.dnanexus.com/), and other WDL-compatible platforms
+    - [`detect_cross_contamination_precalled_vcfs`](https://github.com/broadinstitute/viral-pipelines/blob/master/pipes/WDL/workflows/detect_cross_contamination_precalled_vcfs.wdl): available [on Dockstore](https://dockstore.org/workflows/github.com/broadinstitute/viral-pipelines/detect_cross_contamination_precalled_vcfs:master?tab=info)
+- Tasks:
+    [`detect_cross_contamination`](https://github.com/broadinstitute/viral-pipelines/blob/master/pipes/WDL/tasks/tasks_intrahost.wdl)
+
+### Bioconda
+
+Polyphonia will be available as a [bioconda](https://bioconda.github.io/) package soon.
 
 ## Under the Hood
 
