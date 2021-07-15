@@ -90,7 +90,7 @@ We use [Docker](https://docs.docker.com/get-started/overview/) to distribute and
 
    `docker pull quay.io/broadinstitute/polyphonia:latest`
 
-3. Use Docker to create a new, isolated, ephemeral, pre-built file system containing polyphonia installed alongside the software it requires, with access to your computer's file system. In your terminal application, enter:
+3. Use Docker to create a new, isolated, ephemeral, pre-built file system containing polyphonia installed alongside the software it requires and with access to your computer's file system. In your terminal application, enter:
 
    `docker run -v $(pwd):/mnt/data -it --rm quay.io/broadinstitute/polyphonia`
 
@@ -130,11 +130,11 @@ We use [Docker](https://docs.docker.com/get-started/overview/) to distribute and
 
    Follow the guide below to learn more about polyphonia's input and output options and to run through this example in more detail.
 
-6. Exit. When you are done, destroy your ephemeral file system by typing `exit`. You should see your container disappear from the Docker interface.
+6. Exit. When you are done, destroy your ephemeral file system by typing `exit`. You should see your container disappear from the Docker interface. Make sure to also quit the Docker application when you are done using it.
 
 ### Bioconda
 
-While Docker runs polyphonia together with dependencies in an isolated environment, bioconda solves the same problem by installing all [dependencies](#dependencies) on your machine.
+While Docker runs polyphonia together with dependencies in an isolated environment, bioconda solves the same problem by instead installing all [dependencies](#dependencies) onto your machine.
 
 Polyphonia will be available as a [bioconda](https://bioconda.github.io/) package soon.
 
@@ -142,10 +142,10 @@ Polyphonia will be available as a [bioconda](https://bioconda.github.io/) packag
 
 Polyphonia is available through the following [WDL](https://github.com/openwdl/wdl) workflows and tasks included in [broadinstitute/viral-pipelines](https://github.com/broadinstitute/viral-pipelines):
 - Workflows:
-    - [`detect_cross_contamination`](https://github.com/broadinstitute/viral-pipelines/blob/master/pipes/WDL/workflows/detect_cross_contamination.wdl): available [on Dockstore](https://dockstore.org/workflows/github.com/broadinstitute/viral-pipelines/detect_cross_contamination:master?tab=info) for execution on [Terra](https://terra.bio/), [DNAnexus](https://www.dnanexus.com/), and other WDL-compatible platforms
-    - [`detect_cross_contamination_precalled_vcfs`](https://github.com/broadinstitute/viral-pipelines/blob/master/pipes/WDL/workflows/detect_cross_contamination_precalled_vcfs.wdl): available [on Dockstore](https://dockstore.org/workflows/github.com/broadinstitute/viral-pipelines/detect_cross_contamination_precalled_vcfs:master?tab=info)
+    - [`detect_cross_contamination`](https://github.com/broadinstitute/viral-pipelines/blob/master/pipes/WDL/workflows/detect_cross_contamination.wdl) is available [on Dockstore](https://dockstore.org/workflows/github.com/broadinstitute/viral-pipelines/detect_cross_contamination:master?tab=info) for execution on [Terra](https://terra.bio/), [DNAnexus](https://www.dnanexus.com/), and other WDL-compatible platforms.
+    - [`detect_cross_contamination_precalled_vcfs`](https://github.com/broadinstitute/viral-pipelines/blob/master/pipes/WDL/workflows/detect_cross_contamination_precalled_vcfs.wdl) is available [on Dockstore](https://dockstore.org/workflows/github.com/broadinstitute/viral-pipelines/detect_cross_contamination_precalled_vcfs:master?tab=info).
 - Tasks:
-    [`detect_cross_contamination`](https://github.com/broadinstitute/viral-pipelines/blob/master/pipes/WDL/tasks/tasks_intrahost.wdl)
+    [`detect_cross_contamination`](https://github.com/broadinstitute/viral-pipelines/blob/master/pipes/WDL/tasks/tasks_intrahost.wdl).
 
 ## Under the Hood
 
