@@ -134,7 +134,7 @@ We use [Docker](https://docs.docker.com/get-started/overview/) to distribute and
 
 ### Bioconda
 
-While Docker runs polyphonia together with dependencies in an isolated environment, bioconda solves the same problem by installing all dependencies on your machine.
+While Docker runs polyphonia together with dependencies in an isolated environment, bioconda solves the same problem by installing all [dependencies](#dependencies) on your machine.
 
 Polyphonia will be available as a [bioconda](https://bioconda.github.io/) package soon.
 
