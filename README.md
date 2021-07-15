@@ -340,7 +340,7 @@ By default, a sample is considered potentially contaminated if at most 1 contami
 
 Parallelization is used to substantially speed up processing of [within-sample diversity files](#within-sample-diversity-files) and comparison of neighboring samples.
 
-Use `--cores` to specify how many cores are available. (For example, I use `--cores 4`.) By default, polyphonia will use one core.
+Use `--cores` to specify how many cores are available for polyphonia to use. (For example, I use `--cores 4`.) By default, polyphonia will use one core.
 
 ### Output File Paths
 
@@ -349,7 +349,7 @@ Use `--cores` to specify how many cores are available. (For example, I use `--co
 `--out-temp`
 `--overwrite`
 
-By default, the main output, the [potential cross-contamination table](#potential-cross-contamination-table), are printed to a file named `potential_cross-contamination.txt` in the current working directory within the container, and all output figures, intermediate files, and temporary files are printed to the current working directory within the container.
+By default, the main output file, the [potential cross-contamination table](#potential-cross-contamination-table), is printed to a file named `potential_cross-contamination.txt` in the current working directory within the container, and all output figures, intermediate files, and temporary files are printed to the current working directory within the container.
 
 You can set the output file path for the [potential cross-contamination table](#potential-cross-contamination-table) using `--output`.
 
