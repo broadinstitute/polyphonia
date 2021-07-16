@@ -300,7 +300,7 @@ if(!$reference_genome_file)
 	print STDERR "Error: reference genome not provided. Exiting.\n";
 	die;
 }
-if(!scalar @consensus_genome_files and $consensus_genomes_aligned_file)
+if(!scalar @consensus_genome_files and !$consensus_genomes_aligned_file)
 {
 	print STDERR "Error: no consensus genome files provided. Exiting.\n";
 	die;
