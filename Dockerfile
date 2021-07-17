@@ -24,6 +24,7 @@ COPY bin/* $POLYPHONIA_PATH/
 
 # copy test files
 COPY test/input/* $TEST_FILES_PATH/
+COPY test/output/* $TEST_FILES_PATH/
 
 # default bash prompt
 CMD ["/bin/bash"]
