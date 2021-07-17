@@ -166,7 +166,7 @@ jobs:
             echo "  OUTPUT_MD5:   $OUTPUT_MD5"
             exit 1
           fi
-      - name: Run polyphonia (cross_contamination test) with aligned consensus sequences
+      - name: Run polyphonia (cross_contamination test with aligned consensus sequences)
         run: |
           set -e -x
           docker run -v $(pwd)/bin:${{ env.DOCKER_POLYPHONIA_PATH }} -v $(pwd)/test:${{ env.DOCKER_POLYPHONIA_PATH }}/test -v $(pwd)/output:/tmp/output --rm polyphonia:${{ env.GITHUB_ACTIONS_BRANCH }}-${{ env.GITHUB_ACTIONS_SHORT_SHA }} \
@@ -177,10 +177,9 @@ jobs:
             --consensus-aligned ${{ env.DOCKER_POLYPHONIA_PATH }}/test/input/USA-MA-Broad_CRSP-01315_23-2021_MAFFT_aligned.fasta \
             --output /tmp/output/potential_cross-contamination.txt \
             --overwrite TRUE
-
-          EXPECTED_MD5="358d736c9bd513731c020f84b7b06376"
-          OUTPUT_MD5="$(md5sum $(pwd)/output/potential_cross-contamination.txt | awk '{ print $1 }')"
-          if [[ diff $(pwd)/output/potential_cross-contamination.txt ${{ env.DOCKER_POLYPHONIA_PATH }}/test/output/potential_cross-contamination.txt]]; then
+            
+          DIFF=$(diff $(pwd)/output/potential_cross-contamination.txt ${{ env.DOCKER_POLYPHONIA_PATH }}/test/output/potential_cross-contamination.txt) 
+          if [ "$DIFF" != "" ]; then
             echo "Failure: cross_contamination test output does not match expected output"
             echo "  expected output:"
             cat $(pwd)/output/potential_cross-contamination.txt
@@ -190,7 +189,7 @@ jobs:
           else
             echo "Success: cross_contamination test"
           fi
-      - name: Run polyphonia (cross_contamination test) with aligned consensus sequences with gap in reference
+      - name: Run polyphonia (cross_contamination test with aligned consensus sequences with gap in reference)
         run: |
           set -e -x
           docker run -v $(pwd)/bin:${{ env.DOCKER_POLYPHONIA_PATH }} -v $(pwd)/test:${{ env.DOCKER_POLYPHONIA_PATH }}/test -v $(pwd)/output:/tmp/output --rm polyphonia:${{ env.GITHUB_ACTIONS_BRANCH }}-${{ env.GITHUB_ACTIONS_SHORT_SHA }} \
