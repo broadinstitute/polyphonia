@@ -153,7 +153,8 @@ jobs:
             --vcf ${{ env.DOCKER_POLYPHONIA_PATH }}/test/input/USA-MA-Broad_CRSP-01323-2021.bam_LoFreq.vcf \
             --consensus ${{ env.DOCKER_POLYPHONIA_PATH }}/test/input/USA-MA-Broad_CRSP-01315-2021.fasta \
             --consensus ${{ env.DOCKER_POLYPHONIA_PATH }}/test/input/USA-MA-Broad_CRSP-01323-2021.fasta \
-            --output /tmp/output/potential_cross-contamination.txt
+            --output /tmp/output/potential_cross-contamination.txt \
+            --overwrite TRUE
 
           EXPECTED_MD5="358d736c9bd513731c020f84b7b06376"
           OUTPUT_MD5="$(md5sum $(pwd)/output/potential_cross-contamination.txt | awk '{ print $1 }')"
@@ -174,7 +175,8 @@ jobs:
             --vcf ${{ env.DOCKER_POLYPHONIA_PATH }}/test/input/USA-MA-Broad_CRSP-01315-2021.bam_LoFreq.vcf \
             --vcf ${{ env.DOCKER_POLYPHONIA_PATH }}/test/input/USA-MA-Broad_CRSP-01323-2021.bam_LoFreq.vcf \
             --consensus-aligned ${{ env.DOCKER_POLYPHONIA_PATH }}/test/input/USA-MA-Broad_CRSP-01315_23-2021_MAFFT_aligned.fasta \
-            --output /tmp/output/potential_cross-contamination.txt
+            --output /tmp/output/potential_cross-contamination.txt \
+            --overwrite TRUE
 
           EXPECTED_MD5="358d736c9bd513731c020f84b7b06376"
           OUTPUT_MD5="$(md5sum $(pwd)/output/potential_cross-contamination.txt | awk '{ print $1 }')"
@@ -195,7 +197,8 @@ jobs:
             --vcf ${{ env.DOCKER_POLYPHONIA_PATH }}/test/input/USA-MA-Broad_CRSP-01315-2021.bam_LoFreq.vcf \
             --vcf ${{ env.DOCKER_POLYPHONIA_PATH }}/test/input/USA-MA-Broad_CRSP-01323-2021.bam_LoFreq.vcf \
             --consensus-aligned ${{ env.DOCKER_POLYPHONIA_PATH }}/test/input/USA-MA-Broad_CRSP-01315_23-2021_MAFFT_aligned_gap_added.fasta \
-            --output /tmp/output/potential_cross-contamination.txt
+            --output /tmp/output/potential_cross-contamination.txt \
+            --overwrite TRUE
 
           EXPECTED_MD5="358d736c9bd513731c020f84b7b06376"
           OUTPUT_MD5="$(md5sum $(pwd)/output/potential_cross-contamination.txt | awk '{ print $1 }')"
