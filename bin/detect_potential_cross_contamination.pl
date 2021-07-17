@@ -1003,7 +1003,7 @@ while(<ALIGNED_CONSENSUS_GENOMES>) # for each line in the file
 		$sequence = uc($sequence);
 		if($sequence and $sample_name and $sample_names{$sample_name})
 		{
-			$sequence_name_to_consensus{$sample_name} = $sequence;
+			$sequence_name_to_consensus{$sample_name} = uc($sequence);
 		}
 		if(!$reference_sequence) # reference sequence is first sequence in alignment
 		{
@@ -1025,6 +1025,30 @@ if($sequence and $sample_name and $sample_names{$sample_name})
 	$sequence_name_to_consensus{$sample_name} = uc($sequence);
 }
 close ALIGNED_CONSENSUS_GENOMES;
+
+
+# saves base indices in reference where there are gaps
+print STDOUT "identifying indices with gaps in reference and removing from all sequences in alignment...\n" if $verbose;
+my %base_index_has_gap = (); # key: index of base in reference sequence (0-indexed) -> value: 1 if there is a gap in the reference sequence
+my @reference_values = split(//, $reference_sequence);
+for(my $base_index = 0; $base_index < length($reference_sequence); $base_index++)
+{
+	if(!is_base($reference_values[$base_index]))
+	{
+		$base_index_has_gap{$base_index} = 1;
+	}
+}
+
+# removes bases or gaps at the corresponding positions in all other sequences in the alignment
+foreach my $sample_name(keys %sequence_name_to_consensus)
+{
+	$sequence_name_to_consensus{$sample_name}
+		= remove_bases_at_indices_with_gaps_in_reference($sequence_name_to_consensus{$sample_name});
+}
+
+# removes gaps in reference (first sequence) in alignment
+$reference_sequence = remove_bases_at_indices_with_gaps_in_reference($reference_sequence);
+@reference_values = split(//, $reference_sequence);
 
 
 # if plate map provided, counts number positions with heterozygosity (iSNVs) in each
@@ -1900,6 +1924,69 @@ sub is_unambiguous_base
 	}
 	return 0;
 }
+
+# removes bases at indices that have gaps in reference and prints modified sequence
+# returns updated sequence
+# reference sequence must be read into $reference_sequence
+# indices with gaps in reference must be marked in %base_index_has_gap
+sub remove_bases_at_indices_with_gaps_in_reference
+{
+	my $sequence = $_[0]; # must be capitalized
+
+	# exit if no sequence input
+	if(!$sequence)
+	{
+		return;
+	}
+	
+	# exit if reference sequence not read in
+	if(!$reference_sequence)
+	{
+		return;
+	}
+	
+	# removes bases at indices that have gaps in reference
+	my @sequence_values = split(//, $sequence);
+	my @updated_sequence_values = ();
+	for(my $base_index = 0; $base_index < length($sequence); $base_index++)
+	{
+		if(!$base_index_has_gap{$base_index})
+		{
+			push(@updated_sequence_values, $sequence_values[$base_index]);
+		}
+	}
+	
+	# generates and returns updated sequence from array
+	return join("", @updated_sequence_values);
+}
+
+# returns 1 if base is not gap, 0 if base is a gap (or whitespace or empty)
+sub is_base
+{
+	my $base = $_[0];
+	
+	# empty value
+	if(!$base)
+	{
+		return 0;
+	}
+	
+	# only whitespace
+	if($base !~ /\S/)
+	{
+		return 0;
+	}
+	
+	# gap
+	if($base eq "-")
+	{
+		return 0;
+	}
+	
+	# base
+	return 1;
+}
+
 
 
 # HELPER FUNCTIONS FOR HANDLING PLATE NEIGHBORS
