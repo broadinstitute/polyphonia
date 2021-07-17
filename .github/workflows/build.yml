@@ -165,3 +165,46 @@ jobs:
             echo "  OUTPUT_MD5:   $OUTPUT_MD5"
             exit 1
           fi
+      - name: Run polyphonia (cross_contamination test) with aligned consensus sequences
+        run: |
+          set -e -x
+          docker run -v $(pwd)/bin:${{ env.DOCKER_POLYPHONIA_PATH }} -v $(pwd)/test:${{ env.DOCKER_POLYPHONIA_PATH }}/test -v $(pwd)/output:/tmp/output --rm polyphonia:${{ env.GITHUB_ACTIONS_BRANCH }}-${{ env.GITHUB_ACTIONS_SHORT_SHA }} \
+            polyphonia cross_contamination \
+            --ref ${{ env.DOCKER_POLYPHONIA_PATH }}/test/input/NC_045512.2.fasta \
+            --vcf ${{ env.DOCKER_POLYPHONIA_PATH }}/test/input/USA-MA-Broad_CRSP-01315-2021.bam_LoFreq.vcf \
+            --vcf ${{ env.DOCKER_POLYPHONIA_PATH }}/test/input/USA-MA-Broad_CRSP-01323-2021.bam_LoFreq.vcf \
+            --consensus-aligned ${{ env.DOCKER_POLYPHONIA_PATH }}/test/input/USA-MA-Broad_CRSP-01315_23-2021_MAFFT_aligned.fasta \
+            --output /tmp/output/potential_cross-contamination.txt
+
+          EXPECTED_MD5="358d736c9bd513731c020f84b7b06376"
+          OUTPUT_MD5="$(md5sum $(pwd)/output/potential_cross-contamination.txt | awk '{ print $1 }')"
+          if [[ "$OUTPUT_MD5" == "$EXPECTED_MD5" ]]; then
+            echo "Success: cross_contamination test"
+          else
+            echo "Failure: cross_contamination test output does not match expected file hash"
+            echo "  EXPECTED_MD5: $EXPECTED_MD5"
+            echo "  OUTPUT_MD5:   $OUTPUT_MD5"
+            exit 1
+          fi
+      - name: Run polyphonia (cross_contamination test) with aligned consensus sequences with gap in reference
+        run: |
+          set -e -x
+          docker run -v $(pwd)/bin:${{ env.DOCKER_POLYPHONIA_PATH }} -v $(pwd)/test:${{ env.DOCKER_POLYPHONIA_PATH }}/test -v $(pwd)/output:/tmp/output --rm polyphonia:${{ env.GITHUB_ACTIONS_BRANCH }}-${{ env.GITHUB_ACTIONS_SHORT_SHA }} \
+            polyphonia cross_contamination \
+            --ref ${{ env.DOCKER_POLYPHONIA_PATH }}/test/input/NC_045512.2.fasta \
+            --vcf ${{ env.DOCKER_POLYPHONIA_PATH }}/test/input/USA-MA-Broad_CRSP-01315-2021.bam_LoFreq.vcf \
+            --vcf ${{ env.DOCKER_POLYPHONIA_PATH }}/test/input/USA-MA-Broad_CRSP-01323-2021.bam_LoFreq.vcf \
+            --consensus-aligned ${{ env.DOCKER_POLYPHONIA_PATH }}/test/input/USA-MA-Broad_CRSP-01315_23-2021_MAFFT_aligned_gap_added.fasta \
+            --output /tmp/output/potential_cross-contamination.txt
+
+          EXPECTED_MD5="358d736c9bd513731c020f84b7b06376"
+          OUTPUT_MD5="$(md5sum $(pwd)/output/potential_cross-contamination.txt | awk '{ print $1 }')"
+          if [[ "$OUTPUT_MD5" == "$EXPECTED_MD5" ]]; then
+            echo "Success: cross_contamination test"
+          else
+            echo "Failure: cross_contamination test output does not match expected file hash"
+            echo "  EXPECTED_MD5: $EXPECTED_MD5"
+            echo "  OUTPUT_MD5:   $OUTPUT_MD5"
+            exit 1
+          fi
+
