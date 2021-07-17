@@ -5,6 +5,7 @@ LABEL maintainer "dpark@broadinstitute.org"
 ENV \
     POLYPHONIA_PATH="/opt/polyphonia" \
     TEST_FILES_PATH="/opt/polyphonia/test/input" \
+    TEST_FILES_ORACLE_PATH="/opt/polyphonia/test/output" \
     CONDA_DEFAULT_ENV="default" \
     MINICONDA_PATH="/opt/miniconda"
 ENV \
@@ -24,7 +25,7 @@ COPY bin/* $POLYPHONIA_PATH/
 
 # copy test files
 COPY test/input/* $TEST_FILES_PATH/
-COPY test/output/* $TEST_FILES_PATH/
+COPY test/output/* $TEST_FILES_ORACLE_PATH/
 
 # default bash prompt
 CMD ["/bin/bash"]
