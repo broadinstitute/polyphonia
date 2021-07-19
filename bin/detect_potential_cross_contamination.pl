@@ -1323,6 +1323,7 @@ if(scalar @plate_map_files)
 			print PLATE_OUT_FILE "contamination_source_well".$DELIMITER;
 			print PLATE_OUT_FILE "sample".$DELIMITER;
 			print PLATE_OUT_FILE "contamination_source_sample".$DELIMITER;
+			print PLATE_OUT_FILE "appearance_of_potential_contamination".$DELIMITER;
 			print PLATE_OUT_FILE "estimated_contamination_volume".$NEWLINE;
 	
 			# prints cross contamination table
@@ -1838,6 +1839,7 @@ sub detect_potential_contamination_in_sample_pair
 		# for plate map-specific output file
 		$output_line_plate .= $potential_contaminated_sample.$DELIMITER;
 		$output_line_plate .= $potential_contaminating_sample.$DELIMITER;
+		$output_line_plate .= $contamination_type.$DELIMITER;
 		$output_line_plate .= $median_frequency;
 	}
 
