@@ -151,6 +151,17 @@ if(input_file_type == "contamination")
 {
   input_table$Row0 <- as.numeric(lapply(gsub("[[:digit:]]","",input_table$contamination_source_well), FUN=row_letters_to_row_number)) # retrieves letters, converts to digits
   input_table$Column0 <- as.numeric(gsub("[^[:digit:]]", "", input_table$contamination_source_well)) # retrieves digits
+  
+  # determines amount to jitter--more jitter if more lines of potential cross-contamination
+  jitter_distance <- 0.4 * min(length(input_table$Row0) / (number_columns * number_rows), 1)
+  
+  # adds vertical and horizontal jitter values
+  input_table$jitter_vertical <- runif(length(input_table$Row0),min=-jitter_distance,max=jitter_distance)
+  input_table$jitter_horizontal <- runif(length(input_table$Row0),min=-jitter_distance,max=jitter_distance)
+  
+  # removes horizontal jitter for vertical lines; removes vertical jitter for horizontal lines
+  input_table$jitter_horizontal[input_table$Row == input_table$Row0] <- 0
+  input_table$jitter_vertical[input_table$Column == input_table$Column0] <- 0
 }
 
 
@@ -207,7 +218,7 @@ if(input_file_type == "contamination")
       shape=21, size=well_circle_size, stroke=well_circle_line_thickness) +
     geom_segment(
       data=input_table,
-      mapping=aes(x=Column0, y=Row0, xend=Column, yend=Row),
+      mapping=aes(x=Column0+jitter_horizontal, y=Row0+jitter_vertical, xend=Column+jitter_horizontal, yend=Row+jitter_vertical),
       size=arrow_thickness,
       arrow=arrow(type="open", angle=30, length=unit(arrow_head_length,"cm"))) +
     scale_fill_gradient("Total Estimated Contamination Volume", low="white", high="#CC857E",
