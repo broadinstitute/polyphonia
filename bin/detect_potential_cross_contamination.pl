@@ -2082,7 +2082,7 @@ sub retrieve_samples_neighboring_plate_position
 				foreach my $sample_name(keys %{$sample_name_to_plate_position{$plate_map_file}})
 				{
 					my $plate_position_option = $sample_name_to_plate_position{$plate_map_file}{$sample_name};
-					if($plate_position_option =~ /^([A-Z]+)\s*\d+$/)
+					if($plate_position_option =~ /^[A-Z]+\s*(\d+)$/)
 					{
 						my $plate_position_option_number = $1;
 						if($number eq $plate_position_option_number
