@@ -156,17 +156,6 @@ jobs:
             --plate-map ${{ env.DOCKER_POLYPHONIA_PATH }}/test/input/USA-MA-Broad_CRSP-01315_23-2021_plate_map.txt \
             --output /tmp/output/potential_cross-contamination.txt \
             --overwrite TRUE
-
-          EXPECTED_MD5="358d736c9bd513731c020f84b7b06376"
-          OUTPUT_MD5="$(md5sum $(pwd)/output/potential_cross-contamination.txt | awk '{ print $1 }')"
-          if [[ "$OUTPUT_MD5" == "$EXPECTED_MD5" ]]; then
-            echo "Success: cross_contamination test"
-          else
-            echo "Failure: cross_contamination test output does not match expected file hash"
-            echo "  EXPECTED_MD5: $EXPECTED_MD5"
-            echo "  OUTPUT_MD5:   $OUTPUT_MD5"
-            exit 1
-          fi
           
           DIFF=$(diff $(pwd)/output/potential_cross-contamination.txt $(pwd)/test/output/potential_cross-contamination.txt) 
           if [ "$DIFF" != "" ]; then
@@ -193,15 +182,16 @@ jobs:
             --output /tmp/output/potential_cross-contamination.txt \
             --overwrite TRUE
             
-          EXPECTED_MD5="358d736c9bd513731c020f84b7b06376"
-          OUTPUT_MD5="$(md5sum $(pwd)/output/potential_cross-contamination.txt | awk '{ print $1 }')"
-          if [[ "$OUTPUT_MD5" == "$EXPECTED_MD5" ]]; then
-            echo "Success: cross_contamination test"
-          else
-            echo "Failure: cross_contamination test output does not match expected file hash"
-            echo "  EXPECTED_MD5: $EXPECTED_MD5"
-            echo "  OUTPUT_MD5:   $OUTPUT_MD5"
+          DIFF=$(diff $(pwd)/output/potential_cross-contamination.txt $(pwd)/test/output/potential_cross-contamination.txt) 
+          if [ "$DIFF" != "" ]; then
+            echo "Failure: cross_contamination test output does not match expected output"
+            echo "  expected output:"
+            cat $(pwd)/output/potential_cross-contamination.txt
+            echo "  test output:"
+            cat ${{ env.DOCKER_POLYPHONIA_PATH }}/test/output/potential_cross-contamination.txt
             exit 1
+          else
+            echo "Success: cross_contamination test"
           fi
           
       - name: Run polyphonia (cross_contamination test with aligned consensus sequences with gap in reference)
@@ -217,14 +207,15 @@ jobs:
             --output /tmp/output/potential_cross-contamination.txt \
             --overwrite TRUE
 
-          EXPECTED_MD5="358d736c9bd513731c020f84b7b06376"
-          OUTPUT_MD5="$(md5sum $(pwd)/output/potential_cross-contamination.txt | awk '{ print $1 }')"
-          if [[ "$OUTPUT_MD5" == "$EXPECTED_MD5" ]]; then
-            echo "Success: cross_contamination test"
-          else
-            echo "Failure: cross_contamination test output does not match expected file hash"
-            echo "  EXPECTED_MD5: $EXPECTED_MD5"
-            echo "  OUTPUT_MD5:   $OUTPUT_MD5"
+          DIFF=$(diff $(pwd)/output/potential_cross-contamination.txt $(pwd)/test/output/potential_cross-contamination.txt) 
+          if [ "$DIFF" != "" ]; then
+            echo "Failure: cross_contamination test output does not match expected output"
+            echo "  expected output:"
+            cat $(pwd)/output/potential_cross-contamination.txt
+            echo "  test output:"
+            cat ${{ env.DOCKER_POLYPHONIA_PATH }}/test/output/potential_cross-contamination.txt
             exit 1
+          else
+            echo "Success: cross_contamination test"
           fi
 
