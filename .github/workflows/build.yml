@@ -153,6 +153,7 @@ jobs:
             --vcf ${{ env.DOCKER_POLYPHONIA_PATH }}/test/input/USA-MA-Broad_CRSP-01323-2021.bam_LoFreq.vcf \
             --consensus ${{ env.DOCKER_POLYPHONIA_PATH }}/test/input/USA-MA-Broad_CRSP-01315-2021.fasta \
             --consensus ${{ env.DOCKER_POLYPHONIA_PATH }}/test/input/USA-MA-Broad_CRSP-01323-2021.fasta \
+            --plate-map ${{ env.DOCKER_POLYPHONIA_PATH }}/test/input/USA-MA-Broad_CRSP-01315_23-2021_plate_map.txt \
             --output /tmp/output/potential_cross-contamination.txt \
             --overwrite TRUE
 
@@ -188,6 +189,7 @@ jobs:
             --vcf ${{ env.DOCKER_POLYPHONIA_PATH }}/test/input/USA-MA-Broad_CRSP-01315-2021.bam_LoFreq.vcf \
             --vcf ${{ env.DOCKER_POLYPHONIA_PATH }}/test/input/USA-MA-Broad_CRSP-01323-2021.bam_LoFreq.vcf \
             --consensus-aligned ${{ env.DOCKER_POLYPHONIA_PATH }}/test/input/USA-MA-Broad_CRSP-01315_23-2021_MAFFT_aligned.fasta \
+            --plate-map ${{ env.DOCKER_POLYPHONIA_PATH }}/test/input/USA-MA-Broad_CRSP-01315_23-2021_plate_map.txt \
             --output /tmp/output/potential_cross-contamination.txt \
             --overwrite TRUE
             
@@ -211,6 +213,7 @@ jobs:
             --vcf ${{ env.DOCKER_POLYPHONIA_PATH }}/test/input/USA-MA-Broad_CRSP-01315-2021.bam_LoFreq.vcf \
             --vcf ${{ env.DOCKER_POLYPHONIA_PATH }}/test/input/USA-MA-Broad_CRSP-01323-2021.bam_LoFreq.vcf \
             --consensus-aligned ${{ env.DOCKER_POLYPHONIA_PATH }}/test/input/USA-MA-Broad_CRSP-01315_23-2021_MAFFT_aligned_gap_added.fasta \
+            --plate-map ${{ env.DOCKER_POLYPHONIA_PATH }}/test/input/USA-MA-Broad_CRSP-01315_23-2021_plate_map.txt \
             --output /tmp/output/potential_cross-contamination.txt \
             --overwrite TRUE
 
