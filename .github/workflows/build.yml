@@ -167,11 +167,7 @@ jobs:
             exit 1
           fi
           
-          ls $(pwd)
-          ls $(pwd)/test
-          ls $(pwd)/test/output
-          
-          DIFF=$(diff $(pwd)/output/potential_cross-contamination.txt ${{ env.DOCKER_POLYPHONIA_PATH }}/test/output/potential_cross-contamination.txt) 
+          DIFF=$(diff $(pwd)/output/potential_cross-contamination.txt $(pwd)/test/output/potential_cross-contamination.txt) 
           if [ "$DIFF" != "" ]; then
             echo "Failure: cross_contamination test output does not match expected output"
             echo "  expected output:"
