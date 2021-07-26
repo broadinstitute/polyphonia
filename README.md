@@ -218,7 +218,9 @@ Processing large bam files can be very slow. `--vcf` can be helpful if you have 
 
 Within the vcf file, locus positions must be relative to the same [reference](#reference-genome) as that provided by `--ref`.
 
-Polyphonia is set up to process vcf files output by LoFreq or GATK. If you use a different tool, you can preprocess the output yourself and input it using `--het`.
+If within-sample diversity files are provided as vcf files, then [`--min-depth`](#position-inclusion-thresholds) is set to 0.
+
+Polyphonia is set up to process vcf files that were output by LoFreq or GATK. If you use a different tool, you can preprocess the output yourself and input it using `--het`.
 
 #### `--het`
 If polyphonia cannot read your vcf files, or if you have catalogued within-sample diversity using a tool that produces an output in a different format, you can pre-process the output files yourself and use `--het` to input a heterozygosity table directly. Each line in a heterozygosity table summarizes the major and minor alleles at a locus with heteroyzgosity (base substitutions only). A heterozysity table contains the following columns, tab separated, without a header line:
@@ -234,6 +236,8 @@ If polyphonia cannot read your vcf files, or if you have catalogued within-sampl
 Locus positions must be relative to the same [reference](#reference-genome) as that provided by `--ref`.
 
 Note that the loci listed in the heterozygosity table will be filtered according to the [allele filtering thresholds](#allele-filtering-thresholds) provided by `--min-readcount` and `--min-maf`. Not all alleles will be included in sample comparisons.
+
+If within-sample diversity files are provided as heterozygosity tables, then [`--min-depth`](#position-inclusion-thresholds) is set to 0.
 
 You can view example heterozygosity tables here: [USA-MA-Broad_CRSP-01315-2021.bam_LoFreq.vcf_heterozygosity.txt](/test/input/USA-MA-Broad_CRSP-01315-2021.bam_LoFreq.vcf_heterozygosity.txt) and [USA-MA-Broad_CRSP-01323-2021.bam_LoFreq.vcf_heterozygosity.txt](/test/input/USA-MA-Broad_CRSP-01323-2021.bam_LoFreq.vcf_heterozygosity.txt).
 
@@ -317,7 +321,7 @@ By default, samples are compared only to their direct plate neighbors to the lef
 
 `--min-covered`
 
-Use `--min-covered` to set the minimum proportion of the genome that must be covered in order for a sample to be included. The proportion of the genome covered is calculated by counting the number of unambiguous (`A`, `T`, `C`, or `G`)  bases in the sample's consensus genome provided using `--consensus` or `--consensus-aligned`, then dividing by the total number of unambiguous bases in the reference provided using `--ref`. If [`--min-depth`](#position-inclusion-thresholds) is non-zero and aligned reads are provided as input [within-sample diversity files](#within-sample-diversity-files) using [bam files](#--bam), then only positions with at least the minimum read depth are included.
+Use `--min-covered` to set the minimum proportion of the genome that must be covered in order for a sample to be included. The proportion of the genome covered is calculated by counting the number of unambiguous (`A`, `T`, `C`, or `G`)  bases in the sample's consensus genome provided using `--consensus` or `--consensus-aligned`, then dividing by the total number of unambiguous bases in the reference provided using `--ref`. If [`--min-depth`](#position-inclusion-thresholds) is non-zero, then only positions passing the read depth filter are included.
 
 By default, ≥95% of the genome must be unambigously covered for a sample to be included. If `--min-covered` is set too low, polyphonia may erroneously call potential cross-contamination in or by samples with low genome coverage.
 
@@ -325,9 +329,11 @@ By default, ≥95% of the genome must be unambigously covered for a sample to be
 
 `--min-depth`
 
-Use `--min-depth` to set the minimum number of reads that must overlap a position in a sample in order for that position to be included. If a position does not pass the read depth filter, it is not included in calculations of [genome coverage](#sample-inclusion-thresholds) and is not included as a heterozygous position. Read depths are calculated using [`SAMtools depth`](http://www.htslib.org/doc/samtools-depth.html). `--min-depth` can only be used if aligned reads are provided as input [within-sample diversity files](#within-sample-diversity-files) using [bam files](#--bam), since read depths are retrieved from the aligned reads.
+Use `--min-depth` to set the minimum number of reads that must overlap a position in a sample in order for that position to be included. If a position does not pass the read depth filter, it is not included in calculations of [genome coverage](#sample-inclusion-thresholds) and is not included as a heterozygous position.
 
-By default, minimum read depth is set to 100 reads, or 0 with non-bam file [within-sample diversity files](#within-sample-diversity-files) as input.
+Read depths are calculated from aligned reads using [`SAMtools depth`](http://www.htslib.org/doc/samtools-depth.html). `--min-depth` can only be used if [aligned reads](#--bam) are provided as input [within-sample diversity files](#within-sample-diversity-files), since read depths are calculated from the aligned reads.
+
+By default, minimum read depth is set to 100 reads, or 0 reads with non-bam file [within-sample diversity files](#within-sample-diversity-files) input.
 
 ### Allele Filtering Thresholds
 
@@ -336,7 +342,7 @@ By default, minimum read depth is set to 100 reads, or 0 with non-bam file [with
 
 By default, polyphonia does not include all alleles called by `LoFreq call`. We have found that requiring a minimum minor allele readcount of 10 and a minimum minor allele frequency of 3% after running  `LoFreq call` with default parameters does the best job of separating true within-sample diversity from sequencing errors and other noise. If you would like to specify a different minor allele readcount, you can do that using `--min-readcount`. You can specify a different minimum minor allele frequency using `--min-maf`. These options work regardless of the type(s) of [within-sample diversity files](#within-sample-diversity-files) provided.
 
-If `--min-depth` is non-zero, then an allele will be excluded if it appears at a position that does not pass the read depth threshold even if the minor allele frequency and readcount pass the thresholds set by `--min-readcount` and `--min-maf`.
+If `--min-depth` is non-zero, then an allele will be excluded if it appears at a position that does not pass the read depth threshold—even if the minor allele frequency and readcount pass the thresholds set by `--min-readcount` and `--min-maf`.
 
 ### Cross-Contamination Detection Thresholds
 
@@ -391,6 +397,8 @@ Columns summarizing potential contaminated sample:
 - `potential_contaminated_sample`: the sample proposed to potentially be contaminated. (E.g., `USA-MA-Broad_CRSP-01323-2021`.)
 - `potential_contaminated_sample_unambiguous_bases`: the number of unambiguous (`A`, `T`, `C`, or `G`) bases in the potentially contaminated samples's consensus genome. (E.g., `29,830`.)
 - `potential_contaminated_sample_genome_covered`: the number of unambiguous (`A`, `T`, `C`, or `G`) bases in the potentially contaminated samples's consensus genome divided by the number of unambiguous bases in the reference genome. The proportion is presented as a percentage rounded to one decimal place. (E.g., `99.8%`.)
+- `potential_contaminated_sample_unambiguous_bases_passing_read_depth_filter`: the number of unambiguous (`A`, `T`, `C`, or `G`) bases in the potentially contaminated samples's consensus genome that pass the [read depth filter](#position-inclusion-thresholds). (E.g., `29,728`.)
+- `potential_contaminated_sample_genome_covered_passing_read_depth_filter`: the number of unambiguous (`A`, `T`, `C`, or `G`) bases in the potentially contaminated samples's consensus genome that pass the [read depth filter](#position-inclusion-thresholds) divided by the number of unambiguous bases in the reference genome. The proportion is presented as a percentage rounded to one decimal place. (E.g., `99.4%`.)
 - `num_positions_with_heterozygosity`: the number of loci in the potentially contaminated sample at which there is heterozygosity (base substitutions only) passing [allele filtering thresholds](#allele-filtering-thresholds). (E.g., `21`.)
 - `alleles_at_positions_with_heterozygosity`: the alleles at each heterozygous locus (base substitutions only) in the potentially contaminated sample. Each locus is presented as its position, the consensus-level allele, and the minor allele. Loci are separated by a semicolon and a space (`; `). (E.g., `2,162 AG; 2,813 AG; 3,044 CA; 5,452 GA; 6,429 TC; 6,762 CT; 7,348 TA; 9,391 TC; 10,702 TC; 13,119 CT; 14,484 CT; 18,131 CT; 19,072 GT; 19,868 CT; 21,203 AG; 24,703 TC; 27,630 TC; 29,095 TC; 29,272 TC; 29,360 TC; 29,367 TC`.)
 
@@ -398,6 +406,8 @@ Columns summarizing potential contaminating sample:
 - `potential_contaminating_sample`: the sample proposed to be the source of this contamination event. (E.g., `USA-MA-Broad_CRSP-01315-2021`.)
 - `potential_contaminating_sample_unambiguous_bases`: the number of unambiguous (`A`, `T`, `C`, or `G`) bases in the potentially contaminating samples's consensus genome. (E.g., `29,782`.)
 - `potential_contaminating_sample_genome_covered`: the number of unambiguous (`A`, `T`, `C`, or `G`) bases in the potentially contaminating samples's consensus genome divided by the number of unambiguous bases in the reference genome. The propotion is presented as a percentage rounded to one decimal place. (E.g., `99.6%`.)
+- `potential_contaminating_sample_unambiguous_bases_passing_read_depth_filter`: the number of unambiguous (`A`, `T`, `C`, or `G`) bases in the potentially contaminating samples's consensus genome that pass the [read depth filter](#position-inclusion-thresholds). (E.g., `29,509`.)
+- `potential_contaminating_sample_genome_covered_passing_read_depth_filter`: the number of unambiguous (`A`, `T`, `C`, or `G`) bases in the potentially contaminating samples's consensus genome that pass the [read depth filter](#position-inclusion-thresholds) divided by the number of unambiguous bases in the reference genome. The propotion is presented as a percentage rounded to one decimal place. (E.g., `98.7%`.)
 
 Columns summarizing potential contaminating alleles:
 - `minor_alleles_matched`: the number of minor alleles in the potentially contaminated sample that appear in the potentially contaminating sample's consensus genome. (E.g., `21`.)
