@@ -11,7 +11,8 @@ OPTIONS:
 - Consensus genomes (aligned or not aligned, not both; at least one file required):
 	-c | --consensus FILE(S)	Unaligned consensus genome or genomes [null]
 	-a | --consensus-aligned FILE	Consensus genomes pre-aligned to reference as fasta alignment; reference provided by --ref must appear first [null]
-	-g | --min-covered FLOAT	Minimum proportion genome covered for a sample to be included [0.98]
+	-g | --min-covered FLOAT	Minimum proportion genome covered at minimum read depth for a sample to be included [0.95]
+	-r | --min-depth INT		Minimum read depth for a position to be used for comparison; can only be used with bam files as input [100]
 
 - Within-sample diversity (any combination; at least one file required):
 	-b | --bam FILE(S)		Aligned and trimmed reads as bam file(s); must use reference provided by --ref [null]
@@ -317,7 +318,7 @@ By default, samples are compared only to their direct plate neighbors to the lef
 
 Use `--min-covered` to set the minimum proportion of the genome that must be covered in order for a sample to be included. The proportion of the genome covered is calculated by counting the number of unambiguous (`A`, `T`, `C`, or `G`)  bases in the sample's consensus genome provided using `--consensus` or `--consensus-aligned`, then dividing by the total number of unambiguous bases in the reference provided using `--ref`.
 
-By default, ≥98% of the genome must be unambigously covered for a sample to be included. If `--min-covered` is set too low, polyphonia may erroneously call potential cross-contamination in or by samples with low genome coverage.
+By default, ≥95% of the genome must be unambigously covered for a sample to be included. If `--min-covered` is set too low, polyphonia may erroneously call potential cross-contamination in or by samples with low genome coverage.
 
 ### Allele Filtering Thresholds
 
