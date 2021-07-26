@@ -153,7 +153,7 @@ Polyphonia is available through the following [WDL](https://github.com/openwdl/w
 
 <p align="center"><img src="https://user-images.githubusercontent.com/6245320/122775196-e29fd980-d277-11eb-80b9-2b2ffb4fa3ae.png" alt="process flowchart" width="750"></p>
 
-Polyphonia starts off by verifying and printing input options and preparing a list of samples to analyze. Samples without a [consensus genome](#consensus-genomes) or [within-sample diversity file](#within-sample-diversity-files) are excluded from analysis. If at least one [optional plate map](#optional-plate-map-inputs) is provided, samples not appearing in any plate map are excluded from analysis. Samples not passing [sample inclusion thresholds](#sample-inclusion-thresholds) are excluded from analysis. To save time, samples without any plate neighbors as specified by provided [well comparison options](#well-comparison-options) are excluded.
+Polyphonia starts off by verifying and printing input options and preparing a list of samples to analyze. Samples without a [consensus genome](#consensus-genomes) or [within-sample diversity file](#within-sample-diversity-files) are excluded from analysis. If at least one [optional plate map](#optional-plate-map-inputs) is provided, samples not appearing in any plate map are excluded from analysis. A [read depth filter](#position-inclusion-thresholds) is applied. Samples not passing [sample inclusion thresholds](#sample-inclusion-thresholds) are excluded from analysis. To save time, samples without any plate neighbors as specified by provided [well comparison options](#well-comparison-options) are excluded.
 
 If [consensus genomes](#consensus-genomes) are not already aligned, they are aligned using [`MAFFT`](https://mafft.cbrc.jp/alignment/software/).
 
@@ -333,7 +333,7 @@ Use `--min-depth` to set the minimum number of reads that must overlap a positio
 
 Read depths are calculated from aligned reads using [`SAMtools depth`](http://www.htslib.org/doc/samtools-depth.html). `--min-depth` can only be used if [aligned reads](#--bam) are provided as input [within-sample diversity files](#within-sample-diversity-files), since read depths are calculated from the aligned reads.
 
-By default, minimum read depth is set to 100 reads, or 0 reads with non-bam file [within-sample diversity files](#within-sample-diversity-files) input.
+By default, minimum read depth is set to 100 reads, or 0 reads if at least one non-bam [within-sample diversity file](#within-sample-diversity-files) is provided as input. If `--min-depth` is set too low, polyphonia may erroneously call mismatches at positions where read depth is too low for a minor allele to appear, and cross-contamination that appears as minor alleles or as minor and consensus-level alleles may be missed.
 
 ### Allele Filtering Thresholds
 
@@ -342,7 +342,7 @@ By default, minimum read depth is set to 100 reads, or 0 reads with non-bam file
 
 By default, polyphonia does not include all alleles called by `LoFreq call`. We have found that requiring a minimum minor allele readcount of 10 and a minimum minor allele frequency of 3% after running  `LoFreq call` with default parameters does the best job of separating true within-sample diversity from sequencing errors and other noise. If you would like to specify a different minor allele readcount, you can do that using `--min-readcount`. You can specify a different minimum minor allele frequency using `--min-maf`. These options work regardless of the type(s) of [within-sample diversity files](#within-sample-diversity-files) provided.
 
-If `--min-depth` is non-zero, then an allele will be excluded if it appears at a position that does not pass the read depth threshold—even if the minor allele frequency and readcount pass the thresholds set by `--min-readcount` and `--min-maf`.
+If [`--min-depth`](#position-inclusion-thresholds) is non-zero, then an allele will be excluded if it appears at a position that does not pass the read depth threshold—even if the minor allele frequency and readcount pass the thresholds set by `--min-readcount` and `--min-maf`.
 
 ### Cross-Contamination Detection Thresholds
 
