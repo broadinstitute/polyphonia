@@ -350,6 +350,8 @@ If [`--min-depth`](#position-inclusion-thresholds) is non-zero, then an allele w
 
 By default, a sample is considered potentially contaminated if at most 1 contaminating consensus-level allele does not appear as a minor or consensus-level allele in the contaminated sample. You can allow for more sequencing errors or missed minor allele calls by specifying a larger threshold using `--max-mismatches`. A too-large `--max-mismatches` will result in many erroneous cross-contamination calls.
 
+Alleles are only compared or, therefore, counted as mismatches if they pass the [allele filtering thresholds](#allele-filtering-thresholds) and appear at positions that pass the [read depth filter](#position-inclusion-thresholds).
+
 (A note that insertions and deletions are ignored: we only include base substitutions.)
 
 ### Parallelization
@@ -453,7 +455,7 @@ You can set the [output directory](#output-file-paths) for the plate map visuali
 
 `--out-figures`
 
-If you enter at least one plate map file, polyphonia will generate a visualization of the plate with each well colored by and labelled with the number of iSNVs, or positions with intrahost variation (base substitutions only) passing our [allele filtering thresholds](#allele-filtering-thresholds). You might notice that some or even many wells are grey and labelled `NA` ("no data") even if the well had been mapped to a sample in a plate map. This is because processing [within-sample diversity files](#within-sample-diversity-files) can be very slow, and we only do it if a sample has passed [sample inclusion thresholds](#sample-inclusion-thresholds) and has at least one neighbor (which also passes [sample inclusion thresholds](#sample-inclusion-thresholds)) according to the provided [well comparison options](#well-comparison-options). If you would like to include all wells mapped to samples passing [sample inclusion thresholds](#sample-inclusion-thresholds), you can opt to compare all samples on a plate by entering [`--compare-plate`](#well-comparison-options).
+If you enter at least one plate map file, polyphonia will generate a visualization of the plate with each well colored by and labelled with the number of iSNVs, or positions with intrahost variation (base substitutions only) passing our [allele filtering thresholds](#allele-filtering-thresholds) and [read depth filter](#position-inclusion-thresholds). You might notice that some or even many wells are grey and labelled `NA` ("no data") even if the well had been mapped to a sample in a plate map. This is because processing [within-sample diversity files](#within-sample-diversity-files) can be very slow, and we only do it if a sample has passed [sample inclusion thresholds](#sample-inclusion-thresholds) and has at least one neighbor (which also passes [sample inclusion thresholds](#sample-inclusion-thresholds)) according to the provided [well comparison options](#well-comparison-options). If you would like to include all wells mapped to samples passing [sample inclusion thresholds](#sample-inclusion-thresholds), you can opt to compare all samples on a plate by entering [`--compare-plate`](#well-comparison-options).
 
 You can view an example of a plate map visualization of iSNVs at the [end](#output-files-1) of the [example run-through](#example-run-throughs):
 
