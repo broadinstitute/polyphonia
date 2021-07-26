@@ -154,6 +154,7 @@ jobs:
             --consensus ${{ env.DOCKER_POLYPHONIA_PATH }}/test/input/USA-MA-Broad_CRSP-01315-2021.fasta \
             --consensus ${{ env.DOCKER_POLYPHONIA_PATH }}/test/input/USA-MA-Broad_CRSP-01323-2021.fasta \
             --plate-map ${{ env.DOCKER_POLYPHONIA_PATH }}/test/input/USA-MA-Broad_CRSP-01315_23-2021_plate_map.txt \
+            --min-depth 0 \
             --output /tmp/output/potential_cross-contamination.txt \
             --overwrite TRUE
           

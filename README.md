@@ -11,7 +11,8 @@ OPTIONS:
 - Consensus genomes (aligned or not aligned, not both; at least one file required):
 	-c | --consensus FILE(S)	Unaligned consensus genome or genomes [null]
 	-a | --consensus-aligned FILE	Consensus genomes pre-aligned to reference as fasta alignment; reference provided by --ref must appear first [null]
-	-g | --min-covered FLOAT	Minimum proportion genome covered for a sample to be included [0.98]
+	-g | --min-covered FLOAT	Minimum proportion genome covered at minimum read depth for a sample to be included [0.95]
+	-r | --min-depth INT		Minimum read depth for a position to be used for comparison; can only be used with bam files as input [100]
 
 - Within-sample diversity (any combination; at least one file required):
 	-b | --bam FILE(S)		Aligned and trimmed reads as bam file(s); must use reference provided by --ref [null]
@@ -60,6 +61,7 @@ OPTIONS:
    - [Well Comparison Options](#well-comparison-options)
 - [Other Options](#other-options)
    - [Sample Inclusion Thresholds](#sample-inclusion-thresholds)
+   - [Position Inclusion Thresholds](#position-inclusion-thresholds)
    - [Allele Filtering Thresholds](#allele-filtering-thresholds)
    - [Cross-Contamination Detection Thresholds](#cross-contamination-detection-thresholds)
    - [Parallelization](#parallelization)
@@ -151,7 +153,7 @@ Polyphonia is available through the following [WDL](https://github.com/openwdl/w
 
 <p align="center"><img src="https://user-images.githubusercontent.com/6245320/122775196-e29fd980-d277-11eb-80b9-2b2ffb4fa3ae.png" alt="process flowchart" width="750"></p>
 
-Polyphonia starts off by verifying and printing input options and preparing a list of samples to analyze. Samples without a [consensus genome](#consensus-genomes) or [within-sample diversity file](#within-sample-diversity-files) are excluded from analysis. If at least one [optional plate map](#optional-plate-map-inputs) is provided, samples not appearing in any plate map are excluded from analysis. Samples not passing [sample inclusion thresholds](#sample-inclusion-thresholds) are excluded from analysis. To save time, samples without any plate neighbors as specified by provided [well comparison options](#well-comparison-options) are excluded.
+Polyphonia starts off by verifying and printing input options and preparing a list of samples to analyze. Samples without a [consensus genome](#consensus-genomes) or [within-sample diversity file](#within-sample-diversity-files) are excluded from analysis. If at least one [optional plate map](#optional-plate-map-inputs) is provided, samples not appearing in any plate map are excluded from analysis. A [read depth filter](#position-inclusion-thresholds) is applied. Samples not passing [sample inclusion thresholds](#sample-inclusion-thresholds) are excluded from analysis. To save time, samples without any plate neighbors as specified by provided [well comparison options](#well-comparison-options) are excluded.
 
 If [consensus genomes](#consensus-genomes) are not already aligned, they are aligned using [`MAFFT`](https://mafft.cbrc.jp/alignment/software/).
 
@@ -216,7 +218,9 @@ Processing large bam files can be very slow. `--vcf` can be helpful if you have 
 
 Within the vcf file, locus positions must be relative to the same [reference](#reference-genome) as that provided by `--ref`.
 
-Polyphonia is set up to process vcf files output by LoFreq or GATK. If you use a different tool, you can preprocess the output yourself and input it using `--het`.
+If within-sample diversity files are provided as vcf files, then [`--min-depth`](#position-inclusion-thresholds) is set to 0.
+
+Polyphonia is set up to process vcf files that were output by LoFreq or GATK. If you use a different tool, you can preprocess the output yourself and input it using `--het`.
 
 #### `--het`
 If polyphonia cannot read your vcf files, or if you have catalogued within-sample diversity using a tool that produces an output in a different format, you can pre-process the output files yourself and use `--het` to input a heterozygosity table directly. Each line in a heterozygosity table summarizes the major and minor alleles at a locus with heteroyzgosity (base substitutions only). A heterozysity table contains the following columns, tab separated, without a header line:
@@ -232,6 +236,8 @@ If polyphonia cannot read your vcf files, or if you have catalogued within-sampl
 Locus positions must be relative to the same [reference](#reference-genome) as that provided by `--ref`.
 
 Note that the loci listed in the heterozygosity table will be filtered according to the [allele filtering thresholds](#allele-filtering-thresholds) provided by `--min-readcount` and `--min-maf`. Not all alleles will be included in sample comparisons.
+
+If within-sample diversity files are provided as heterozygosity tables, then [`--min-depth`](#position-inclusion-thresholds) is set to 0.
 
 You can view example heterozygosity tables here: [USA-MA-Broad_CRSP-01315-2021.bam_LoFreq.vcf_heterozygosity.txt](/test/input/USA-MA-Broad_CRSP-01315-2021.bam_LoFreq.vcf_heterozygosity.txt) and [USA-MA-Broad_CRSP-01323-2021.bam_LoFreq.vcf_heterozygosity.txt](/test/input/USA-MA-Broad_CRSP-01323-2021.bam_LoFreq.vcf_heterozygosity.txt).
 
@@ -315,9 +321,19 @@ By default, samples are compared only to their direct plate neighbors to the lef
 
 `--min-covered`
 
-Use `--min-covered` to set the minimum proportion of the genome that must be covered in order for a sample to be included. The proportion of the genome covered is calculated by counting the number of unambiguous (`A`, `T`, `C`, or `G`)  bases in the sample's consensus genome provided using `--consensus` or `--consensus-aligned`, then dividing by the total number of unambiguous bases in the reference provided using `--ref`.
+Use `--min-covered` to set the minimum proportion of the genome that must be covered in order for a sample to be included. The proportion of the genome covered is calculated by counting the number of unambiguous (`A`, `T`, `C`, or `G`)  bases in the sample's consensus genome provided using `--consensus` or `--consensus-aligned`, then dividing by the total number of unambiguous bases in the reference provided using `--ref`. If [`--min-depth`](#position-inclusion-thresholds) is non-zero, then only positions passing the read depth filter are included.
 
-By default, ≥98% of the genome must be unambigously covered for a sample to be included. If `--min-covered` is set too low, polyphonia may erroneously call potential cross-contamination in or by samples with low genome coverage.
+By default, ≥95% of the genome must be unambigously covered for a sample to be included. If `--min-covered` is set too low, polyphonia may erroneously call potential cross-contamination in or by samples with low genome coverage.
+
+### Position Inclusion Thresholds
+
+`--min-depth`
+
+Use `--min-depth` to set the minimum number of reads that must overlap a position in a sample in order for that position to be included. If a position does not pass the read depth filter, it is not included in calculations of [genome coverage](#sample-inclusion-thresholds) and is not included as a heterozygous position.
+
+Read depths are calculated from aligned reads using [`SAMtools depth`](http://www.htslib.org/doc/samtools-depth.html). `--min-depth` can only be used if [aligned reads](#--bam) are provided as input [within-sample diversity files](#within-sample-diversity-files), since read depths are calculated from the aligned reads.
+
+By default, minimum read depth is set to 100 reads, or 0 reads if at least one non-bam [within-sample diversity file](#within-sample-diversity-files) is provided as input. If `--min-depth` is set too low, polyphonia may erroneously call mismatches at positions where read depth is too low for a minor allele to appear, and non-consensus-level cross-contamination may be missed.
 
 ### Allele Filtering Thresholds
 
@@ -326,11 +342,15 @@ By default, ≥98% of the genome must be unambigously covered for a sample to be
 
 By default, polyphonia does not include all alleles called by `LoFreq call`. We have found that requiring a minimum minor allele readcount of 10 and a minimum minor allele frequency of 3% after running  `LoFreq call` with default parameters does the best job of separating true within-sample diversity from sequencing errors and other noise. If you would like to specify a different minor allele readcount, you can do that using `--min-readcount`. You can specify a different minimum minor allele frequency using `--min-maf`. These options work regardless of the type(s) of [within-sample diversity files](#within-sample-diversity-files) provided.
 
+If [`--min-depth`](#position-inclusion-thresholds) is non-zero, then an allele will be excluded if it appears at a position that does not pass the read depth threshold—even if the minor allele frequency and readcount pass the thresholds set by `--min-readcount` and `--min-maf`.
+
 ### Cross-Contamination Detection Thresholds
 
 `--max-mismatches`
 
 By default, a sample is considered potentially contaminated if at most 1 contaminating consensus-level allele does not appear as a minor or consensus-level allele in the contaminated sample. You can allow for more sequencing errors or missed minor allele calls by specifying a larger threshold using `--max-mismatches`. A too-large `--max-mismatches` will result in many erroneous cross-contamination calls.
+
+Alleles are only compared or, therefore, counted as mismatches if they pass the [allele filtering thresholds](#allele-filtering-thresholds) and appear at positions that pass the [read depth filter](#position-inclusion-thresholds).
 
 (A note that insertions and deletions are ignored: we only include base substitutions.)
 
@@ -379,6 +399,8 @@ Columns summarizing potential contaminated sample:
 - `potential_contaminated_sample`: the sample proposed to potentially be contaminated. (E.g., `USA-MA-Broad_CRSP-01323-2021`.)
 - `potential_contaminated_sample_unambiguous_bases`: the number of unambiguous (`A`, `T`, `C`, or `G`) bases in the potentially contaminated samples's consensus genome. (E.g., `29,830`.)
 - `potential_contaminated_sample_genome_covered`: the number of unambiguous (`A`, `T`, `C`, or `G`) bases in the potentially contaminated samples's consensus genome divided by the number of unambiguous bases in the reference genome. The proportion is presented as a percentage rounded to one decimal place. (E.g., `99.8%`.)
+- `potential_contaminated_sample_unambiguous_bases_passing_read_depth_filter`: the number of unambiguous (`A`, `T`, `C`, or `G`) bases in the potentially contaminated samples's consensus genome that pass the [read depth filter](#position-inclusion-thresholds). This column only appears if `--min-depth` is non-zero and (aligned reads)[#--bam] are provided as input. (E.g., `29,728`.)
+- `potential_contaminated_sample_genome_covered_passing_read_depth_filter`: the number of unambiguous (`A`, `T`, `C`, or `G`) bases in the potentially contaminated samples's consensus genome that pass the [read depth filter](#position-inclusion-thresholds) divided by the number of unambiguous bases in the reference genome. The proportion is presented as a percentage rounded to one decimal place. This column only appears if `--min-depth` is non-zero and (aligned reads)[#--bam] are provided as input. (E.g., `99.4%`.)
 - `num_positions_with_heterozygosity`: the number of loci in the potentially contaminated sample at which there is heterozygosity (base substitutions only) passing [allele filtering thresholds](#allele-filtering-thresholds). (E.g., `21`.)
 - `alleles_at_positions_with_heterozygosity`: the alleles at each heterozygous locus (base substitutions only) in the potentially contaminated sample. Each locus is presented as its position, the consensus-level allele, and the minor allele. Loci are separated by a semicolon and a space (`; `). (E.g., `2,162 AG; 2,813 AG; 3,044 CA; 5,452 GA; 6,429 TC; 6,762 CT; 7,348 TA; 9,391 TC; 10,702 TC; 13,119 CT; 14,484 CT; 18,131 CT; 19,072 GT; 19,868 CT; 21,203 AG; 24,703 TC; 27,630 TC; 29,095 TC; 29,272 TC; 29,360 TC; 29,367 TC`.)
 
@@ -386,6 +408,8 @@ Columns summarizing potential contaminating sample:
 - `potential_contaminating_sample`: the sample proposed to be the source of this contamination event. (E.g., `USA-MA-Broad_CRSP-01315-2021`.)
 - `potential_contaminating_sample_unambiguous_bases`: the number of unambiguous (`A`, `T`, `C`, or `G`) bases in the potentially contaminating samples's consensus genome. (E.g., `29,782`.)
 - `potential_contaminating_sample_genome_covered`: the number of unambiguous (`A`, `T`, `C`, or `G`) bases in the potentially contaminating samples's consensus genome divided by the number of unambiguous bases in the reference genome. The propotion is presented as a percentage rounded to one decimal place. (E.g., `99.6%`.)
+- `potential_contaminating_sample_unambiguous_bases_passing_read_depth_filter`: the number of unambiguous (`A`, `T`, `C`, or `G`) bases in the potentially contaminating samples's consensus genome that pass the [read depth filter](#position-inclusion-thresholds). This column only appears if `--min-depth` is non-zero and (aligned reads)[#--bam] are provided as input. (E.g., `29,509`.)
+- `potential_contaminating_sample_genome_covered_passing_read_depth_filter`: the number of unambiguous (`A`, `T`, `C`, or `G`) bases in the potentially contaminating samples's consensus genome that pass the [read depth filter](#position-inclusion-thresholds) divided by the number of unambiguous bases in the reference genome. The propotion is presented as a percentage rounded to one decimal place. This column only appears if `--min-depth` is non-zero and (aligned reads)[#--bam] are provided as input. (E.g., `98.7%`.)
 
 Columns summarizing potential contaminating alleles:
 - `minor_alleles_matched`: the number of minor alleles in the potentially contaminated sample that appear in the potentially contaminating sample's consensus genome. (E.g., `21`.)
@@ -431,7 +455,7 @@ You can set the [output directory](#output-file-paths) for the plate map visuali
 
 `--out-figures`
 
-If you enter at least one plate map file, polyphonia will generate a visualization of the plate with each well colored by and labelled with the number of iSNVs, or positions with intrahost variation (base substitutions only) passing our [allele filtering thresholds](#allele-filtering-thresholds). You might notice that some or even many wells are grey and labelled `NA` ("no data") even if the well had been mapped to a sample in a plate map. This is because processing [within-sample diversity files](#within-sample-diversity-files) can be very slow, and we only do it if a sample has passed [sample inclusion thresholds](#sample-inclusion-thresholds) and has at least one neighbor (which also passes [sample inclusion thresholds](#sample-inclusion-thresholds)) according to the provided [well comparison options](#well-comparison-options). If you would like to include all wells mapped to samples passing [sample inclusion thresholds](#sample-inclusion-thresholds), you can opt to compare all samples on a plate by entering [`--compare-plate`](#well-comparison-options).
+If you enter at least one plate map file, polyphonia will generate a visualization of the plate with each well colored by and labelled with the number of iSNVs, or positions with intrahost variation (base substitutions only) passing our [allele filtering thresholds](#allele-filtering-thresholds) and [read depth filter](#position-inclusion-thresholds). You might notice that some or even many wells are grey and labelled `NA` ("no data") even if the well had been mapped to a sample in a plate map. This is because processing [within-sample diversity files](#within-sample-diversity-files) can be very slow, and we only do it if a sample has passed [sample inclusion thresholds](#sample-inclusion-thresholds) and has at least one neighbor (which also passes [sample inclusion thresholds](#sample-inclusion-thresholds)) according to the provided [well comparison options](#well-comparison-options). If you would like to include all wells mapped to samples passing [sample inclusion thresholds](#sample-inclusion-thresholds), you can opt to compare all samples on a plate by entering [`--compare-plate`](#well-comparison-options).
 
 You can view an example of a plate map visualization of iSNVs at the [end](#output-files-1) of the [example run-through](#example-run-throughs):
 
@@ -575,6 +599,7 @@ You can view the software polyphonia uses in [`requirements-conda.txt`](https://
    - Parallelization is performed using [Parallel::ForkManager](https://metacpan.org/pod/Parallel::ForkManager) ≥2.02.
 - Allele frequencies are calculated by [LoFreq](https://csb5.github.io/lofreq/installation/) ≥2.1.5.
 - Sequence alignments are generated by [MAFFT](https://mafft.cbrc.jp/alignment/software/) ≥7.480.
+- Read depths are calculated by [SAMtools depth](http://www.htslib.org/doc/samtools-depth.html).
 - Visualizations are created in [R](https://www.r-project.org/) ≥4.0.5 using [tidyverse](https://www.tidyverse.org/) ≥1.2.1.
 
 ### Name

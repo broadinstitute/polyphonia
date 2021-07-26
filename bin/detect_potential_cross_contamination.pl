@@ -10,6 +10,7 @@ use Math::Round;
 use Parallel::ForkManager; # download here: https://metacpan.org/pod/Parallel::ForkManager
 my $LOFREQ_EXECUTABLE_FILE_PATH = "lofreq";
 my $MAFFT_EXECUTABLE_FILE_PATH = "mafft";
+my $SAMTOOLS_EXECUTABLE_FILE_PATH = "samtools";
 my $VCF_TO_HETEROZYGOSITY_TABLE_SCRIPT_FILE_PATH = "vcf_file_to_heterozygosity_table.pl";
 my $PLATE_VISUALIZATION_FILE_PATH = "visualize_plate_map.R";
 
@@ -45,6 +46,10 @@ my $HETEROZYGOSITY_TABLE_MINOR_ALLELE_COLUMN = 5;
 my $HETEROZYGOSITY_TABLE_MINOR_ALLELE_READCOUNT_COLUMN = 6;
 my $HETEROZYGOSITY_TABLE_MINOR_ALLELE_FREQUENCY_COLUMN = 7;
 
+# columns in read-depth tables produced by samtools:
+my $READ_DEPTH_POSITION_COLUMN = 1;
+my $READ_DEPTH_COLUMN = 2;
+
 # options for output
 my $ROUND_PERCENTAGES = 1;
 my $ALLELE_LIST_SEPARATOR = "; ";
@@ -59,8 +64,8 @@ my $NO_DATA = "NA";
 
 # default values for command line arguments
 my $DEFAULT_MAXIMUM_ALLOWED_MISMATCHES = 1;
-my $DEFAULT_MINIMUM_GENOME_COVERAGE = 0.98;
-
+my $DEFAULT_MINIMUM_GENOME_COVERAGE = 0.95;
+my $DEFAULT_MINIMUM_READ_DEPTH = 100;
 my $DEFAULT_MINIMUM_MINOR_ALLELE_READCOUNT = 10; # ignore minor alleles with readcount <10 (does not consider the position to have heterozygosity)
 my $DEFAULT_MINIMUM_MINOR_ALLELE_FREQUENCY = 0.03; # 3%
 
@@ -101,14 +106,14 @@ if(!scalar @ARGV) # no command line arguments supplied
 	print STDOUT "- Consensus genomes (aligned or not aligned, not both; at least one file required):\n";
 	print STDOUT "\t-c | --consensus FILE(S)\tUnaligned consensus genome or genomes [null]\n";
 	print STDOUT "\t-a | --consensus-aligned FILE\tConsensus genomes pre-aligned to reference as fasta alignment; reference provided by --ref must appear first [null]\n";
-	print STDOUT "\t-g | --min-covered FLOAT\tMinimum proportion genome covered for a sample to be included [".$DEFAULT_MINIMUM_GENOME_COVERAGE."]\n";
+	print STDOUT "\t-g | --min-covered FLOAT\tMinimum proportion genome covered at minimum read depth for a sample to be included [".$DEFAULT_MINIMUM_GENOME_COVERAGE."]\n";
+	print STDOUT "\t-r | --min-depth INT\t\tMinimum read depth for a position to be used for comparison; can only be used with bam files as input [".$DEFAULT_MINIMUM_READ_DEPTH."]\n";
 	print STDOUT "\n";
 	
 	print STDOUT "- Within-sample diversity (any combination; at least one file required):\n";
 	print STDOUT "\t-b | --bam FILE(S)\t\tAligned and trimmed reads as bam file(s); must use reference provided by --ref [null]\n";
 	print STDOUT "\t-v | --vcf FILE(S)\t\tVCF file(s) output by LoFreq or GATK; must use reference provided by --ref [null]\n";
 	print STDOUT "\t-h | --het FILE(S)\t\tTab-separated heterozygosity summary tables; see documentation for format [null]\n";
-	
 	print STDOUT "\t-e | --min-readcount INT\tMinimum minor allele readcount for position to be considered heterozygous [".$DEFAULT_MINIMUM_MINOR_ALLELE_READCOUNT."]\n";
 	print STDOUT "\t-i | --min-maf FLOAT\t\tMinimum minor allele frequency for position to be considered heterozygous [".$DEFAULT_MINIMUM_MINOR_ALLELE_FREQUENCY."]\n";
 	print STDOUT "\n";
@@ -147,6 +152,7 @@ my @consensus_genome_files = ();
 my $consensus_genomes_aligned_file = "";
 my $minimum_genome_coverage = $DEFAULT_MINIMUM_GENOME_COVERAGE;
 my $maximum_allowed_mismatches = $DEFAULT_MAXIMUM_ALLOWED_MISMATCHES;
+my $minimum_read_depth = $DEFAULT_MINIMUM_READ_DEPTH;
 
 my @aligned_and_trimmed_bam_files = ();
 my @vcf_files = ();
@@ -218,6 +224,10 @@ for($argument_index = 0; $argument_index <= $#ARGV; $argument_index++)
 	elsif(($input = read_in_input_files_argument("-c", "--consensus")) ne "-1")
 	{
 		push(@consensus_genome_files, @$input);
+	}
+	elsif(($input = read_in_positive_integer_argument("-r", "--min-depth")) != -1)
+	{
+		$minimum_read_depth = $input;
 	}
 	elsif(($input = read_in_positive_float_argument("-g", "--min-covered")) != -1)
 	{
@@ -351,6 +361,12 @@ if($minimum_genome_coverage < 0 or $minimum_genome_coverage > 1)
 {
 	print STDERR "Error: minimum genome coverage is not between 0 and 1. Exiting.\n";
 	die;
+}
+if($minimum_read_depth > 0 and (scalar @heterozygosity_tables or scalar @vcf_files))
+{
+	# does not apply read depth filter
+	$minimum_read_depth = 0;
+	print STDERR "Warning: not all input files are vcf files; not applying read depth filter.\n";
 }
 
 
@@ -552,6 +568,14 @@ if(scalar @plate_map_files)
 	}
 }
 
+# options
+print STDERR "OPTIONS:\n" if $verbose;
+print STDOUT "\tminimum read depth: ".$minimum_read_depth."\n" if $verbose;
+print STDOUT "\tminimum genome coverage: ".($minimum_genome_coverage*100)."%\n" if $verbose;
+print STDOUT "\tminimum minor allele readcount: ".$minimum_minor_allele_readcount."\n" if $verbose;
+print STDOUT "\tminimum minor allele frequency: ".($minimum_minor_allele_frequency*100)."%\n" if $verbose;
+print STDOUT "\tmaximum allowed mismatches: ".$maximum_allowed_mismatches."\n" if $verbose;
+
 # output
 print STDOUT "OUTPUT:\n" if $verbose;
 print STDOUT "\toutput file: ".$output_file_path."\n" if $verbose;
@@ -588,28 +612,31 @@ if(scalar @plate_map_files)
 	}
 	
 	# prints number of samples remaining
-	print STDOUT (keys %sample_names)." samples...\n" if $verbose;
+	print_number_samples_remaining_and_exit_if_none();
 	
 	# catalogues consensus genome sample names
 	print STDOUT "removing names of samples without associated consensus genome...\n" if $verbose;
 	my %sample_name_has_consensus_genome = (); # key: sample name -> value: 1 if sample has associated consensus genome
 	foreach my $consensus_genome_fasta_file(@consensus_genome_files, $consensus_genomes_aligned_file)
 	{
-		open FASTA_FILE, "<$consensus_genome_fasta_file" || die "Could not open $consensus_genome_fasta_file to read; terminating =(\n";
-		while(<FASTA_FILE>) # for each line in the file
+		if($consensus_genome_fasta_file)
 		{
-			chomp;
-			if($_ =~ /^>(.*)/) # header line
+			open FASTA_FILE, "<$consensus_genome_fasta_file" || die "Could not open $consensus_genome_fasta_file to read; terminating =(\n";
+			while(<FASTA_FILE>) # for each line in the file
 			{
-				my $sample_name = $1;
-				$sample_name_has_consensus_genome{$sample_name} = 1;
+				chomp;
+				if($_ =~ /^>(.*)/) # header line
+				{
+					my $sample_name = $1;
+					$sample_name_has_consensus_genome{$sample_name} = 1;
+				}
 			}
+			close FASTA_FILE;
 		}
-		close FASTA_FILE;
 	}
 	
 	# prints number of samples remaining
-	print STDOUT (keys %sample_names)." samples remain...\n" if $verbose;
+	print_number_samples_remaining_and_exit_if_none();
 	
 	# removes any sample names that don't have a consensus genome
 	foreach my $sample_name(keys %sample_names)
@@ -627,21 +654,24 @@ else
 	print STDOUT "retrieving sample names from consensus genome fasta file(s)...\n" if $verbose;
 	foreach my $consensus_genome_fasta_file(@consensus_genome_files, $consensus_genomes_aligned_file)
 	{
-		open FASTA_FILE, "<$consensus_genome_fasta_file" || die "Could not open $consensus_genome_fasta_file to read; terminating =(\n";
-		while(<FASTA_FILE>) # for each line in the file
+		if($consensus_genome_fasta_file)
 		{
-			chomp;
-			if($_ =~ /^>(.*)/) # header line
+			open FASTA_FILE, "<$consensus_genome_fasta_file" || die "Could not open $consensus_genome_fasta_file to read; terminating =(\n";
+			while(<FASTA_FILE>) # for each line in the file
 			{
-				my $sample_name = $1;
-				$sample_names{$sample_name} = 1;
+				chomp;
+				if($_ =~ /^>(.*)/) # header line
+				{
+					my $sample_name = $1;
+					$sample_names{$sample_name} = 1;
+				}
 			}
+			close FASTA_FILE;
 		}
-		close FASTA_FILE;
 	}
 	
 	# prints number of samples remaining
-	print STDOUT (keys %sample_names)." samples...\n" if $verbose;
+	print_number_samples_remaining_and_exit_if_none();
 }
 
 # records file stage for each within-sample diversity file
@@ -699,7 +729,7 @@ foreach my $sample_name(keys %sample_names)
 }
 
 # prints number of samples remaining
-print STDOUT (keys %sample_names)." samples remain...\n" if $verbose;
+print_number_samples_remaining_and_exit_if_none();
 
 
 # reads in reference sequence
@@ -736,70 +766,61 @@ if(!$reference_sequence_length)
 
 
 # reads in consensus genomes; removes samples that do not have sufficiently complete genomes
+my %sequence_name_to_consensus = (); # key: sequence name -> value: consensus sequence, including gaps froms alignment
 if($minimum_genome_coverage)
 {
 	print STDERR "reading in consensus genomes...\n";
-	my %sequence_name_to_consensus = (); # key: sequence name -> value: consensus sequence, including gaps froms alignment
 	foreach my $consensus_genome_fasta_file(@consensus_genome_files, $consensus_genomes_aligned_file)
 	{
-		open FASTA_FILE, "<$consensus_genome_fasta_file" || die "Could not open $consensus_genome_fasta_file to read; terminating =(\n";
-		my $sequence = "";
-		my $sample_name = "";
-		while(<FASTA_FILE>) # for each line in the file
+		if($consensus_genome_fasta_file)
 		{
-			chomp;
-			if($_ =~ /^>(.*)/) # header line
+			open FASTA_FILE, "<$consensus_genome_fasta_file" || die "Could not open $consensus_genome_fasta_file to read; terminating =(\n";
+			my $sequence = "";
+			my $sample_name = "";
+			while(<FASTA_FILE>) # for each line in the file
 			{
-				# process previous sequence
-				$sequence = uc($sequence);
-				if($sequence and $sample_name and $sample_names{$sample_name})
+				chomp;
+				if($_ =~ /^>(.*)/) # header line
 				{
-					$sequence_name_to_consensus{$sample_name} = $sequence;
-				}
+					# process previous sequence
+					$sequence = uc($sequence);
+					if($sequence and $sample_name and $sample_names{$sample_name})
+					{
+						$sequence_name_to_consensus{$sample_name} = $sequence;
+					}
 
-				# prepare for next sequence
-				$sequence = "";
-				$sample_name = $1;
+					# prepare for next sequence
+					$sequence = "";
+					$sample_name = $1;
+				}
+				else
+				{
+					$sequence .= $_;
+				}
 			}
-			else
+			# process final sequence
+			if($sequence and $sample_name and $sample_names{$sample_name})
 			{
-				$sequence .= $_;
+				$sequence_name_to_consensus{$sample_name} = uc($sequence);
 			}
+			close FASTA_FILE;
 		}
-		# process final sequence
-		if($sequence and $sample_name and $sample_names{$sample_name})
-		{
-			$sequence_name_to_consensus{$sample_name} = uc($sequence);
-		}
-		close FASTA_FILE;
 	}
 	
 	print STDOUT "removing names of samples without at least ".($minimum_genome_coverage*100)
 		."% coverage ("."of ".$reference_sequence_length." total bases)...\n" if $verbose;
-	foreach my $sample_name(keys %sample_names)
-	{
-		# retrieves consensus genome bases
-		my $consensus = $sequence_name_to_consensus{$sample_name};
-		my @consensus_values = split(//, $consensus);
-
-		# counts unambiguous bases in consensus genome
-		my $consensus_unambig_bases = count_unambiguous_bases_in_sequence(@consensus_values);
-		my $consensus_percent_covered = $consensus_unambig_bases / $reference_sequence_length;
-
-		# removes sample name if sample does not have minimum genome coverage
-		if($consensus_percent_covered < $minimum_genome_coverage)
-		{
-			delete $sample_names{$sample_name};
-		}
-	}
+	remove_samples_without_minimum_genome_coverage();
 	
 	# prints number of samples remaining
-	print STDOUT (keys %sample_names)." samples remain...\n" if $verbose;
+	print_number_samples_remaining_and_exit_if_none();
+	
+	# clears consensus genomes
+	%sequence_name_to_consensus = ();
 }
 
 
-# if a plate map is provided, removes any samples that do not have neighbors
-# reads in plate map positions of all samples
+# if a plate map is provided, reads in plate map positions of all samples;
+# removes any samples that do not have neighbors
 my %sample_name_to_all_plate_positions = (); # key: sample name -> value: string including all plate positions the sample appears in
 my %sample_name_to_all_plates = (); # key: sample name -> value: string including all plates the sample appears in
 
@@ -808,8 +829,7 @@ my %sample_name_to_plate_position = (); # key: plate map file -> sample name -> 
 
 if(scalar @plate_map_files)
 {
-	print STDOUT "reading in plate map positions and removing names of samples without plate neighbors...\n" if $verbose;
-	my %sample_has_plate_neighbors = (); # key: sample name -> value: 1 if sample has plate neighbors
+	print STDOUT "reading in plate map positions...\n" if $verbose;
 	foreach my $plate_map_file(@plate_map_files)
 	{
 		# reads in plate map
@@ -849,39 +869,130 @@ if(scalar @plate_map_files)
 			}
 		}
 		close PLATE_MAP;
-		
-		# checks if each sample has at least one neighbor
-		foreach my $plate_position(keys %{$plate_position_to_sample_name{$plate_map_file}})
-		{
-			my $sample_name = $plate_position_to_sample_name{$plate_map_file}{$plate_position};
-			my @neighboring_samples = retrieve_samples_neighboring_plate_position($plate_position, $sample_name, $plate_map_file);
-			
-			if(scalar @neighboring_samples)
-			{
-				$sample_has_plate_neighbors{$sample_name} = 1;
-			}
-		}
 	}
 	
 	# removes any sample names that don't have at least one plate neighbor
-	foreach my $sample_name(keys %sample_names)
-	{
-		if(!$sample_has_plate_neighbors{$sample_name})
-		{
-			delete $sample_names{$sample_name};
-		}
-	}
+	print STDOUT "removing names of samples without plate neighbors...\n" if $verbose;
+	remove_samples_without_plate_neighbors();
+	
+	# prints number of samples remaining
+	print_number_samples_remaining_and_exit_if_none();
 }
 
-# prints number of samples remaining
-print STDOUT (keys %sample_names)." samples remain...\n" if $verbose;
 
-# verifies that we still have samples to compare
-print STDOUT "verifying that there are samples to compare...\n" if $verbose;
-if(scalar keys %sample_names < 2)
+# generates and reads in read depth files
+my %sample_name_to_position_to_read_depth = (); # key: sample name -> key: position -> value: read depth that that position
+if($minimum_read_depth > 0)
 {
-	print STDERR "Error: no pairs of samples to compare. Exiting.\n";
-	die;
+	print STDOUT "generating and reading in read depth files, using ".$cores_to_use." cores in parallel...\n" if $verbose;
+	
+	my $pm = Parallel::ForkManager -> new($cores_to_use);
+	$pm -> run_on_finish(
+	sub
+	{
+		my ($pid, $exit_code, $ident, $exit_signal, $core_dump, $data_structure_reference) = @_;
+		my $q = $data_structure_reference -> {sample};
+		$sample_name_to_position_to_read_depth{$q} = $data_structure_reference -> {position_to_read_depth};
+	});
+
+	foreach my $sample(keys %sample_names)
+	{
+		my $pid = $pm -> start and next;
+		
+		my $within_sample_diversity_file = $sample_name_to_within_sample_diversity_file{$sample};
+		my %position_to_read_depth = (); # key: position -> value: read depth that that position
+		if($within_sample_diversity_file_to_stage{$within_sample_diversity_file} eq "bam") # if this is indeed a bam file
+		{
+			# runs samtools depth
+			my $read_depth_file = $temp_intermediate_directory.retrieve_file_name($within_sample_diversity_file."_read_depth.txt");
+			check_if_file_exists_before_writing($read_depth_file);
+			print STDOUT "$SAMTOOLS_EXECUTABLE_FILE_PATH depth $within_sample_diversity_file > $read_depth_file\n" if $verbose;
+			`$SAMTOOLS_EXECUTABLE_FILE_PATH depth $within_sample_diversity_file > $read_depth_file`;
+			print STDOUT "\n" if $verbose;
+			
+			# verifies that read depth file is generated and is not empty
+			verify_input_file_exists_and_is_nonempty($read_depth_file, "read depth file", 1, 1);
+			
+			# reads in read depth file
+			open READ_DEPTH_FILE, "<$read_depth_file" || die "Could not open $read_depth_file to read; terminating =(\n";
+			while(<READ_DEPTH_FILE>) # for each line in the file
+			{
+				chomp;
+				if($_ =~ /\S/)
+				{
+					# reads in mapped values
+					my @items_in_row = split($DELIMITER, $_);
+		
+					my $position = $items_in_row[$READ_DEPTH_POSITION_COLUMN];
+					my $read_depth = $items_in_row[$READ_DEPTH_COLUMN];
+		
+					$position_to_read_depth{$position} = $read_depth;
+				}
+			}
+			close READ_DEPTH_FILE;
+		}
+		else
+		{
+			print STDERR "Error: expected bam file for sample ".$sample.". Could not "
+				."generate read depth file.\n";
+		}
+		$pm -> finish(0, {position_to_read_depth => \%position_to_read_depth, sample => $sample});
+	}
+	$pm -> wait_all_children;
+
+# not parallelized; uncomment and replace parallelized version if needed
+# 	print STDOUT "generating read depth files (not parallelized)...\n" if $verbose;
+# 
+# 	foreach my $sample(keys %sample_names)
+# 	{
+# 		my $within_sample_diversity_file = $sample_name_to_within_sample_diversity_file{$sample};
+# 		my $read_depth_file = $temp_intermediate_directory.retrieve_file_name($within_sample_diversity_file."_read_depth.txt");
+# 		if($within_sample_diversity_file_to_stage{$within_sample_diversity_file} eq "bam") # if this is indeed a bam file
+# 		{
+# 			# runs samtools depth
+# 			check_if_file_exists_before_writing($read_depth_file);
+# 			print STDOUT "$SAMTOOLS_EXECUTABLE_FILE_PATH depth $within_sample_diversity_file > $read_depth_file\n" if $verbose;
+# 			`$SAMTOOLS_EXECUTABLE_FILE_PATH depth $within_sample_diversity_file > $read_depth_file`;
+# 			print STDOUT "\n" if $verbose;
+# 		}
+# 		else
+# 		{
+# 			print STDERR "Error: expected bam file for sample ".$sample.". Could not "
+# 				."generate read depth file.\n";
+# 		}
+# 		
+# 		# verifies that read depth file is generated and is not empty
+# 		verify_input_file_exists_and_is_nonempty($read_depth_file, "read depth file", 1, 1);
+# 		
+# 		# reads in read depth file
+# 		open READ_DEPTH_FILE, "<$read_depth_file" || die "Could not open $read_depth_file to read; terminating =(\n";
+# 		while(<READ_DEPTH_FILE>) # for each line in the file
+# 		{
+# 			chomp;
+# 			if($_ =~ /\S/)
+# 			{
+# 				# reads in mapped values
+# 				my @items_in_row = split($DELIMITER, $_);
+# 	
+# 				my $position = $items_in_row[$READ_DEPTH_POSITION_COLUMN];
+# 				my $read_depth = $items_in_row[$READ_DEPTH_COLUMN];
+# 	
+# 				$sample_name_to_position_to_read_depth{$sample}{$position} = $read_depth;
+# 			}
+# 		}
+# 		close READ_DEPTH_FILE;
+# 	}
+
+	# verifies that each sample has at least minimum_genome_coverage * reference_sequence_length
+	# positions with sufficient read depth
+	print STDOUT "removing names of samples without at least "
+		.($minimum_genome_coverage * $reference_sequence_length)." bases with read depth >= "
+		.$minimum_read_depth." (".(100*$minimum_genome_coverage)."% of "
+		.$reference_sequence_length." total bases)...\n" if $verbose;
+	remove_samples_without_minimum_genome_coverage_with_high_read_depth();
+	
+	# prints number of samples remaining
+	print_number_samples_remaining_and_exit_if_none();
 }
 
 
@@ -893,36 +1004,39 @@ if(!$consensus_genomes_aligned_file)
 	my %sequence_name_to_consensus = (); # key: sequence name -> value: consensus sequence, including gaps froms alignment
 	foreach my $consensus_genome_fasta_file(@consensus_genome_files, $consensus_genomes_aligned_file)
 	{
-		open FASTA_FILE, "<$consensus_genome_fasta_file" || die "Could not open $consensus_genome_fasta_file to read; terminating =(\n";
-		my $sequence = "";
-		my $sample_name = "";
-		while(<FASTA_FILE>) # for each line in the file
+		if($consensus_genome_fasta_file)
 		{
-			chomp;
-			if($_ =~ /^>(.*)/) # header line
+			open FASTA_FILE, "<$consensus_genome_fasta_file" || die "Could not open $consensus_genome_fasta_file to read; terminating =(\n";
+			my $sequence = "";
+			my $sample_name = "";
+			while(<FASTA_FILE>) # for each line in the file
 			{
-				# process previous sequence
-				$sequence = uc($sequence);
-				if($sequence and $sample_name and $sample_names{$sample_name})
+				chomp;
+				if($_ =~ /^>(.*)/) # header line
 				{
-					$sequence_name_to_consensus{$sample_name} = $sequence;
-				}
+					# process previous sequence
+					$sequence = uc($sequence);
+					if($sequence and $sample_name and $sample_names{$sample_name})
+					{
+						$sequence_name_to_consensus{$sample_name} = $sequence;
+					}
 
-				# prepare for next sequence
-				$sequence = "";
-				$sample_name = $1;
+					# prepare for next sequence
+					$sequence = "";
+					$sample_name = $1;
+				}
+				else
+				{
+					$sequence .= $_;
+				}
 			}
-			else
+			# process final sequence
+			if($sequence and $sample_name and $sample_names{$sample_name})
 			{
-				$sequence .= $_;
+				$sequence_name_to_consensus{$sample_name} = uc($sequence);
 			}
+			close FASTA_FILE;
 		}
-		# process final sequence
-		if($sequence and $sample_name and $sample_names{$sample_name})
-		{
-			$sequence_name_to_consensus{$sample_name} = uc($sequence);
-		}
-		close FASTA_FILE;
 	}
 	
 	# generates concatenated consensus genomes file
@@ -954,42 +1068,10 @@ if(!$consensus_genomes_aligned_file)
 }
 
 
-# pre-processes within-sample diversity files
-# parallelization based on https://perlmaven.com/speed-up-calculation-by-running-in-parallel
-print STDOUT "pre-processing within-sample diversity files, using ".$cores_to_use." cores in parallel...\n" if $verbose;
-
-my %updated_within_sample_diversity_files = ();
-my $pm = Parallel::ForkManager -> new($cores_to_use);
-$pm -> run_on_finish(
-sub
-{
-	my ($pid, $exit_code, $ident, $exit_signal, $core_dump, $data_structure_reference) = @_;
-	my $q = $data_structure_reference -> {input};
-	$updated_within_sample_diversity_files{$q} = $data_structure_reference -> {updated_file};
-});
-
-foreach my $sample(keys %sample_names)
-{
-	my $pid = $pm -> start and next;
-	my $res = process_within_sample_diversity_file_for_sample($sample);
-	$pm -> finish(0, {updated_file => $res, input => $sample});
-}
-$pm -> wait_all_children;
-
-# saves updated within-sample diversity files
-foreach my $sample(keys %updated_within_sample_diversity_files)
-{
-	my $within_sample_diversity_file = $updated_within_sample_diversity_files{$sample};
-	
-	$sample_name_to_within_sample_diversity_file{$sample} = $within_sample_diversity_file;
-	$within_sample_diversity_file_to_stage{$within_sample_diversity_file} = "het";
-}
-
-
 # reads in aligned consensus genomes
 print STDERR "reading in aligned consensus genomes...\n";
 open ALIGNED_CONSENSUS_GENOMES, "<$consensus_genomes_aligned_file" || die "Could not open $consensus_genomes_aligned_file to read; terminating =(\n";
-my %sequence_name_to_consensus = (); # key: sequence name -> value: consensus sequence, including gaps froms alignment
+%sequence_name_to_consensus = (); # key: sequence name -> value: consensus sequence, including gaps froms alignment
 $reference_sequence = ""; # first sequence in alignment
 
 my $sequence = "";
@@ -1051,6 +1133,80 @@ $reference_sequence = remove_bases_at_indices_with_gaps_in_reference($reference_
 @reference_values = split(//, $reference_sequence);
 
 
+# masks any positions with read depth below minimum_read_depth
+# removes samples that do not have sufficiently complete genomes with read depth filter applied
+# removes samples without plate neighbors after read depth filter applied
+my %sequence_name_to_pre_masking_consensus = %sequence_name_to_consensus;
+if($minimum_read_depth > 0)
+{
+	print STDOUT "masking positions with read depth < ".$minimum_read_depth."...\n" if $verbose;
+	foreach my $sample_name(keys %sample_names)
+	{
+		# retrieves consensus genome bases
+		my $consensus = $sequence_name_to_consensus{$sample_name};
+		my @consensus_values = split(//, $consensus);
+		
+		for my $position(keys %{$sample_name_to_position_to_read_depth{$sample_name}})
+		{
+			if($sample_name_to_position_to_read_depth{$sample_name}{$position} < $minimum_read_depth)
+			{
+				$consensus_values[$position - 1] = "N";
+			}
+		}
+		$sequence_name_to_consensus{$sample_name} = join("", @consensus_values);
+	}
+	
+	print STDOUT "removing names of samples without at least ".($minimum_genome_coverage*100)
+		."% coverage with read depth >= ".$minimum_read_depth." ("."of "
+		.$reference_sequence_length." total bases)...\n" if $verbose;
+	my $samples_removed = remove_samples_without_minimum_genome_coverage();
+	
+	# prints number of samples remaining
+	print_number_samples_remaining_and_exit_if_none();
+	
+	if($samples_removed and scalar @plate_map_files)
+	{
+		# removes samples that are now without plate neighbors
+		print STDOUT "removing names of samples without plate neighbors...\n" if $verbose;
+		remove_samples_without_plate_neighbors();
+	
+		# prints number of samples remaining
+		print_number_samples_remaining_and_exit_if_none();
+	}
+}
+
+
+# pre-processes within-sample diversity files
+# parallelization based on https://perlmaven.com/speed-up-calculation-by-running-in-parallel
+print STDOUT "pre-processing within-sample diversity files, using ".$cores_to_use." cores in parallel...\n" if $verbose;
+my %updated_within_sample_diversity_files = ();
+my $pm = Parallel::ForkManager -> new($cores_to_use);
+$pm -> run_on_finish(
+sub
+{
+	my ($pid, $exit_code, $ident, $exit_signal, $core_dump, $data_structure_reference) = @_;
+	my $q = $data_structure_reference -> {input};
+	$updated_within_sample_diversity_files{$q} = $data_structure_reference -> {updated_file};
+});
+
+foreach my $sample(keys %sample_names)
+{
+	my $pid = $pm -> start and next;
+	my $res = process_within_sample_diversity_file_for_sample($sample);
+	$pm -> finish(0, {updated_file => $res, input => $sample});
+}
+$pm -> wait_all_children;
+
+# saves updated within-sample diversity files
+foreach my $sample(keys %updated_within_sample_diversity_files)
+{
+	my $within_sample_diversity_file = $updated_within_sample_diversity_files{$sample};
+	
+	$sample_name_to_within_sample_diversity_file{$sample} = $within_sample_diversity_file;
+	$within_sample_diversity_file_to_stage{$within_sample_diversity_file} = "het";
+}
+
+
 # if plate map provided, counts number positions with heterozygosity (iSNVs) in each
 # sample and generates visualization
 # within-sample diversity files must be pre-processed before this step
@@ -1088,7 +1244,7 @@ if(scalar @plate_map_files)
 		foreach my $plate_position(keys %{$plate_position_to_sample_name{$plate_map_file}})
 		{
 			my $sample = $plate_position_to_sample_name{$plate_map_file}{$plate_position};
-			if($sample_names{$sample}) # if sample not excluded for not having neighbors
+			if($sample_names{$sample}) # if sample not excluded
 			{
 				# retrieves within-sample diversity file for potential contaminated sample
 				my $within_sample_diversity_file = $sample_name_to_within_sample_diversity_file{$sample};
@@ -1393,12 +1549,22 @@ open OUT_FILE, ">$output_file_path" || die "Could not open $output_file_path to 
 print OUT_FILE "potential_contaminated_sample".$DELIMITER;
 print OUT_FILE "potential_contaminated_sample_unambiguous_bases".$DELIMITER;
 print OUT_FILE "potential_contaminated_sample_genome_covered".$DELIMITER;
+if($minimum_read_depth)
+{
+	print OUT_FILE "potential_contaminated_sample_unambiguous_bases_passing_read_depth_filter".$DELIMITER;
+	print OUT_FILE "potential_contaminated_sample_genome_covered_passing_read_depth_filter".$DELIMITER;
+}
 print OUT_FILE "num_positions_with_heterozygosity".$DELIMITER;
 print OUT_FILE "alleles_at_positions_with_heterozygosity".$DELIMITER;
 
 print OUT_FILE "potential_contaminating_sample".$DELIMITER;
 print OUT_FILE "potential_contaminating_sample_unambiguous_bases".$DELIMITER;
 print OUT_FILE "potential_contaminating_sample_genome_covered".$DELIMITER;
+if($minimum_read_depth)
+{
+	print OUT_FILE "potential_contaminating_sample_unambiguous_bases_passing_read_depth_filter".$DELIMITER;
+	print OUT_FILE "potential_contaminating_sample_genome_covered_passing_read_depth_filter".$DELIMITER;
+}
 print OUT_FILE "minor_alleles_matched".$DELIMITER;
 print OUT_FILE "major_alleles_matched".$DELIMITER;
 print OUT_FILE "heterozygous_positions_matched".$DELIMITER;
@@ -1561,10 +1727,12 @@ sub detect_potential_contamination_in_sample_pair
 				.$potential_contaminated_within_sample_diversity_file."\n";
 		}
 	
-		# only includes positions with minor allele readcount >= 10, minor allele frequency >= 3%
+		# only includes positions with minor allele readcount >= 10, minor allele frequency >= 3%,
+		# minor + consensus-level allele readcount >= minimum_read_depth
 		# assumes that major allele frequency = 100% - minor allele frequency
 		if($minor_allele_readcount >= $minimum_minor_allele_readcount
-			and $minor_allele_frequency >= $minimum_minor_allele_frequency)
+			and $minor_allele_frequency >= $minimum_minor_allele_frequency
+			and $minor_allele_readcount + $major_allele_readcount >= $minimum_read_depth)
 		{
 			if($positions_with_heterozygosity{$position})
 			{
@@ -1611,6 +1779,17 @@ sub detect_potential_contamination_in_sample_pair
 	my $potential_contaminating_consensus_unambig_bases = count_unambiguous_bases_in_sequence(@potential_contaminating_consensus_values);
 	my $potential_contaminated_consensus_percent_covered = $potential_contaminated_consensus_unambig_bases / $reference_sequence_length;
 	my $potential_contaminating_consensus_percent_covered = $potential_contaminating_consensus_unambig_bases / $reference_sequence_length;
+	
+	# does the same for the sequences before masking
+	my $pre_masking_potential_contaminated_consensus = $sequence_name_to_pre_masking_consensus{$potential_contaminated_sample};
+	my @pre_masking_potential_contaminated_consensus_values = split(//, $pre_masking_potential_contaminated_consensus);
+	my $pre_masking_potential_contaminated_consensus_unambig_bases = count_unambiguous_bases_in_sequence(@pre_masking_potential_contaminated_consensus_values);
+	my $pre_masking_potential_contaminated_consensus_percent_covered = $pre_masking_potential_contaminated_consensus_unambig_bases / $reference_sequence_length;
+	
+	my $pre_masking_potential_contaminating_consensus = $sequence_name_to_pre_masking_consensus{$potential_contaminating_sample};
+	my @pre_masking_potential_contaminating_consensus_values = split(//, $pre_masking_potential_contaminating_consensus);
+	my $pre_masking_potential_contaminating_consensus_unambig_bases = count_unambiguous_bases_in_sequence(@pre_masking_potential_contaminating_consensus_values);
+	my $pre_masking_potential_contaminating_consensus_percent_covered = $pre_masking_potential_contaminating_consensus_unambig_bases / $reference_sequence_length;
 	
 	# exits if either sample does not have minimum genome coverage
 	if($potential_contaminated_consensus_percent_covered < $minimum_genome_coverage
@@ -1696,7 +1875,12 @@ sub detect_potential_contamination_in_sample_pair
 			
 			# bases in both contaminating and contaminated sequence are A, T, C, or G
 			and is_unambiguous_base($potential_contaminating_consensus_value)
-			and is_unambiguous_base($potential_contaminated_consensus_value))
+			and is_unambiguous_base($potential_contaminated_consensus_value)
+			
+			# both contaminating and contaminated sequence have read depth >= minimum_read_depth
+			# at this position
+			and $sample_name_to_position_to_read_depth{$potential_contaminating_sample}{$position} >= $minimum_read_depth
+			and $sample_name_to_position_to_read_depth{$potential_contaminated_sample}{$position} >= $minimum_read_depth)
 		{
 			# this base does not match consensus genome
 			$number_mismatches++;
@@ -1778,6 +1962,11 @@ sub detect_potential_contamination_in_sample_pair
 	
 	# adds columns about contaminated sample
 	$output_line .= $potential_contaminated_sample.$DELIMITER;
+	if($minimum_read_depth)
+	{
+		$output_line .= add_comma_separators($pre_masking_potential_contaminated_consensus_unambig_bases).$DELIMITER;
+		$output_line .= prepare_percentage_to_print($pre_masking_potential_contaminated_consensus_percent_covered).$DELIMITER;
+	}
 	$output_line .= add_comma_separators($potential_contaminated_consensus_unambig_bases).$DELIMITER;
 	$output_line .= prepare_percentage_to_print($potential_contaminated_consensus_percent_covered).$DELIMITER;
 	$output_line .= $number_positions_with_heterozygosity.$DELIMITER;
@@ -1785,6 +1974,11 @@ sub detect_potential_contamination_in_sample_pair
 	
 	# adds columns about contaminating sample
 	$output_line .= $potential_contaminating_sample.$DELIMITER;
+	if($minimum_read_depth)
+	{
+		$output_line .= add_comma_separators($pre_masking_potential_contaminating_consensus_unambig_bases).$DELIMITER;
+		$output_line .= prepare_percentage_to_print($pre_masking_potential_contaminating_consensus_percent_covered).$DELIMITER;
+	}
 	$output_line .= add_comma_separators($potential_contaminating_consensus_unambig_bases).$DELIMITER;
 	$output_line .= prepare_percentage_to_print($potential_contaminating_consensus_percent_covered).$DELIMITER;
 	
@@ -1865,7 +2059,6 @@ sub process_within_sample_diversity_file_for_sample
 		check_if_file_exists_before_writing($output_vcf_file);
 		print STDOUT "$LOFREQ_EXECUTABLE_FILE_PATH call -f $reference_genome_file -o $output_vcf_file $within_sample_diversity_file\n" if $verbose;
 		`$LOFREQ_EXECUTABLE_FILE_PATH call -f $reference_genome_file -o $output_vcf_file $within_sample_diversity_file`;
-		print STDOUT "\n" if $verbose;
 		
 		# updates within-sample diversity file saved for this sample
 		$within_sample_diversity_file = $output_vcf_file;
@@ -1990,6 +2183,109 @@ sub is_base
 }
 
 
+# HELPER FUNCTIONS FOR FILTERING SAMPLES
+
+# prints number of samples remaining and exits if no samples remain
+sub print_number_samples_remaining_and_exit_if_none
+{
+	# prints number of samples remaining
+	print STDOUT (keys %sample_names)." samples remain...\n" if $verbose;
+
+	# verifies that we still have samples to compare
+	if(scalar keys %sample_names < 2)
+	{
+		print STDERR "Error: no pairs of samples to compare. Exiting.\n";
+		die;
+	}
+}
+
+# removes samples that do not have genome coverage >= minimum_genome_coverage
+# assumes that consensus genomes have been read into %sequence_name_to_consensus
+# returns number of samples removed
+sub remove_samples_without_minimum_genome_coverage
+{
+	my $number_samples_removed = 0;
+	foreach my $sample_name(keys %sample_names)
+	{
+		# retrieves consensus genome bases
+		my $consensus = $sequence_name_to_consensus{$sample_name};
+		my @consensus_values = split(//, $consensus);
+
+		# counts unambiguous bases in consensus genome
+		my $consensus_unambig_bases = count_unambiguous_bases_in_sequence(@consensus_values);
+		my $consensus_percent_covered = $consensus_unambig_bases / $reference_sequence_length;
+
+		# removes sample name if sample does not have minimum genome coverage
+		if($consensus_percent_covered < $minimum_genome_coverage)
+		{
+			delete $sample_names{$sample_name};
+			$number_samples_removed++;
+		}
+	}
+	return $number_samples_removed;
+}
+
+# removes samples without enough positions with sufficient read depth to reach
+# minimum_genome_coverage
+# assumes that sample_name_to_position_to_read_depth has been read in
+# returns number of samples removed
+sub remove_samples_without_minimum_genome_coverage_with_high_read_depth
+{
+	my $number_samples_removed = 0;
+	for my $sample_name(keys %sample_name_to_position_to_read_depth)
+	{
+		my $number_positions_with_high_read_depth = 0;
+		for my $position(keys %{$sample_name_to_position_to_read_depth{$sample_name}})
+		{
+			if($sample_name_to_position_to_read_depth{$sample_name}{$position} >= $minimum_read_depth)
+			{
+				$number_positions_with_high_read_depth++;
+			}
+		}
+		
+		if($number_positions_with_high_read_depth < $minimum_genome_coverage * $reference_sequence_length)
+		{
+			delete $sample_names{$sample_name};
+			$number_samples_removed++;
+		}
+	}
+	return $number_samples_removed;
+}
+
+# removes any sample names that don't have at least one plate neighbor
+# assumes that %plate_position_to_sample_name and %sample_name_to_plate_position have been read in
+# returns number of samples removed
+sub remove_samples_without_plate_neighbors
+{
+	# checks if each sample has at least one neighbor
+	my %sample_has_plate_neighbors = (); # key: sample name -> value: 1 if sample has plate neighbors
+	foreach my $plate_map_file(@plate_map_files)
+	{
+		foreach my $plate_position(keys %{$plate_position_to_sample_name{$plate_map_file}})
+		{
+			my $sample_name = $plate_position_to_sample_name{$plate_map_file}{$plate_position};
+			my @neighboring_samples = retrieve_samples_neighboring_plate_position($plate_position, $sample_name, $plate_map_file);
+			
+			if(scalar @neighboring_samples)
+			{
+				$sample_has_plate_neighbors{$sample_name} = 1;
+			}
+		}
+	}
+	
+	# removes any sample names that don't have at least one plate neighbor
+	my $number_samples_removed = 0;
+	foreach my $sample_name(keys %sample_names)
+	{
+		if(!$sample_has_plate_neighbors{$sample_name})
+		{
+			delete $sample_names{$sample_name};
+			$number_samples_removed++;
+		}
+	}
+	return $number_samples_removed;
+}
+
 
 # HELPER FUNCTIONS FOR HANDLING PLATE NEIGHBORS
 
@@ -1997,7 +2293,7 @@ sub is_base
 # assumes that %plate_position_to_sample_name and %sample_name_to_plate_position have been read in
 # for this particular plate
 # input: plate position (example input: H9)
-# output: list of neighboring plate positions
+# output: list of samples at neighboring plate positions
 # (example output: sample at H8, sample at H10, sample at G9, sample at I9)
 sub retrieve_samples_neighboring_plate_position
 {
@@ -2098,12 +2394,12 @@ sub retrieve_samples_neighboring_plate_position
 		}
 	}
 	
-	# remove duplicate neighbors, empty neighbors,
+	# remove duplicate neighbors, empty neighbors, samples we're not looking at,
 	# and neighbors identical to sample we're getting neighbors of
 	my %neighbors_hash = ();
 	foreach my $neighbor(@neighbors)
 	{
-		if($neighbor and $neighbor ne $plate_position_sample_name)
+		if($neighbor and $sample_names{$neighbor} and $neighbor ne $plate_position_sample_name)
 		{
 			$neighbors_hash{$neighbor} = 1;
 		}
