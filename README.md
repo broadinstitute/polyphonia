@@ -42,7 +42,7 @@ OPTIONS:
 	-p | --cores INT		Optional number of cores to use for preprocessing in parallel [1]
 	-u | --verbose BOOL		Print progress updates to STDOUT [TRUE]
 	-j | --overwrite BOOL		Overwrite files that already exist at output, intermediate, and temp files paths [FALSE]
-	-0 | --print-all BOOL		Output outcomes of all comparisons (all comparisons marked as potential cross-contamination) [FALSE]
+	-0 | --print-all BOOL		Output outcomes of all comparisons (all comparisons are marked as potential cross-contamination) [FALSE]
 ```
 
 ## Contents
