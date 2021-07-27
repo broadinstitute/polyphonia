@@ -73,6 +73,7 @@ my $DEFAULT_OUTPUT_FILE_NAME = "potential_cross-contamination.txt";
 my $DEFAULT_OVERWRITE = 0; # false
 my $DEFAULT_CORES_TO_USE = 1;
 my $DEFAULT_VERBOSE = 1; # true
+my $DEFAULT_PRINT_ALL = 0; # false
 
 my $DEFAULT_PLATE_SIZE = 96; # 12 columns, 8 rows
 my $DEFAULT_PLATE_NUMBER_ROWS = 8; # A through H
@@ -141,6 +142,7 @@ if(!scalar @ARGV) # no command line arguments supplied
 	print STDOUT "\t-p | --cores INT\t\tOptional number of cores to use for preprocessing in parallel [".$DEFAULT_CORES_TO_USE."]\n";
 	print STDOUT "\t-u | --verbose BOOL\t\tPrint progress updates to STDOUT [".int_to_bool_string($DEFAULT_VERBOSE)."]\n";
 	print STDOUT "\t-j | --overwrite BOOL\t\tOverwrite files that already exist at output, intermediate, and temp files paths [".int_to_bool_string($DEFAULT_OVERWRITE)."]\n";
+	print STDOUT "\t-0 | --print-all BOOL\t\tOutput outcomes of all comparisons (all comparisons marked as potential cross-contamination) [".int_to_bool_string($DEFAULT_PRINT_ALL)."]\n";
 	print STDOUT "\n\n";
 	exit;
 }
@@ -165,6 +167,7 @@ my $temp_intermediate_directory = $default_temp_intermediate_files_directory;
 my $cores_to_use = $DEFAULT_CORES_TO_USE;
 my $overwrite = $DEFAULT_OVERWRITE;
 my $verbose = $DEFAULT_VERBOSE;
+my $print_all = $DEFAULT_PRINT_ALL;
 
 my $minimum_minor_allele_readcount = $DEFAULT_MINIMUM_MINOR_ALLELE_READCOUNT;
 my $minimum_minor_allele_frequency = $DEFAULT_MINIMUM_MINOR_ALLELE_FREQUENCY;
@@ -295,6 +298,10 @@ for($argument_index = 0; $argument_index <= $#ARGV; $argument_index++)
 	elsif(($input = read_in_boolean_argument("-u", "--verbose")) != -1)
 	{
 		$verbose = $input;
+	}
+	elsif(($input = read_in_boolean_argument("-0", "--print-all")) != -1)
+	{
+		$print_all = $input;
 	}
 	else
 	{
@@ -1795,7 +1802,10 @@ sub detect_potential_contamination_in_sample_pair
 	if($potential_contaminated_consensus_percent_covered < $minimum_genome_coverage
 		or $potential_contaminating_consensus_percent_covered < $minimum_genome_coverage)
 	{
-		return;
+		if(!$print_all)
+		{
+			return;
+		}
 	}
 	
 	# counts matches and mismatches at positions with heterozygosity
@@ -1842,7 +1852,10 @@ sub detect_potential_contamination_in_sample_pair
 				# verifies that this potential contamination scenario is still worth looking at
 				if($number_mismatches > $maximum_allowed_mismatches)
 				{
-					return;
+					if(!$print_all)
+					{
+						return;
+					}
 				}
 				
 				# saves mismatch to string to print
@@ -1888,7 +1901,10 @@ sub detect_potential_contamination_in_sample_pair
 			# verifies that this potential contamination scenario is still worth looking at
 			if($number_mismatches > $maximum_allowed_mismatches)
 			{
-				return;
+				if(!$print_all)
+				{
+					return;
+				}
 			}
 			
 			# saves mismatch to string to print

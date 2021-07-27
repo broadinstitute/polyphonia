@@ -42,6 +42,7 @@ OPTIONS:
 	-p | --cores INT		Optional number of cores to use for preprocessing in parallel [1]
 	-u | --verbose BOOL		Print progress updates to STDOUT [TRUE]
 	-j | --overwrite BOOL		Overwrite files that already exist at output, intermediate, and temp files paths [FALSE]
+	-0 | --print-all BOOL		Output outcomes of all comparisons (all comparisons marked as potential cross-contamination) [FALSE]
 ```
 
 ## Contents
@@ -67,6 +68,7 @@ OPTIONS:
    - [Parallelization](#parallelization)
    - [Output File Paths](#output-file-paths)
    - [Verbose](#verbose)
+   - [Print All](#print-all)
 - [Output Files](#output-files)
    - [Potential Cross-Contamination Table](#potential-cross-contamination-table)
    - [Plate Map Visualization of Potential Cross-Contamination](#plate-map-visualization-of-potential-cross-contamination)
@@ -386,6 +388,12 @@ By default, polyphonia will not overwrite an existing file. You can allow overwr
 `--verbose`
 
 By default, polyphonia will print updates on its progress to the console. You can silence most updates using `--verbose FALSE`.
+
+### Print All
+
+`--print-all`
+
+Use `--print-all TRUE` for the output of all comparisons to be output as potential cross-contamination. The potential [cross-contamination table](#potential-cross-contamination-table) will list all comparisons. The [plate map visualization of potential cross-contamination](#plate-map-visualization-of-potential-cross-contamination) will indicate that every sample is potentially contaminated by every sample it was compared to. `--print-all` is useful for debugging or otherwise peeking under the hood; it is not meant for everyday use.
 
 ## Output Files
 
