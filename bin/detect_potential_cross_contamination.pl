@@ -1735,11 +1735,13 @@ sub detect_potential_contamination_in_sample_pair
 		}
 	
 		# only includes positions with minor allele readcount >= 10, minor allele frequency >= 3%,
-		# minor + consensus-level allele readcount >= minimum_read_depth
+		# minor + consensus-level allele readcount >= minimum_read_depth,
+		# and read depth in potential contaminated sample >= minimum_read_depth
 		# assumes that major allele frequency = 100% - minor allele frequency
 		if($minor_allele_readcount >= $minimum_minor_allele_readcount
 			and $minor_allele_frequency >= $minimum_minor_allele_frequency
-			and $minor_allele_readcount + $major_allele_readcount >= $minimum_read_depth)
+			and $minor_allele_readcount + $major_allele_readcount >= $minimum_read_depth
+			and $sample_name_to_position_to_read_depth{$potential_contaminated_sample}{$position} >= $minimum_read_depth)
 		{
 			if($positions_with_heterozygosity{$position})
 			{
@@ -1820,7 +1822,8 @@ sub detect_potential_contamination_in_sample_pair
 	foreach my $position(sort {$a <=> $b} keys %positions_with_heterozygosity)
 	{
 		my $nucleotide_at_position = $potential_contaminating_consensus_values[$position - 1];
-		if(is_unambiguous_base($nucleotide_at_position))
+		if(is_unambiguous_base($nucleotide_at_position)
+			and $sample_name_to_position_to_read_depth{$potential_contaminating_sample}{$position} >= $minimum_read_depth)
 		{
 			if($minor_alleles{$position}{$nucleotide_at_position}
 				or $major_alleles{$position}{$nucleotide_at_position})
