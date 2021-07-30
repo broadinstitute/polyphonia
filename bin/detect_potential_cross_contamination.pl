@@ -1619,28 +1619,28 @@ close OUT_FILE;
 # HELPER FUNCTIONS FOR DETECTING POTENTIAL CONTAMINATION
 
 # compares these two samples to check for contamination in both directions
-sub detect_potential_contamination_in_sample_pair_both_directions
-{
-	my $sample_1 = $_[0];
-	my $sample_2 = $_[1];
-	
-	my ($result_1, $result_1_plate) = detect_potential_contamination_in_sample_pair($sample_1, $sample_2);
-	my ($result_2, $result_2_plate) = detect_potential_contamination_in_sample_pair($sample_2, $sample_1);
-	
-	# returns output lines
-	if($result_1 and $result_2)
-	{
-		return ($result_1.$NEWLINE.$result_2, $result_1_plate.$NEWLINE.$result_2_plate);
-	}
-	elsif($result_1)
-	{
-		return ($result_1, $result_1_plate);
-	}
-	elsif($result_2)
-	{
-		return ($result_2, $result_2_plate);
-	}
-}
+# sub detect_potential_contamination_in_sample_pair_both_directions
+# {
+# 	my $sample_1 = $_[0];
+# 	my $sample_2 = $_[1];
+# 	
+# 	my ($result_1, $result_1_plate) = detect_potential_contamination_in_sample_pair($sample_1, $sample_2);
+# 	my ($result_2, $result_2_plate) = detect_potential_contamination_in_sample_pair($sample_2, $sample_1);
+# 	
+# 	# returns output lines
+# 	if($result_1 and $result_2)
+# 	{
+# 		return ($result_1.$NEWLINE.$result_2, $result_1_plate.$NEWLINE.$result_2_plate);
+# 	}
+# 	elsif($result_1)
+# 	{
+# 		return ($result_1, $result_1_plate);
+# 	}
+# 	elsif($result_2)
+# 	{
+# 		return ($result_2, $result_2_plate);
+# 	}
+# }
 
 # prepares and retrieves files for the two input samples; checks if the second sample
 # potentially could have contaminated the first
@@ -1741,7 +1741,7 @@ sub detect_potential_contamination_in_sample_pair
 		if($minor_allele_readcount >= $minimum_minor_allele_readcount
 			and $minor_allele_frequency >= $minimum_minor_allele_frequency
 			and $minor_allele_readcount + $major_allele_readcount >= $minimum_read_depth
-			and $sample_name_to_position_to_read_depth{$potential_contaminated_sample}{$position} >= $minimum_read_depth)
+			and (!$minimum_read_depth or $sample_name_to_position_to_read_depth{$potential_contaminated_sample}{$position} >= $minimum_read_depth))
 		{
 			if($positions_with_heterozygosity{$position})
 			{
@@ -1823,7 +1823,7 @@ sub detect_potential_contamination_in_sample_pair
 	{
 		my $nucleotide_at_position = $potential_contaminating_consensus_values[$position - 1];
 		if(is_unambiguous_base($nucleotide_at_position)
-			and $sample_name_to_position_to_read_depth{$potential_contaminating_sample}{$position} >= $minimum_read_depth)
+			and (!$minimum_read_depth or $sample_name_to_position_to_read_depth{$potential_contaminating_sample}{$position} >= $minimum_read_depth))
 		{
 			if($minor_alleles{$position}{$nucleotide_at_position}
 				or $major_alleles{$position}{$nucleotide_at_position})
@@ -1895,8 +1895,8 @@ sub detect_potential_contamination_in_sample_pair
 			
 			# both contaminating and contaminated sequence have read depth >= minimum_read_depth
 			# at this position
-			and $sample_name_to_position_to_read_depth{$potential_contaminating_sample}{$position} >= $minimum_read_depth
-			and $sample_name_to_position_to_read_depth{$potential_contaminated_sample}{$position} >= $minimum_read_depth)
+			and (!$minimum_read_depth or $sample_name_to_position_to_read_depth{$potential_contaminating_sample}{$position} >= $minimum_read_depth)
+			and (!$minimum_read_depth or $sample_name_to_position_to_read_depth{$potential_contaminated_sample}{$position} >= $minimum_read_depth))
 		{
 			# this base does not match consensus genome
 			$number_mismatches++;
