@@ -1823,7 +1823,8 @@ sub detect_potential_contamination_in_sample_pair
 	{
 		my $nucleotide_at_position = $potential_contaminating_consensus_values[$position - 1];
 		if(is_unambiguous_base($nucleotide_at_position)
-			and (!$minimum_read_depth or $sample_name_to_position_to_read_depth{$potential_contaminating_sample}{$position} >= $minimum_read_depth))
+			and (!$minimum_read_depth or $sample_name_to_position_to_read_depth{$potential_contaminating_sample}{$position} >= $minimum_read_depth)
+			and (!$minimum_read_depth or $sample_name_to_position_to_read_depth{$potential_contaminated_sample}{$position} >= $minimum_read_depth))
 		{
 			if($minor_alleles{$position}{$nucleotide_at_position}
 				or $major_alleles{$position}{$nucleotide_at_position})
@@ -2060,7 +2061,7 @@ sub detect_potential_contamination_in_sample_pair
 }
 
 # finishes processing within-sample diversity file for sample, starting at whatever stage
-# we have input file for
+# we have input file for:
 # if we have bam file, runs LoFreq to get vcf file
 # if we have vcf file, runs vcf_file_to_heterozygosity_table.pl to get heterozygosity table
 # returns final within-sample diversity file (heterozygosity table)
