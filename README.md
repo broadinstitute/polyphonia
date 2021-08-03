@@ -12,12 +12,13 @@ OPTIONS:
 	-c | --consensus FILE(S)	Unaligned consensus genome or genomes [null]
 	-a | --consensus-aligned FILE	Consensus genomes pre-aligned to reference as fasta alignment; reference provided by --ref must appear first [null]
 	-g | --min-covered FLOAT	Minimum proportion genome covered at minimum read depth for a sample to be included [0.95]
-	-r | --min-depth INT		Minimum read depth for a position to be used for comparison; can only be used with bam files as input [100]
 
 - Within-sample diversity (any combination; at least one file required):
 	-b | --bam FILE(S)		Aligned and trimmed reads as bam file(s); must use reference provided by --ref [null]
 	-v | --vcf FILE(S)		VCF file(s) output by LoFreq or GATK; must use reference provided by --ref [null]
 	-h | --het FILE(S)		Tab-separated heterozygosity summary tables; see documentation for format [null]
+	-1 | --depths FILE(S)	Read depths; provide alongside vcf files or heterozygosity tables; see documentation for format [null]
+	-r | --min-depth INT		Minimum read depth for a position to be used for comparison [100]
 	-e | --min-readcount INT	Minimum minor allele readcount for position to be considered heterozygous [10]
 	-i | --min-maf FLOAT		Minimum minor allele frequency for position to be considered heterozygous [0.03]
 

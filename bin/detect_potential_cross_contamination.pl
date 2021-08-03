@@ -108,13 +108,14 @@ if(!scalar @ARGV) # no command line arguments supplied
 	print STDOUT "\t-c | --consensus FILE(S)\tUnaligned consensus genome or genomes [null]\n";
 	print STDOUT "\t-a | --consensus-aligned FILE\tConsensus genomes pre-aligned to reference as fasta alignment; reference provided by --ref must appear first [null]\n";
 	print STDOUT "\t-g | --min-covered FLOAT\tMinimum proportion genome covered at minimum read depth for a sample to be included [".$DEFAULT_MINIMUM_GENOME_COVERAGE."]\n";
-	print STDOUT "\t-r | --min-depth INT\t\tMinimum read depth for a position to be used for comparison; can only be used with bam files as input [".$DEFAULT_MINIMUM_READ_DEPTH."]\n";
 	print STDOUT "\n";
 	
 	print STDOUT "- Within-sample diversity (any combination; at least one file required):\n";
 	print STDOUT "\t-b | --bam FILE(S)\t\tAligned and trimmed reads as bam file(s); must use reference provided by --ref [null]\n";
 	print STDOUT "\t-v | --vcf FILE(S)\t\tVCF file(s) output by LoFreq or GATK; must use reference provided by --ref [null]\n";
 	print STDOUT "\t-h | --het FILE(S)\t\tTab-separated heterozygosity summary tables; see documentation for format [null]\n";
+	print STDOUT "\t-1 | --depths FILE(S)\t\tRead depths; provide alongside vcf files or heterozygosity tables; see documentation for format [null]\n";
+	print STDOUT "\t-r | --min-depth INT\t\tMinimum read depth for a position to be used for comparison [".$DEFAULT_MINIMUM_READ_DEPTH."]\n";
 	print STDOUT "\t-e | --min-readcount INT\tMinimum minor allele readcount for position to be considered heterozygous [".$DEFAULT_MINIMUM_MINOR_ALLELE_READCOUNT."]\n";
 	print STDOUT "\t-i | --min-maf FLOAT\t\tMinimum minor allele frequency for position to be considered heterozygous [".$DEFAULT_MINIMUM_MINOR_ALLELE_FREQUENCY."]\n";
 	print STDOUT "\n";
@@ -159,6 +160,7 @@ my $minimum_read_depth = $DEFAULT_MINIMUM_READ_DEPTH;
 my @aligned_and_trimmed_bam_files = ();
 my @vcf_files = ();
 my @heterozygosity_tables = ();
+my @read_depth_tables = ();
 
 my $output_file_path = $default_output_file;
 my $visualizations_directory = $default_visualizations_directory;
@@ -227,6 +229,10 @@ for($argument_index = 0; $argument_index <= $#ARGV; $argument_index++)
 	elsif(($input = read_in_input_files_argument("-c", "--consensus")) ne "-1")
 	{
 		push(@consensus_genome_files, @$input);
+	}
+	elsif(($input = read_in_input_files_argument("-1", "--depths")) ne "-1")
+	{
+		push(@read_depth_tables, @$input);
 	}
 	elsif(($input = read_in_positive_integer_argument("-r", "--min-depth")) != -1)
 	{
@@ -369,11 +375,18 @@ if($minimum_genome_coverage < 0 or $minimum_genome_coverage > 1)
 	print STDERR "Error: minimum genome coverage is not between 0 and 1. Exiting.\n";
 	die;
 }
-if($minimum_read_depth > 0 and (scalar @heterozygosity_tables or scalar @vcf_files))
+if($minimum_read_depth < 0)
+{
+	print STDERR "Warning: minimum read depth is less than 0; not applying read depth "
+		."filter.\n";
+}
+if($minimum_read_depth and (scalar @heterozygosity_tables or scalar @vcf_files)
+	and !scalar @read_depth_tables)
 {
 	# does not apply read depth filter
 	$minimum_read_depth = 0;
-	print STDERR "Warning: not all input files are vcf files; not applying read depth filter.\n";
+	print STDERR "Warning: not all input files are vcf files but no read depth files "
+		."provided; not applying read depth filter.\n";
 }
 
 
@@ -402,6 +415,10 @@ foreach my $heterozygosity_table(@heterozygosity_tables)
 foreach my $plate_map_file(@plate_map_files)
 {
 	verify_input_file_exists_and_is_nonempty($plate_map_file, "plate map file", 1, 0);
+}
+foreach my $read_depth_table(@read_depth_tables)
+{
+	verify_input_file_exists_and_is_nonempty($read_depth_table, "read depth table", 1, 0);
 }
 
 
@@ -536,6 +553,16 @@ foreach my $vcf_file(@vcf_files)
 foreach my $heterozygosity_table(@heterozygosity_tables)
 {
 	print STDOUT "\tfully pre-processed heterozygosity table: ".$heterozygosity_table."\n" if $verbose;
+}
+
+# read depth tables
+if(scalar @read_depth_tables and $minimum_read_depth > 0)
+{
+	print STDOUT "READ DEPTH TABLES:\n" if $verbose;
+	foreach my $read_depth_table(@read_depth_tables)
+	{
+		print STDOUT "\t".$read_depth_table."\n" if $verbose;
+	}
 }
 
 # optional plate map file(s) and related options
@@ -739,6 +766,54 @@ foreach my $sample_name(keys %sample_names)
 print_number_samples_remaining_and_exit_if_none();
 
 
+# retrieves read depth file for each sample
+my %sample_name_to_read_depth_file = (); # key: sample name -> value: file path of read depth file
+if($minimum_read_depth and scalar @read_depth_tables)
+{
+	print STDOUT "retrieving read depth table for each sample...\n" if $verbose;
+	foreach my $file_path(@read_depth_tables)
+	{
+		# trims file path to file name
+		my $potential_sample_name = retrieve_file_name($file_path);
+
+		# retrieves largest possible sample name that collides with a sample name
+		# (file name sample1.ext1.ext2 has possible sample names sample1.ext1.ext2, sample1.ext1, sample1)
+		my $sample_name_found = 0;
+		while($potential_sample_name and !$sample_name_found)
+		{
+			if($sample_names{$potential_sample_name})
+			{
+				# potential sample name collides with a sample name from consensus genome or plate map files
+				# this is our sample name
+				$sample_name_to_read_depth_file{$potential_sample_name} = $file_path;
+				$sample_name_found = 1;
+			}
+			else
+			{
+				$potential_sample_name = trim_off_file_extension($potential_sample_name);
+			}
+		}
+	}
+}
+
+# removes any sample names that don't have a read depth file or bam file
+if($minimum_read_depth)
+{
+	print STDOUT "removing names of samples without read depth table or bam file to generate it from...\n" if $verbose;
+	foreach my $sample_name(keys %sample_names)
+	{
+		if(!$sample_name_to_read_depth_file{$sample_name}
+			and $within_sample_diversity_file_to_stage{$sample_name_to_within_sample_diversity_file{$sample_name}} ne "bam")
+		{
+			delete $sample_names{$sample_name};
+		}
+	}
+	
+	# prints number of samples remaining
+	print_number_samples_remaining_and_exit_if_none();
+}
+
+
 # reads in reference sequence
 open REFERENCE_FASTA, "<$reference_genome_file" || die "Could not open $reference_genome_file to read; terminating =(\n";
 my $reference_sequence = "";
@@ -908,41 +983,47 @@ if($minimum_read_depth > 0)
 		
 		my $within_sample_diversity_file = $sample_name_to_within_sample_diversity_file{$sample};
 		my %position_to_read_depth = (); # key: position -> value: read depth that that position
-		if($within_sample_diversity_file_to_stage{$within_sample_diversity_file} eq "bam") # if this is indeed a bam file
+		
+		# generates read depth file if needed
+		my $read_depth_file = $sample_name_to_read_depth_file{$sample};
+		if(!$read_depth_file)
 		{
-			# runs samtools depth
-			my $read_depth_file = $temp_intermediate_directory.retrieve_file_name($within_sample_diversity_file."_read_depth.txt");
-			check_if_file_exists_before_writing($read_depth_file);
-			print STDOUT "$SAMTOOLS_EXECUTABLE_FILE_PATH depth $within_sample_diversity_file > $read_depth_file\n" if $verbose;
-			`$SAMTOOLS_EXECUTABLE_FILE_PATH depth $within_sample_diversity_file > $read_depth_file`;
-			print STDOUT "\n" if $verbose;
-			
-			# verifies that read depth file is generated and is not empty
-			verify_input_file_exists_and_is_nonempty($read_depth_file, "read depth file", 1, 1);
-			
-			# reads in read depth file
-			open READ_DEPTH_FILE, "<$read_depth_file" || die "Could not open $read_depth_file to read; terminating =(\n";
-			while(<READ_DEPTH_FILE>) # for each line in the file
+			if($within_sample_diversity_file_to_stage{$within_sample_diversity_file} eq "bam") # if this sample indeed has a bam file
 			{
-				chomp;
-				if($_ =~ /\S/)
-				{
-					# reads in mapped values
-					my @items_in_row = split($DELIMITER, $_);
-		
-					my $position = $items_in_row[$READ_DEPTH_POSITION_COLUMN];
-					my $read_depth = $items_in_row[$READ_DEPTH_COLUMN];
-		
-					$position_to_read_depth{$position} = $read_depth;
-				}
+				# runs samtools depth
+				$read_depth_file = $temp_intermediate_directory.retrieve_file_name($within_sample_diversity_file."_read_depth.txt");
+				check_if_file_exists_before_writing($read_depth_file);
+				print STDOUT "$SAMTOOLS_EXECUTABLE_FILE_PATH depth $within_sample_diversity_file > $read_depth_file\n" if $verbose;
+				`$SAMTOOLS_EXECUTABLE_FILE_PATH depth $within_sample_diversity_file > $read_depth_file`;
+				print STDOUT "\n" if $verbose;
 			}
-			close READ_DEPTH_FILE;
+			else # no bam file
+			{
+				print STDERR "Error: expected bam file for sample ".$sample.". Could not "
+					."generate read depth file.\n";
+			}
 		}
-		else
+		
+		# verifies that read depth file is generated and is not empty
+		verify_input_file_exists_and_is_nonempty($read_depth_file, "read depth file", 1, 1);
+		
+		# reads in read depth file
+		open READ_DEPTH_FILE, "<$read_depth_file" || die "Could not open $read_depth_file to read; terminating =(\n";
+		while(<READ_DEPTH_FILE>) # for each line in the file
 		{
-			print STDERR "Error: expected bam file for sample ".$sample.". Could not "
-				."generate read depth file.\n";
+			chomp;
+			if($_ =~ /\S/)
+			{
+				# reads in mapped values
+				my @items_in_row = split($DELIMITER, $_);
+	
+				my $position = $items_in_row[$READ_DEPTH_POSITION_COLUMN];
+				my $read_depth = $items_in_row[$READ_DEPTH_COLUMN];
+	
+				$position_to_read_depth{$position} = $read_depth;
+			}
 		}
+		close READ_DEPTH_FILE;
 		$pm -> finish(0, {position_to_read_depth => \%position_to_read_depth, sample => $sample});
 	}
 	$pm -> wait_all_children;
@@ -953,19 +1034,25 @@ if($minimum_read_depth > 0)
 # 	foreach my $sample(keys %sample_names)
 # 	{
 # 		my $within_sample_diversity_file = $sample_name_to_within_sample_diversity_file{$sample};
-# 		my $read_depth_file = $temp_intermediate_directory.retrieve_file_name($within_sample_diversity_file."_read_depth.txt");
-# 		if($within_sample_diversity_file_to_stage{$within_sample_diversity_file} eq "bam") # if this is indeed a bam file
+# 		
+# 		# generates read depth file if needed
+# 		my $read_depth_file = $sample_name_to_read_depth_file{$sample};
+# 		if(!$read_depth_file)
 # 		{
-# 			# runs samtools depth
-# 			check_if_file_exists_before_writing($read_depth_file);
-# 			print STDOUT "$SAMTOOLS_EXECUTABLE_FILE_PATH depth $within_sample_diversity_file > $read_depth_file\n" if $verbose;
-# 			`$SAMTOOLS_EXECUTABLE_FILE_PATH depth $within_sample_diversity_file > $read_depth_file`;
-# 			print STDOUT "\n" if $verbose;
-# 		}
-# 		else
-# 		{
-# 			print STDERR "Error: expected bam file for sample ".$sample.". Could not "
-# 				."generate read depth file.\n";
+# 			$read_depth_file = $temp_intermediate_directory.retrieve_file_name($within_sample_diversity_file."_read_depth.txt");
+# 			if($within_sample_diversity_file_to_stage{$within_sample_diversity_file} eq "bam") # if this is indeed a bam file
+# 			{
+# 				# runs samtools depth
+# 				check_if_file_exists_before_writing($read_depth_file);
+# 				print STDOUT "$SAMTOOLS_EXECUTABLE_FILE_PATH depth $within_sample_diversity_file > $read_depth_file\n" if $verbose;
+# 				`$SAMTOOLS_EXECUTABLE_FILE_PATH depth $within_sample_diversity_file > $read_depth_file`;
+# 				print STDOUT "\n" if $verbose;
+# 			}
+# 			else
+# 			{
+# 				print STDERR "Error: expected bam file for sample ".$sample.". Could not "
+# 					."generate read depth file.\n";
+# 			}
 # 		}
 # 		
 # 		# verifies that read depth file is generated and is not empty
