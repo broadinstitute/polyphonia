@@ -107,17 +107,20 @@ if(!scalar @ARGV) # no command line arguments supplied
 	print STDOUT "- Consensus genomes (aligned or not aligned, not both; at least one file required):\n";
 	print STDOUT "\t-c | --consensus FILE(S)\tUnaligned consensus genome or genomes [null]\n";
 	print STDOUT "\t-a | --consensus-aligned FILE\tConsensus genomes pre-aligned to reference as fasta alignment; reference provided by --ref must appear first [null]\n";
-	print STDOUT "\t-g | --min-covered FLOAT\tMinimum proportion genome covered at minimum read depth for a sample to be included [".$DEFAULT_MINIMUM_GENOME_COVERAGE."]\n";
 	print STDOUT "\n";
 	
 	print STDOUT "- Within-sample diversity (any combination; at least one file required):\n";
 	print STDOUT "\t-b | --bam FILE(S)\t\tAligned and trimmed reads as bam file(s); must use reference provided by --ref [null]\n";
 	print STDOUT "\t-v | --vcf FILE(S)\t\tVCF file(s) output by LoFreq or GATK; must use reference provided by --ref [null]\n";
 	print STDOUT "\t-h | --het FILE(S)\t\tTab-separated heterozygosity summary tables; see documentation for format [null]\n";
-	print STDOUT "\t-1 | --depths FILE(S)\t\tRead depths; provide alongside vcf files or heterozygosity tables; see documentation for format [null]\n";
-	print STDOUT "\t-r | --min-depth INT\t\tMinimum read depth for a position to be used for comparison [".$DEFAULT_MINIMUM_READ_DEPTH."]\n";
-	print STDOUT "\t-e | --min-readcount INT\tMinimum minor allele readcount for position to be considered heterozygous [".$DEFAULT_MINIMUM_MINOR_ALLELE_READCOUNT."]\n";
+	print STDOUT "\n";
+	
+	print STDOUT "- Filtering options:\n";
 	print STDOUT "\t-i | --min-maf FLOAT\t\tMinimum minor allele frequency for position to be considered heterozygous [".$DEFAULT_MINIMUM_MINOR_ALLELE_FREQUENCY."]\n";
+	print STDOUT "\t-e | --min-readcount INT\tMinimum minor allele readcount for position to be considered heterozygous [".$DEFAULT_MINIMUM_MINOR_ALLELE_READCOUNT."]\n";
+	print STDOUT "\t-r | --min-depth INT\t\tMinimum read depth for a position to be used for comparison [".$DEFAULT_MINIMUM_READ_DEPTH."]\n";
+	print STDOUT "\t-1 | --read-depths FILE(S)\tRead depth tables; provide alongside vcf files or heterozygosity tables if min-depth>0; see documentation for format [null]\n";
+	print STDOUT "\t-g | --min-covered FLOAT\tMinimum proportion genome covered at minimum read depth for a sample to be included [".$DEFAULT_MINIMUM_GENOME_COVERAGE."]\n";
 	print STDOUT "\n";
 	
 	print STDOUT "- Plate map and neighbors (any combination, all optional):\n";
@@ -230,7 +233,7 @@ for($argument_index = 0; $argument_index <= $#ARGV; $argument_index++)
 	{
 		push(@consensus_genome_files, @$input);
 	}
-	elsif(($input = read_in_input_files_argument("-1", "--depths")) ne "-1")
+	elsif(($input = read_in_input_files_argument("-1", "--read-depths")) ne "-1")
 	{
 		push(@read_depth_tables, @$input);
 	}
