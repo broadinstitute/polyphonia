@@ -21,8 +21,9 @@ OPTIONS:
 	-i | --min-maf FLOAT		Minimum minor allele frequency for position to be considered heterozygous [0.03]
 	-e | --min-readcount INT	Minimum minor allele readcount for position to be considered heterozygous [10]
 	-r | --min-depth INT		Minimum read depth for a position to be used for comparison [100]
-	-1 | --depths FILE(S)		Read depth tables; provide alongside vcf files or heterozygosity tables if min-depth>0; see documentation for format [null]
+	-1 | --read-depths FILE(S)	Read depth tables; provide alongside vcf files or heterozygosity tables if min-depth>0; see documentation for format [null]
 	-g | --min-covered FLOAT	Minimum proportion genome covered at minimum read depth for a sample to be included [0.95]
+	-y | --max-mismatches INT	Maximum allowed unambiguous bases in contaminating sample consensus not matching contaminated sample alleles [1]
 
 - Plate map and neighbors (any combination, all optional):
 	-m | --plate-map FILE(S)	Optional plate map(s) (tab-separated, no header: sample name, plate position (e.g., A8)); provides substantial speed-up [null]
@@ -41,7 +42,6 @@ OPTIONS:
 	-x | --out-temp DIRECTORY	Path of directory to store intermediate and temporary files [current working directory]
 
 - Misc:
-	-y | --max-mismatches INT	Maximum allowed unambiguous bases in contaminating sample consensus not matching contaminated sample alleles [1]
 	-p | --cores INT		Optional number of cores to use for preprocessing in parallel [1]
 	-u | --verbose BOOL		Print progress updates to STDOUT [TRUE]
 	-j | --overwrite BOOL		Overwrite files that already exist at output, intermediate, and temp files paths [FALSE]
