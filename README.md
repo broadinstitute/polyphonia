@@ -17,7 +17,7 @@ OPTIONS:
 	-b | --bam FILE(S)		Aligned and trimmed reads as bam file(s); must use reference provided by --ref [null]
 	-v | --vcf FILE(S)		VCF file(s) output by LoFreq or GATK; must use reference provided by --ref [null]
 	-h | --het FILE(S)		Tab-separated heterozygosity summary tables; see documentation for format [null]
-	-1 | --depths FILE(S)	Read depths; provide alongside vcf files or heterozygosity tables; see documentation for format [null]
+	-1 | --depths FILE(S)		Read depths; provide alongside vcf files or heterozygosity tables; see documentation for format [null]
 	-r | --min-depth INT		Minimum read depth for a position to be used for comparison [100]
 	-e | --min-readcount INT	Minimum minor allele readcount for position to be considered heterozygous [10]
 	-i | --min-maf FLOAT		Minimum minor allele frequency for position to be considered heterozygous [0.03]
