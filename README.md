@@ -228,7 +228,7 @@ If within-sample diversity files are provided as vcf files, then [`--min-depth`]
 Polyphonia is set up to process vcf files that were output by LoFreq or GATK. If you use a different tool, you can preprocess the output yourself and input it using `--het`.
 
 #### `--het`
-If polyphonia cannot read your vcf files, or if you have catalogued within-sample diversity using a tool that produces an output in a different format, you can pre-process the output files yourself and use `--het` to input a heterozygosity table directly. Each line in a heterozygosity table summarizes the major and minor alleles at a locus with heteroyzgosity (base substitutions only). A heterozysity table contains the following columns, tab separated, without a header line:
+If polyphonia cannot read your vcf files, or if you have catalogued within-sample diversity using a tool that produces an output in a different format, you can pre-process the output files yourself and use `--het` to input a heterozygosity table directly. Each line in a heterozygosity table summarizes the major and minor alleles at a locus with heteroyzgosity (base substitutions only). In a heterozysity table, every row lists a position in the genome relative to the reference genome. A heterozysity table contains the following tab-separated columns without a header line:
 1. name of reference genome (e.g., NC_045512.2)
 2. position of locus relative to reference genome, 1-indexed (e.g., 28928)
 3. major allele at that position (e.g., C)
@@ -252,7 +252,7 @@ You can view example heterozygosity tables here: [USA-MA-Broad_CRSP-01315-2021.b
 
 `--plate-map`
 
-If you would like, you can include a plate map file, or multiple plate map files, using `--plate-map`. Your plate map must contain two columns, tab separated, without a header:
+If you would like, you can include a plate map file, or multiple plate map files, using `--plate-map`. Your plate map must contain two tab-separated columns without a header line:
 1. The name of the sample. Each sample name in a plate map must match a full header line (after the `>`) in the [consensus genome fasta file(s)](#consensus-genomes) and the *name* of a [within-sample diversity file](#within-sample-diversity-files) up to a `.`. (If your within-sample diversity file name contains multiple `.`s, polyphonia will try to match all possible names starting with the longest.) Any sample names that do not have a corresponding consensus genome and a corresponding within-sample diversity file will not be included.
 3. The well the sample is in. Each well must be a letter, denoting the row of the well, followed by a number, denoting the column of the well. Column numbers are 1-indexed: the first column is column 1, the second column is column 2, and so on. Row letters are A-Z for the first 26 rows, followed by AA-AZ for the next 26 rows, followed by BA-BZ, and so on.
 
@@ -318,7 +318,7 @@ You can mix and match well comparison options. For example, `--compare-direct TR
 
 <p align="center"><img src="https://user-images.githubusercontent.com/6245320/122708120-6a122c00-d229-11eb-8b98-e4b845a48b73.png" alt="compare-direct and compare-diagonal" width=400></p>
 
-By default, samples are compared only to their direct plate neighbors to the left, right, top, and bottom: `--compare-direct` is set to `TRUE` and all other options are set to `FALSE`. Note that even if another option is set to `TRUE`, `--compare-direct` is only set to `FALSE` if `--compare-direct FALSE` is explicitly entered.
+By default, samples are compared only to their direct plate neighbors to the left, right, top, and bottom: `--compare-direct` is set to `TRUE` and all other options are set to `FALSE`. Note that even if another option is set to `TRUE`, `--compare-direct` is only set to `FALSE` if `--compare-direct FALSE` is explicitly specified.
 
 ## Other Options
 
@@ -334,7 +334,7 @@ By default, ≥95% of the genome must be unambigously covered for a sample to be
 
 `--min-depth`
 
-Use `--min-depth` to set the minimum number of reads that must overlap a position in a sample in order for that position to be included. If a position does not pass the read depth filter, it is not included in calculations of [genome coverage](#sample-inclusion-thresholds) and is not included as a heterozygous position.
+Use `--min-depth` to set the minimum number of reads that must overlap a position in a sample in order for that position to be included. If a position does not pass the read depth filter, it is not included in the numerator of [genome coverage](#sample-inclusion-thresholds) and is not included as a heterozygous position.
 
 Read depths are calculated from aligned reads using [`SAMtools depth`](http://www.htslib.org/doc/samtools-depth.html). `--min-depth` can only be used if [aligned reads](#--bam) are provided as input [within-sample diversity files](#within-sample-diversity-files), since read depths are calculated from the aligned reads.
 
@@ -396,7 +396,7 @@ By default, polyphonia will print updates on its progress to the console. You ca
 
 `--print-all`
 
-Use `--print-all TRUE` for the output of all comparisons to be output as potential cross-contamination. The potential [cross-contamination table](#potential-cross-contamination-table) will list all comparisons. The [plate map visualization of potential cross-contamination](#plate-map-visualization-of-potential-cross-contamination) will indicate that every sample is potentially contaminated by every sample it was compared to. `--print-all` is useful for debugging or otherwise peeking under the hood; it is not meant for everyday use.
+Use `--print-all TRUE` for all comparisons to be output as potential cross-contamination. In other words, the output potential [cross-contamination table](#potential-cross-contamination-table) will instead list all comparisons. Similarly, the [plate map visualization of potential cross-contamination](#plate-map-visualization-of-potential-cross-contamination) will indicate that every sample is potentially contaminated by every sample it was compared to. `--print-all` is useful for debugging or otherwise peeking under the hood; it is not meant for everyday use.
 
 ## Output Files
 
@@ -404,25 +404,31 @@ Use `--print-all TRUE` for the output of all comparisons to be output as potenti
 
 `--output`
 
-The primary output file generated by polyphonia is a table detailing evidence for potential cross-contamination events. Each row in the output table corresponds to a single potential cross-contamination event. The output table has the following columns—
+The primary output file generated by polyphonia is a table detailing evidence for potential cross-contamination events. You can set the [output file path](#output-file-paths) for the potential cross-contamination table using `--output`.
 
-Columns summarizing potential contaminated sample:
+You can view an example of a potential cross-contamination table at the [end](#output-files-1) of the [example run-through](#example-run-throughs):
+
+<img width="1435" alt="output_table_screenshot" src="https://user-images.githubusercontent.com/6245320/122626233-3becea80-d077-11eb-97af-dccbb3007b1b.png">
+
+Each row in the output table corresponds to a single potential cross-contamination event. The output table has the following columns—
+
+Columns summarizing the potentially contaminated sample:
 - `potential_contaminated_sample`: the sample proposed to potentially be contaminated. (E.g., `USA-MA-Broad_CRSP-01323-2021`.)
 - `potential_contaminated_sample_unambiguous_bases`: the number of unambiguous (`A`, `T`, `C`, or `G`) bases in the potentially contaminated samples's consensus genome. (E.g., `29,830`.)
 - `potential_contaminated_sample_genome_covered`: the number of unambiguous (`A`, `T`, `C`, or `G`) bases in the potentially contaminated samples's consensus genome divided by the number of unambiguous bases in the reference genome. The proportion is presented as a percentage rounded to one decimal place. (E.g., `99.8%`.)
-- `potential_contaminated_sample_unambiguous_bases_passing_read_depth_filter`: the number of unambiguous (`A`, `T`, `C`, or `G`) bases in the potentially contaminated samples's consensus genome that pass the [read depth filter](#position-inclusion-thresholds). This column only appears if `--min-depth` is non-zero and (aligned reads)[#--bam] are provided as input. (E.g., `29,728`.)
-- `potential_contaminated_sample_genome_covered_passing_read_depth_filter`: the number of unambiguous (`A`, `T`, `C`, or `G`) bases in the potentially contaminated samples's consensus genome that pass the [read depth filter](#position-inclusion-thresholds) divided by the number of unambiguous bases in the reference genome. The proportion is presented as a percentage rounded to one decimal place. This column only appears if `--min-depth` is non-zero and (aligned reads)[#--bam] are provided as input. (E.g., `99.4%`.)
+- `potential_contaminated_sample_unambiguous_bases_passing_read_depth_filter`: the number of unambiguous (`A`, `T`, `C`, or `G`) bases in the potentially contaminated samples's consensus genome that pass the [read depth filter](#position-inclusion-thresholds). This column only appears if `--min-depth` is non-zero and [aligned reads](#--bam) are provided as input. (E.g., `29,728`.)
+- `potential_contaminated_sample_genome_covered_passing_read_depth_filter`: the number of unambiguous (`A`, `T`, `C`, or `G`) bases in the potentially contaminated samples's consensus genome that pass the [read depth filter](#position-inclusion-thresholds) divided by the number of unambiguous bases in the reference genome. The proportion is presented as a percentage rounded to one decimal place. This column only appears if `--min-depth` is non-zero and [aligned reads](#--bam) are provided as input. (E.g., `99.4%`.)
 - `num_positions_with_heterozygosity`: the number of loci in the potentially contaminated sample at which there is heterozygosity (base substitutions only) passing [allele filtering thresholds](#allele-filtering-thresholds). (E.g., `21`.)
 - `alleles_at_positions_with_heterozygosity`: the alleles at each heterozygous locus (base substitutions only) in the potentially contaminated sample. Each locus is presented as its position, the consensus-level allele, and the minor allele. Loci are separated by a semicolon and a space (`; `). (E.g., `2,162 AG; 2,813 AG; 3,044 CA; 5,452 GA; 6,429 TC; 6,762 CT; 7,348 TA; 9,391 TC; 10,702 TC; 13,119 CT; 14,484 CT; 18,131 CT; 19,072 GT; 19,868 CT; 21,203 AG; 24,703 TC; 27,630 TC; 29,095 TC; 29,272 TC; 29,360 TC; 29,367 TC`.)
 
-Columns summarizing potential contaminating sample:
+Columns summarizing the potentially contaminating sample:
 - `potential_contaminating_sample`: the sample proposed to be the source of this contamination event. (E.g., `USA-MA-Broad_CRSP-01315-2021`.)
 - `potential_contaminating_sample_unambiguous_bases`: the number of unambiguous (`A`, `T`, `C`, or `G`) bases in the potentially contaminating samples's consensus genome. (E.g., `29,782`.)
 - `potential_contaminating_sample_genome_covered`: the number of unambiguous (`A`, `T`, `C`, or `G`) bases in the potentially contaminating samples's consensus genome divided by the number of unambiguous bases in the reference genome. The propotion is presented as a percentage rounded to one decimal place. (E.g., `99.6%`.)
-- `potential_contaminating_sample_unambiguous_bases_passing_read_depth_filter`: the number of unambiguous (`A`, `T`, `C`, or `G`) bases in the potentially contaminating samples's consensus genome that pass the [read depth filter](#position-inclusion-thresholds). This column only appears if `--min-depth` is non-zero and (aligned reads)[#--bam] are provided as input. (E.g., `29,509`.)
-- `potential_contaminating_sample_genome_covered_passing_read_depth_filter`: the number of unambiguous (`A`, `T`, `C`, or `G`) bases in the potentially contaminating samples's consensus genome that pass the [read depth filter](#position-inclusion-thresholds) divided by the number of unambiguous bases in the reference genome. The propotion is presented as a percentage rounded to one decimal place. This column only appears if `--min-depth` is non-zero and (aligned reads)[#--bam] are provided as input. (E.g., `98.7%`.)
+- `potential_contaminating_sample_unambiguous_bases_passing_read_depth_filter`: the number of unambiguous (`A`, `T`, `C`, or `G`) bases in the potentially contaminating samples's consensus genome that pass the [read depth filter](#position-inclusion-thresholds). This column only appears if `--min-depth` is non-zero and [aligned reads](#--bam) are provided as input. (E.g., `29,509`.)
+- `potential_contaminating_sample_genome_covered_passing_read_depth_filter`: the number of unambiguous (`A`, `T`, `C`, or `G`) bases in the potentially contaminating samples's consensus genome that pass the [read depth filter](#position-inclusion-thresholds) divided by the number of unambiguous bases in the reference genome. The propotion is presented as a percentage rounded to one decimal place. This column only appears if `--min-depth` is non-zero and [aligned reads](#--bam) are provided as input. (E.g., `98.7%`.)
 
-Columns summarizing potential contaminating alleles:
+Columns summarizing potentially contaminating alleles:
 - `minor_alleles_matched`: the number of minor alleles in the potentially contaminated sample that appear in the potentially contaminating sample's consensus genome. (E.g., `21`.)
 - `major_alleles_matched`: the number of consensus-level alleles at positions of heterozygosity in the potentially contaminated sample that appear in the potentially contaminating sample's consensus genome. (E.g., `0`.)
 - `heterozygous_positions_matched`: the proportion of heterozygous positions in the potentially contaminated sample at which either the minor or consensus-level allele appears in the potentially contaminating sample's consensus genome. The proportion is presented as a percentage rounded to one decimal place. (E.g., `100.0%`.)
@@ -443,12 +449,6 @@ Columns summarizing plate positions:
 - `potential_contaminating_sample_plate_position`: the well occupied by the sample listed in `potential_contaminating_sample`, if a plate map is provided. If multiple plate maps are provided and the potential contaminating sample appears in multiple plate maps, this field will contain a list of all wells the potential contaminating sample appears in, separated by a comma and a space (`, `). (E.g., `H9`.)
 - `potential_contaminated_sample_plate`: a list of all plate maps the potentially contaminated sample appears in, in order corresponding to the list of wells in `potential_contaminated_sample_plate_position`. This column is only present if multiple plate maps are provided.
 - `potential_contaminating_sample_plate`: a list of all plate maps the potential contaminating sample appears in, in order corresponding to the list of wells in `potential_contaminating_sample_plate_position`. This column is only present if multiple plate maps are provided.
-
-You can view an example of a potential cross-contamination table at the [end](#output-files-1) of the [example run-through](#example-run-throughs):
-
-<img width="1435" alt="output_table_screenshot" src="https://user-images.githubusercontent.com/6245320/122626233-3becea80-d077-11eb-97af-dccbb3007b1b.png">
-
-You can set the [output file path](#output-file-paths) for the potential cross-contamination table using `--output`.
 
 ### Plate Map Visualization of Potential Cross-Contamination
 
@@ -535,7 +535,7 @@ Our output table is in `/opt/polyphonia/test/outputs/test1_potential_cross_conta
 
 <img width="1435" alt="output_table_screenshot" src="https://user-images.githubusercontent.com/6245320/122626233-3becea80-d077-11eb-97af-dccbb3007b1b.png">
 
-The output table shows that USA-MA-Broad_CRSP-01323-2021, in well H10, is potentially contaminated by USA-MA-Broad_CRSP-01315-2021, in well H9. USA-MA-Broad_CRSP-01323-2021 has 21 positions with intrahost variation passing our thresholds. Alleles at all of these positions match the USA-MA-Broad_CRSP-01315-2021 consensus genome—in this case, all matched alleles in positions of heterozygosity are minor alleles, rather than consensus-level alleles. There are no mismatches, or USA-MA-Broad_CRSP-01315-2021 consensus-level alleles not appearing as minor or consensus-level alleles in USA-MA-Broad_CRSP-01323-2021. (A note that insertions and deletions are ignored: we only examine base substitutions.)
+The output table shows that USA-MA-Broad_CRSP-01323-2021, in well H10, is potentially contaminated by USA-MA-Broad_CRSP-01315-2021, in well H9. USA-MA-Broad_CRSP-01323-2021 has 21 positions with intrahost variation passing our thresholds. Alleles at all of these positions match the USA-MA-Broad_CRSP-01315-2021 consensus genome. There are no mismatches, or USA-MA-Broad_CRSP-01315-2021 consensus-level alleles not appearing as minor or consensus-level alleles in USA-MA-Broad_CRSP-01323-2021. (A note that insertions and deletions are ignored: we only examine base substitutions.)
 
 The USA-MA-Broad_CRSP-01323-2021 alleles appearing at consensus level in USA-MA-Broad_CRSP-01315-2021 range in frequency from 3.2% to 12.3%, with a median allele frequency of 4.9%. In this case, all potential contaminating alleles appear as minor, rather than consensus-level, alleles in USA-MA-Broad_CRSP-01323-2021.
 
@@ -615,7 +615,7 @@ You can view the software polyphonia uses in [`requirements-conda.txt`](https://
 
 ### Name
 
-[**Polyphony**](https://www.youtube.com/watch?v=teh22szdnRQ) describes music containing multiple simultaneous voices with their own melodies, like parts of ["We Will Fall Together" by Streetlight Manifesto](https://www.youtube.com/watch?v=SOqenYis1iQ), ["Somebody That I Used to Know" by Walk off the Earth](https://www.youtube.com/watch?v=d9NF2edxy-M), ["exile" by Taylor Swift with Bon Iver](https://www.youtube.com/watch?v=osdoLjUNFnA), ["Daddy Cool" by Boney M](https://www.youtube.com/watch?v=tHyHOUShOg8), ["Come As You Are" by Nirvana](https://www.youtube.com/watch?v=vabnZ9-ex7o), ["Severed" by The Decemberists](https://www.youtube.com/watch?v=ksTFj6L0mao), and to at least some extent most music created in recent memory.
+[**Polyphony**](https://www.youtube.com/watch?v=teh22szdnRQ) describes music containing multiple simultaneous voices with their own melodies, like parts of ["We Will Fall Together" by Streetlight Manifesto](https://www.youtube.com/watch?v=SOqenYis1iQ), ["Somebody That I Used to Know" by Walk off the Earth](https://www.youtube.com/watch?v=d9NF2edxy-M), ["exile" by Taylor Swift with Bon Iver](https://www.youtube.com/watch?v=osdoLjUNFnA), ["Daddy Cool" by Boney M](https://www.youtube.com/watch?v=tHyHOUShOg8), ["Come As You Are" by Nirvana](https://www.youtube.com/watch?v=vabnZ9-ex7o), ["Severed" by The Decemberists](https://www.youtube.com/watch?v=ksTFj6L0mao), ["That's Not My Name" by The Ting Tings](https://www.youtube.com/watch?v=v1c2OfAzDTI), and to at least some extent most music created in recent memory.
 
 [**Diafonia**](https://translate.google.com/?sl=it&tl=en&text=diafonia&op=translate) means crosstalk in Italian, Portuguese, and Haitian Creole, and is very close to the words for crosstalk in Spanish (diafonía) and French (diaphonie). In Italian, diafonia also refers to the simultaneous presence of multiple voices, in music and otherwise.
 
