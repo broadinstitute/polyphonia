@@ -176,7 +176,7 @@ The rest is up to you. Depending on availability of material and the stage at wh
 
 Not all potential cross-contamination flagged by polyphonia will be true cross-contamination. You should examine and verify any potential cross-contamination that polyphonia flags.
 
-Consensus-level potential cross-contamination can also be explained by infections by identical genomes. Especially if you are sequencing samples from a cluster of infections or samples from the same patient, identical infections may be a more likely explanation.
+Consensus-level potential cross-contamination can also be explained by infections by identical genomes. Especially if you are sequencing samples from a cluster of infections or samples from the same patient, genetically identical infections may be a more likely explanation.
 
 Potential cross-contamination at the level of minor alleles (with contaminating allele frequency below 50%) can also be explained by the "contaminated" sample containing multiple infections. In the example we run through from our own lab, we suspect that USA-MA-Broad_CRSP-01323-2021 is contaminated by USA-MA-Broad_CRSP-01315-2021 because they are plate neighbors; however, it is also possible that USA-MA-Broad_CRSP-01323-2021 contains a second, minor infection identical to the consensus-level infection in USA-MA-Broad_CRSP-01315-2021. There is no way for us to know for sure.
 
@@ -197,11 +197,11 @@ The reference genome that is input using `--ref` must match that used in other i
 `--consensus`
 `--consensus-aligned`
 
-You must include a consensus genome for every sample you want to compare. You can either enter unaligned consensus genomes in one or more fasta files using `--consensus` (in which case they and the [reference](#reference-genome) provided using `--ref` will be aligned using [`MAFFT`](https://mafft.cbrc.jp/alignment/software/), or you can input all consensus genomes aligned to the reference in a single aligned fasta file using `--consensus-aligned`. If you provide aligned consensus genomes using `--consensus-aligned`, then the first sequence in the alignment must match the [reference genome](#reference-genome) that is input using `--ref`.
+You must include a consensus genome for every sample you want to compare. Any sample without a consensus genome will be excluded.
 
-The sample name must occupy the full header line after the `>`. The provided sample name must match the *filename* of the corresponding [within-sample diversity file](#within-sample-diversity-files) up to a `.` (if your within-sample diversity file name contains multiple `.`s, polyphonia will try to match all possible names starting with the longest); any sample without a matching within-sample diversity file will be excluded. If you provide at least one [plate map](#optional-plate-map-inputs) using `--plate-map`, then sample names not appearing in a plate map will be excluded.
+You can either enter unaligned consensus genomes in one or more fasta files using `--consensus` (in which case they and the [reference](#reference-genome) provided using `--ref` will be aligned using [`MAFFT`](https://mafft.cbrc.jp/alignment/software/)), or you can input all consensus genomes aligned to the reference in a single aligned fasta file using `--consensus-aligned`. If you provide aligned consensus genomes using `--consensus-aligned`, then the first sequence in the alignment must match the [reference genome](#reference-genome) that is input using `--ref`.
 
-Any sample without a consensus genome will be excluded.
+The sample name must occupy the full header line after the `>`. The provided sample name must match the *filename* of the corresponding [within-sample diversity file](#within-sample-diversity-files) up to a `.` (if your within-sample diversity file name contains multiple `.`s, polyphonia will try to match all possible names starting with the longest); any sample without a matching within-sample diversity file will be excluded. If you provide at least one [plate map](#optional-plate-map-inputs) using `--plate-map`, then sample names not appearing in any plate map will be excluded.
 
 ### Within-Sample Diversity Files
 
