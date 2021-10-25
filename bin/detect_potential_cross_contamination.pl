@@ -106,7 +106,7 @@ if(!scalar @ARGV) # no command line arguments supplied
 	
 	print STDOUT "- Consensus genomes (aligned or not aligned, not both; at least one file required):\n";
 	print STDOUT "\t-c | --consensus FILE(S)\tUnaligned consensus genome or genomes [null]\n";
-	print STDOUT "\t-a | --consensus-aligned FILE\tConsensus genomes pre-aligned to reference as fasta alignment; reference provided by --ref must appear first [null]\n";
+	print STDOUT "\t-a | --consensus-aligned FILE\tFasta alignment with consensus genomes pre-aligned to reference; reference provided by --ref must appear first [null]\n";
 	print STDOUT "\n";
 	
 	print STDOUT "- Within-sample diversity (any combination; at least one file required):\n";
@@ -116,12 +116,12 @@ if(!scalar @ARGV) # no command line arguments supplied
 	print STDOUT "\n";
 	
 	print STDOUT "- Filtering options:\n";
-	print STDOUT "\t-i | --min-maf FLOAT\t\tMinimum minor allele frequency for position to be considered heterozygous [".$DEFAULT_MINIMUM_MINOR_ALLELE_FREQUENCY."]\n";
-	print STDOUT "\t-e | --min-readcount INT\tMinimum minor allele readcount for position to be considered heterozygous [".$DEFAULT_MINIMUM_MINOR_ALLELE_READCOUNT."]\n";
+	print STDOUT "\t-i | --min-maf FLOAT\t\tMinimum minor allele frequency for a position to be considered heterozygous [".$DEFAULT_MINIMUM_MINOR_ALLELE_FREQUENCY."]\n";
+	print STDOUT "\t-e | --min-readcount INT\tMinimum minor allele readcount for a position to be considered heterozygous [".$DEFAULT_MINIMUM_MINOR_ALLELE_READCOUNT."]\n";
 	print STDOUT "\t-r | --min-depth INT\t\tMinimum read depth for a position to be used for comparison [".$DEFAULT_MINIMUM_READ_DEPTH."]\n";
 	print STDOUT "\t-1 | --read-depths FILE(S)\tRead depth tables; provide alongside vcf files or heterozygosity tables if min-depth>0; see documentation for format [null]\n";
-	print STDOUT "\t-g | --min-covered FLOAT\tMinimum proportion genome covered at minimum read depth for a sample to be included [".$DEFAULT_MINIMUM_GENOME_COVERAGE."]\n";
-	print STDOUT "\t-y | --max-mismatches INT\tMaximum allowed unambiguous bases in contaminating sample consensus not matching contaminated sample alleles [".$DEFAULT_MAXIMUM_ALLOWED_MISMATCHES."]\n";
+	print STDOUT "\t-g | --min-covered FLOAT\tMinimum proportion genome that must be covered at minimum read depth for a sample to be included [".$DEFAULT_MINIMUM_GENOME_COVERAGE."]\n";
+	print STDOUT "\t-y | --max-mismatches INT\tIn flagged potential cross-contamination, maximum allowed unambiguous bases in contaminating sample consensus not matching contaminated sample alleles [".$DEFAULT_MAXIMUM_ALLOWED_MISMATCHES."]\n";
 	print STDOUT "\n";
 	
 	print STDOUT "- Plate map and neighbors (any combination, all optional):\n";
@@ -145,7 +145,7 @@ if(!scalar @ARGV) # no command line arguments supplied
 	print STDOUT "- Misc:\n";
 	print STDOUT "\t-p | --cores INT\t\tOptional number of cores to use for preprocessing in parallel [".$DEFAULT_CORES_TO_USE."]\n";
 	print STDOUT "\t-u | --verbose BOOL\t\tPrint progress updates to STDOUT [".int_to_bool_string($DEFAULT_VERBOSE)."]\n";
-	print STDOUT "\t-j | --overwrite BOOL\t\tOverwrite files that already exist at output, intermediate, and temp files paths [".int_to_bool_string($DEFAULT_OVERWRITE)."]\n";
+	print STDOUT "\t-j | --overwrite BOOL\t\tOverwrite files that already exist at output, intermediate, and temp file paths [".int_to_bool_string($DEFAULT_OVERWRITE)."]\n";
 	print STDOUT "\t-0 | --print-all BOOL\t\tOutput outcomes of all comparisons (all comparisons are marked as potential cross-contamination) [".int_to_bool_string($DEFAULT_PRINT_ALL)."]\n";
 	print STDOUT "\n\n";
 	exit;
