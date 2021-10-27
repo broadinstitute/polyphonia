@@ -73,6 +73,7 @@ my $DEFAULT_OUTPUT_FILE_NAME = "potential_cross-contamination.txt";
 my $DEFAULT_OVERWRITE = 0; # false
 my $DEFAULT_CORES_TO_USE = 1;
 my $DEFAULT_VERBOSE = 1; # true
+my $DEFAULT_PRINT_ALL_ISNVS = 0; # false
 my $DEFAULT_PRINT_ALL = 0; # false
 
 my $DEFAULT_PLATE_SIZE = 96; # 12 columns, 8 rows
@@ -146,6 +147,7 @@ if(!scalar @ARGV) # no command line arguments supplied
 	print STDOUT "\t-p | --cores INT\t\tOptional number of cores to use for preprocessing in parallel [".$DEFAULT_CORES_TO_USE."]\n";
 	print STDOUT "\t-u | --verbose BOOL\t\tPrint progress updates to STDOUT [".int_to_bool_string($DEFAULT_VERBOSE)."]\n";
 	print STDOUT "\t-j | --overwrite BOOL\t\tOverwrite files that already exist at output, intermediate, and temp file paths [".int_to_bool_string($DEFAULT_OVERWRITE)."]\n";
+	print STDOUT "\t-2 | --print-all-iSNVs BOOL\tPrint iSNVs for all samples in plate visualization file, including samples without plate neighbors [".int_to_bool_string($DEFAULT_PRINT_ALL_ISNVS)."]\n";
 	print STDOUT "\t-0 | --print-all BOOL\t\tOutput outcomes of all comparisons (all comparisons are marked as potential cross-contamination) [".int_to_bool_string($DEFAULT_PRINT_ALL)."]\n";
 	print STDOUT "\n\n";
 	exit;
@@ -172,6 +174,7 @@ my $temp_intermediate_directory = $default_temp_intermediate_files_directory;
 my $cores_to_use = $DEFAULT_CORES_TO_USE;
 my $overwrite = $DEFAULT_OVERWRITE;
 my $verbose = $DEFAULT_VERBOSE;
+my $print_all_isnvs = $DEFAULT_PRINT_ALL_ISNVS;
 my $print_all = $DEFAULT_PRINT_ALL;
 
 my $minimum_minor_allele_readcount = $DEFAULT_MINIMUM_MINOR_ALLELE_READCOUNT;
@@ -308,6 +311,10 @@ for($argument_index = 0; $argument_index <= $#ARGV; $argument_index++)
 	{
 		$verbose = $input;
 	}
+	elsif(($input = read_in_boolean_argument("-2", "--print-all-isnvs")) != -1)
+	{
+		$print_all_isnvs = $input;
+	}
 	elsif(($input = read_in_boolean_argument("-0", "--print-all")) != -1)
 	{
 		$print_all = $input;
@@ -424,6 +431,11 @@ foreach my $read_depth_table(@read_depth_tables)
 	verify_input_file_exists_and_is_nonempty($read_depth_table, "read depth table", 1, 0);
 }
 
+# option to print all iSNV counts set to FALSE if no plate maps provided
+if(!scalar @plate_map_files)
+{
+	$print_all_isnvs = 0;
+}
 
 # retrieves dimensions of standard plate map size entered
 if($plate_size_entered)
@@ -613,16 +625,26 @@ print STDOUT "\tminimum minor allele readcount: ".$minimum_minor_allele_readcoun
 print STDOUT "\tminimum minor allele frequency: ".($minimum_minor_allele_frequency*100)."%\n" if $verbose;
 print STDOUT "\tmaximum allowed mismatches: ".$maximum_allowed_mismatches."\n" if $verbose;
 
-# output
+# output files
 print STDOUT "OUTPUT:\n" if $verbose;
 print STDOUT "\toutput file: ".$output_file_path."\n" if $verbose;
 print STDOUT "\tplate visualization files: ".$visualizations_directory."\n" if $verbose;
 print STDOUT "\tintermediate and temporary files: ".$temp_intermediate_directory."\n" if $verbose;
+
+# output options
+if($print_all)
+{
+	print STDOUT "\tPrinting all comparisons.\n" if $verbose;
+}
+if($print_all_isnvs)
+{
+	print STDOUT "\tPrinting iSNVs for all samples in plate visualization file, including samples without plate neighbors.\n" if $verbose;
+}
 print STDOUT "\n" if $verbose;
 
 
 # retrieves sample names from plate maps if possible
-my %sample_names = (); # key: sample name -> value: 1
+my %sample_names = (); # key: sample name to include in comparisons -> value: 1
 if(scalar @plate_map_files)
 {
 	print STDOUT "retrieving sample names from plate map(s)...\n" if $verbose;
@@ -675,7 +697,7 @@ if(scalar @plate_map_files)
 	# prints number of samples remaining
 	print_number_samples_remaining_and_exit_if_none();
 	
-	# removes any sample names that don't have a consensus genome
+	# removes samples that don't have a consensus genome
 	foreach my $sample_name(keys %sample_names)
 	{
 		if(!$sample_name_has_consensus_genome{$sample_name})
@@ -729,7 +751,6 @@ foreach my $file_path(@aligned_and_trimmed_bam_files)
 
 # retrieves within-sample diversity file for each sample
 print STDOUT "retrieving within-sample diversity file for each sample...\n" if $verbose;
-# removes any sample names that don't have an associated within-sample diversity file
 my %sample_name_to_within_sample_diversity_file = (); # key: sample name -> value: file path of within-sample diversity file (bam or vcf or heterozygosity table)
 foreach my $file_path(@aligned_and_trimmed_bam_files, @vcf_files, @heterozygosity_tables) # most processed is looked at last (so that most processed replaces least processed)
 {
@@ -755,7 +776,7 @@ foreach my $file_path(@aligned_and_trimmed_bam_files, @vcf_files, @heterozygosit
 	}
 }
 
-# removes any sample names that don't have a within-sample diversity file
+# removes samples that don't have a within-sample diversity file
 print STDOUT "removing samples without within-sample diversity file...\n" if $verbose;
 foreach my $sample_name(keys %sample_names)
 {
@@ -799,7 +820,7 @@ if($minimum_read_depth and scalar @read_depth_tables)
 	}
 }
 
-# removes any sample names that don't have a read depth file or bam file
+# removes samples that don't have a read depth file or bam file
 if($minimum_read_depth)
 {
 	print STDOUT "removing samples without read depth table or bam file to generate it from...\n" if $verbose;
@@ -904,8 +925,15 @@ if($minimum_genome_coverage)
 }
 
 
-# if a plate map is provided, reads in plate map positions of all samples;
-# removes any samples that do not have neighbors
+# sample names to include in iSNV outputs
+# if print_all_isnvs is TRUE, includes samples without neighbors, unlike %sample_names
+# if print_all_isnvs is FALSE, is identical to %sample_names
+# will always be a superset of %sample_names
+my %sample_names_for_isnvs = %sample_names; # key: sample name to include in iSNV outputs -> value: 1
+
+
+# if a plate map is provided, reads in plate map positions of all samples
+# removes samples that do not have neighbors
 my %sample_name_to_all_plate_positions = (); # key: sample name -> value: string including all plate positions the sample appears in
 my %sample_name_to_all_plates = (); # key: sample name -> value: string including all plates the sample appears in
 
@@ -929,7 +957,7 @@ if(scalar @plate_map_files)
 				my $sample_name = $items[$PLATE_MAP_SAMPLE_COLUMN];
 				my $position = uc $items[$PLATE_MAP_POSITION_COLUMN];
 				
-				if($position and $sample_name and $sample_names{$sample_name})
+				if($position and $sample_name and $sample_names_for_isnvs{$sample_name})
 				{
 					$plate_position_to_sample_name{$plate_map_file}{$position} = $sample_name;
 					$sample_name_to_plate_position{$plate_map_file}{$sample_name} = $position;
@@ -956,8 +984,9 @@ if(scalar @plate_map_files)
 		close PLATE_MAP;
 	}
 	
-	# removes any sample names that don't have at least one plate neighbor
+	# removes samples that don't have at least one plate neighbor
 	print STDOUT "removing samples without plate neighbors...\n" if $verbose;
+	%sample_names_for_isnvs = %sample_names; # samples so far including those without neighbors
 	remove_samples_without_plate_neighbors();
 	
 	# prints number of samples remaining
@@ -980,7 +1009,7 @@ if($minimum_read_depth > 0)
 		$sample_name_to_position_to_read_depth{$q} = $data_structure_reference -> {position_to_read_depth};
 	});
 
-	foreach my $sample(keys %sample_names)
+	foreach my $sample(keys %sample_names_for_isnvs)
 	{
 		my $pid = $pm -> start and next;
 		
@@ -1034,7 +1063,7 @@ if($minimum_read_depth > 0)
 # not parallelized; uncomment and replace parallelized version if needed
 # 	print STDOUT "generating read depth files (not parallelized)...\n" if $verbose;
 # 
-# 	foreach my $sample(keys %sample_names)
+# 	foreach my $sample(keys %sample_names_for_isnvs)
 # 	{
 # 		my $within_sample_diversity_file = $sample_name_to_within_sample_diversity_file{$sample};
 # 		
@@ -1113,7 +1142,7 @@ if(!$consensus_genomes_aligned_file)
 				{
 					# process previous sequence
 					$sequence = uc($sequence);
-					if($sequence and $sample_name and $sample_names{$sample_name})
+					if($sequence and $sample_name and $sample_names_for_isnvs{$sample_name})
 					{
 						$sequence_name_to_consensus{$sample_name} = $sequence;
 					}
@@ -1128,7 +1157,7 @@ if(!$consensus_genomes_aligned_file)
 				}
 			}
 			# process final sequence
-			if($sequence and $sample_name and $sample_names{$sample_name})
+			if($sequence and $sample_name and $sample_names_for_isnvs{$sample_name})
 			{
 				$sequence_name_to_consensus{$sample_name} = uc($sequence);
 			}
@@ -1147,7 +1176,7 @@ if(!$consensus_genomes_aligned_file)
 	print CONSENSUS_GENOMES $reference_sequence.$NEWLINE;
 	
 	# prints included consensus genomes
-	foreach my $sample_name(keys %sample_names)
+	foreach my $sample_name(keys %sample_names_for_isnvs)
 	{
 		print CONSENSUS_GENOMES ">".$sample_name.$NEWLINE;
 		print CONSENSUS_GENOMES $sequence_name_to_consensus{$sample_name}.$NEWLINE;
@@ -1180,7 +1209,7 @@ while(<ALIGNED_CONSENSUS_GENOMES>) # for each line in the file
 	{
 		# process previous sequence
 		$sequence = uc($sequence);
-		if($sequence and $sample_name and $sample_names{$sample_name})
+		if($sequence and $sample_name and $sample_names{$sample_names_for_isnvs})
 		{
 			$sequence_name_to_consensus{$sample_name} = uc($sequence);
 		}
@@ -1199,7 +1228,7 @@ while(<ALIGNED_CONSENSUS_GENOMES>) # for each line in the file
 	}
 }
 # process final sequence
-if($sequence and $sample_name and $sample_names{$sample_name})
+if($sequence and $sample_name and $sample_names{$sample_names_for_isnvs})
 {
 	$sequence_name_to_consensus{$sample_name} = uc($sequence);
 }
@@ -1237,7 +1266,7 @@ my %sequence_name_to_pre_masking_consensus = %sequence_name_to_consensus;
 if($minimum_read_depth > 0)
 {
 	print STDOUT "masking positions with read depth < ".$minimum_read_depth."...\n" if $verbose;
-	foreach my $sample_name(keys %sample_names)
+	foreach my $sample_name(keys %sample_names_for_isnvs)
 	{
 		# retrieves consensus genome bases
 		my $consensus = $sequence_name_to_consensus{$sample_name};
@@ -1286,7 +1315,7 @@ sub
 	$updated_within_sample_diversity_files{$q} = $data_structure_reference -> {updated_file};
 });
 
-foreach my $sample(keys %sample_names)
+foreach my $sample(keys %sample_names_for_isnvs)
 {
 	my $pid = $pm -> start and next;
 	my $res = process_within_sample_diversity_file_for_sample($sample);
@@ -1337,11 +1366,11 @@ if(scalar @plate_map_files)
 		close PLATE_MAP;
 
 		# retrieves number iSNVs for each sample on plate map
-		# (excludes previously removed samples without neighbors)
+		# (excludes previously removed samples without neighbors unless print_all_isnvs is TRUE)
 		foreach my $plate_position(keys %{$plate_position_to_sample_name{$plate_map_file}})
 		{
 			my $sample = $plate_position_to_sample_name{$plate_map_file}{$plate_position};
-			if($sample_names{$sample}) # if sample not excluded
+			if($sample_names_for_isnvs{$sample}) # if sample not excluded
 			{
 				# retrieves within-sample diversity file for potential contaminated sample
 				my $within_sample_diversity_file = $sample_name_to_within_sample_diversity_file{$sample};
@@ -1437,7 +1466,7 @@ if(scalar @plate_map_files)
 		{
 			my $sample_name = $plate_position_to_sample_name{$plate_map_file}{$plate_position};
 			my $number_positions_with_heterozygosity = $sample_name_to_number_positions_with_heterozygosity{$sample_name};
-			if(!$sample_names{$sample_name})
+			if(!$sample_names_for_isnvs{$sample_name})
 			{
 				$number_positions_with_heterozygosity = $NO_DATA;
 			}
@@ -2311,11 +2340,12 @@ sub print_number_samples_remaining_and_exit_if_none
 
 # removes samples that do not have genome coverage >= minimum_genome_coverage
 # assumes that consensus genomes have been read into %sequence_name_to_consensus
-# returns number of samples removed
+# returns number of samples removed from %sample_names
+# removes samples from %sample_names and, if $print_all_isnvs is TRUE, %sample_names_for_isnvs
 sub remove_samples_without_minimum_genome_coverage
 {
 	my $number_samples_removed = 0;
-	foreach my $sample_name(keys %sample_names)
+	foreach my $sample_name(keys %sample_names_for_isnvs)
 	{
 		# retrieves consensus genome bases
 		my $consensus = $sequence_name_to_consensus{$sample_name};
@@ -2329,8 +2359,18 @@ sub remove_samples_without_minimum_genome_coverage
 		if($consensus_percent_covered < $minimum_genome_coverage)
 		{
 			delete $sample_names{$sample_name};
+			if($print_all_isnvs)
+			{
+				delete $sample_names_for_isnvs{$sample_name};
+			}
 			$number_samples_removed++;
 		}
+	}
+	
+	# if we are not printing all iSNVs, no need to keep separate sample lists
+	if(!$print_all_isnvs)
+	{
+		%sample_names_for_isnvs = %sample_names;
 	}
 	return $number_samples_removed;
 }
@@ -2338,7 +2378,8 @@ sub remove_samples_without_minimum_genome_coverage
 # removes samples without enough positions with sufficient read depth to reach
 # minimum_genome_coverage
 # assumes that sample_name_to_position_to_read_depth has been read in
-# returns number of samples removed
+# returns number of samples removed from %sample_names
+# removes samples from %sample_names and, if $print_all_isnvs is TRUE, %sample_names_for_isnvs
 sub remove_samples_without_minimum_genome_coverage_with_high_read_depth
 {
 	my $number_samples_removed = 0;
@@ -2356,15 +2397,26 @@ sub remove_samples_without_minimum_genome_coverage_with_high_read_depth
 		if($number_positions_with_high_read_depth < $minimum_genome_coverage * $reference_sequence_length)
 		{
 			delete $sample_names{$sample_name};
+			if($print_all_isnvs)
+			{
+				delete $sample_names_for_isnvs{$sample_name};
+			}
 			$number_samples_removed++;
 		}
+	}
+	
+	# if we are not printing all iSNVs, no need to keep separate sample lists
+	if(!$print_all_isnvs)
+	{
+		%sample_names_for_isnvs = %sample_names;
 	}
 	return $number_samples_removed;
 }
 
-# removes any sample names that don't have at least one plate neighbor
+# removes samples that don't have at least one plate neighbor
 # assumes that %plate_position_to_sample_name and %sample_name_to_plate_position have been read in
-# returns number of samples removed
+# returns number of samples removed from %sample_names
+# removes samples from %sample_names only
 sub remove_samples_without_plate_neighbors
 {
 	# checks if each sample has at least one neighbor
@@ -2383,7 +2435,7 @@ sub remove_samples_without_plate_neighbors
 		}
 	}
 	
-	# removes any sample names that don't have at least one plate neighbor
+	# removes samples that don't have at least one plate neighbor
 	my $number_samples_removed = 0;
 	foreach my $sample_name(keys %sample_names)
 	{

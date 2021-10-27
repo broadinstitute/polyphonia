@@ -45,6 +45,7 @@ OPTIONS:
 	-p | --cores INT		Optional number of cores to use for preprocessing in parallel [1]
 	-u | --verbose BOOL		Print progress updates to STDOUT [TRUE]
 	-j | --overwrite BOOL		Overwrite files that already exist at output, intermediate, and temp file paths [FALSE]
+	-2 | --print-all-iSNVs BOOL	Print iSNVs for all samples in plate visualization file, including samples without plate neighbors [FALSE]
 	-0 | --print-all BOOL		Output outcomes of all comparisons (all comparisons are marked as potential cross-contamination) [FALSE]
 ```
 
