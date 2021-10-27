@@ -45,7 +45,7 @@ OPTIONS:
 	-p | --cores INT		Optional number of cores to use for preprocessing in parallel [1]
 	-u | --verbose BOOL		Print progress updates to STDOUT [TRUE]
 	-j | --overwrite BOOL		Overwrite files that already exist at output, intermediate, and temp file paths [FALSE]
-	-2 | --print-all-iSNVs BOOL	Print iSNVs for all samples in plate visualization file, including samples without plate neighbors [FALSE]
+	-2 | --print-all-iSNVs BOOL	Include in plate visualization file all threshold-passing samples, including samples without plate neighbors [FALSE]
 	-0 | --print-all BOOL		Output outcomes of all comparisons (all comparisons are marked as potential cross-contamination) [FALSE]
 ```
 
@@ -478,8 +478,11 @@ You can set the [output directory](#output-file-paths) for the plate map visuali
 ### Plate Map Visualization of iSNVs
 
 `--out-figures`
+`--print-all-iSNVs`
 
-If you enter at least one plate map file, polyphonia will generate a visualization of the plate with each well colored by and labelled with the number of iSNVs, or positions with intrahost variation (base substitutions only) passing our [allele filtering thresholds](#allele-filtering-thresholds) and [read depth filter](#position-inclusion-thresholds). You might notice that some or even many wells are grey and labelled `NA` ("no data") even if the well had been mapped to a sample in a plate map. This is because processing [within-sample diversity files](#within-sample-diversity-files) can be very slow, and we only do it if a sample has passed [sample inclusion thresholds](#sample-inclusion-thresholds) and has at least one neighbor (which also passes [sample inclusion thresholds](#sample-inclusion-thresholds)) according to the provided [well comparison options](#well-comparison-options). If you would like to include all wells mapped to samples passing [sample inclusion thresholds](#sample-inclusion-thresholds), you can opt to compare all samples on a plate by entering [`--compare-plate`](#well-comparison-options).
+If you enter at least one plate map file, polyphonia will generate a visualization of the plate with each well colored by and labelled with the number of iSNVs, or positions with intrahost variation (base substitutions only) passing our [allele filtering thresholds](#allele-filtering-thresholds) and [read depth filter](#position-inclusion-thresholds).
+
+You might notice that some or even many wells are grey and labelled `NA` ("no data") even if the well had been mapped to a sample in a plate map. This is because processing [within-sample diversity files](#within-sample-diversity-files) can be very slow, and we only do it if a sample has passed [sample inclusion thresholds](#sample-inclusion-thresholds) and has at least one neighbor (which also passes [sample inclusion thresholds](#sample-inclusion-thresholds)) according to the provided [well comparison options](#well-comparison-options). You can include all wells mapped to samples passing [sample inclusion thresholds](#sample-inclusion-thresholds), including samples without neighbors, by adding `--print-all-iSNVs TRUE`.
 
 You can view an example of a plate map visualization of iSNVs at the [end](#output-files-1) of the [example run-through](#example-run-throughs):
 
