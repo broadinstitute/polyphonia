@@ -652,7 +652,7 @@ if(scalar @plate_map_files)
 	print_number_samples_remaining_and_exit_if_none();
 	
 	# catalogues consensus genome sample names
-	print STDOUT "removing names of samples without associated consensus genome...\n" if $verbose;
+	print STDOUT "removing samples without associated consensus genome...\n" if $verbose;
 	my %sample_name_has_consensus_genome = (); # key: sample name -> value: 1 if sample has associated consensus genome
 	foreach my $consensus_genome_fasta_file(@consensus_genome_files, $consensus_genomes_aligned_file)
 	{
@@ -756,7 +756,7 @@ foreach my $file_path(@aligned_and_trimmed_bam_files, @vcf_files, @heterozygosit
 }
 
 # removes any sample names that don't have a within-sample diversity file
-print STDOUT "removing names of samples without within-sample diversity file...\n" if $verbose;
+print STDOUT "removing samples without within-sample diversity file...\n" if $verbose;
 foreach my $sample_name(keys %sample_names)
 {
 	if(!$sample_name_to_within_sample_diversity_file{$sample_name})
@@ -802,7 +802,7 @@ if($minimum_read_depth and scalar @read_depth_tables)
 # removes any sample names that don't have a read depth file or bam file
 if($minimum_read_depth)
 {
-	print STDOUT "removing names of samples without read depth table or bam file to generate it from...\n" if $verbose;
+	print STDOUT "removing samples without read depth table or bam file to generate it from...\n" if $verbose;
 	foreach my $sample_name(keys %sample_names)
 	{
 		if(!$sample_name_to_read_depth_file{$sample_name}
@@ -892,7 +892,7 @@ if($minimum_genome_coverage)
 		}
 	}
 	
-	print STDOUT "removing names of samples without at least ".($minimum_genome_coverage*100)
+	print STDOUT "removing samples without at least ".($minimum_genome_coverage*100)
 		."% coverage ("."of ".$reference_sequence_length." total bases)...\n" if $verbose;
 	remove_samples_without_minimum_genome_coverage();
 	
@@ -957,7 +957,7 @@ if(scalar @plate_map_files)
 	}
 	
 	# removes any sample names that don't have at least one plate neighbor
-	print STDOUT "removing names of samples without plate neighbors...\n" if $verbose;
+	print STDOUT "removing samples without plate neighbors...\n" if $verbose;
 	remove_samples_without_plate_neighbors();
 	
 	# prints number of samples remaining
@@ -1082,7 +1082,7 @@ if($minimum_read_depth > 0)
 
 	# verifies that each sample has at least minimum_genome_coverage * reference_sequence_length
 	# positions with sufficient read depth
-	print STDOUT "removing names of samples without at least "
+	print STDOUT "removing samples without at least "
 		.($minimum_genome_coverage * $reference_sequence_length)." bases with read depth >= "
 		.$minimum_read_depth." (".(100*$minimum_genome_coverage)."% of "
 		.$reference_sequence_length." total bases)...\n" if $verbose;
@@ -1253,7 +1253,7 @@ if($minimum_read_depth > 0)
 		$sequence_name_to_consensus{$sample_name} = join("", @consensus_values);
 	}
 	
-	print STDOUT "removing names of samples without at least ".($minimum_genome_coverage*100)
+	print STDOUT "removing samples without at least ".($minimum_genome_coverage*100)
 		."% coverage with read depth >= ".$minimum_read_depth." ("."of "
 		.$reference_sequence_length." total bases)...\n" if $verbose;
 	my $samples_removed = remove_samples_without_minimum_genome_coverage();
@@ -1264,7 +1264,7 @@ if($minimum_read_depth > 0)
 	if($samples_removed and scalar @plate_map_files)
 	{
 		# removes samples that are now without plate neighbors
-		print STDOUT "removing names of samples without plate neighbors...\n" if $verbose;
+		print STDOUT "removing samples without plate neighbors...\n" if $verbose;
 		remove_samples_without_plate_neighbors();
 	
 		# prints number of samples remaining
