@@ -223,7 +223,7 @@ Processing large bam files can be very slow. `--vcf` can be helpful if you have 
 
 Within the vcf file, locus positions must be relative to the same [reference](#reference-genome) as that provided by `--ref`.
 
-If a non-zero minimum readcount is set by [`--min-depth`](#position-inclusion-thresholds), then each vcf file must be accompanied by a read depth table provided by [`--read-depths`](#position-inclusion-thresholds). If within-sample diversity files are provided as vcf files or heterozygosity tables without any accompanying read depth tables, then [`--min-depth`](#position-inclusion-thresholds) is set to 0.
+If a non-zero minimum readcount is set by [`--min-depth`](#position-inclusion-thresholds), then each vcf file must be accompanied by a read depth table provided by [`--read-depths`](#position-inclusion-thresholds). If within-sample diversity files are provided as vcf files or heterozygosity tables without any accompanying read depth tables, then [`--min-depth`](#position-inclusion-thresholds) is set to 0. If [`--min-depth`](#position-inclusion-thresholds) is non-zero and at least one read depth table is provided, then any vcf files without a corresponding read depth table are excluded.
 
 Polyphonia is set up to process vcf files that were output by LoFreq or GATK. If you use a different tool, you can preprocess the output yourself and input it using `--het`.
 
@@ -242,7 +242,7 @@ Locus positions must be relative to the same [reference](#reference-genome) as t
 
 Note that the loci listed in the heterozygosity table will be filtered according to the [allele filtering thresholds](#allele-filtering-thresholds) provided by `--min-readcount` and `--min-maf`. Not all alleles will be included in sample comparisons.
 
-If a non-zero minimum readcount is set by [`--min-depth`](#position-inclusion-thresholds), then each heterozygosity table must be accompanied by a read depth table provided by [`--read-depths`](#position-inclusion-thresholds). If within-sample diversity files are provided as heterozygosity tables or vcf files without any accompanying read depth tables, then [`--min-depth`](#position-inclusion-thresholds) is set to 0.
+If a non-zero minimum readcount is set by [`--min-depth`](#position-inclusion-thresholds), then each heterozygosity table must be accompanied by a read depth table provided by [`--read-depths`](#position-inclusion-thresholds). If within-sample diversity files are provided as heterozygosity tables or vcf files without any accompanying read depth tables, then [`--min-depth`](#position-inclusion-thresholds) is set to 0. If [`--min-depth`](#position-inclusion-thresholds) is non-zero and at least one read depth table is provided, then any heterozygosity tables without a corresponding read depth table are excluded.
 
 You can view example heterozygosity tables here: [USA-MA-Broad_CRSP-01315-2021.bam_LoFreq.vcf_heterozygosity.txt](/test/input/USA-MA-Broad_CRSP-01315-2021.bam_LoFreq.vcf_heterozygosity.txt) and [USA-MA-Broad_CRSP-01323-2021.bam_LoFreq.vcf_heterozygosity.txt](/test/input/USA-MA-Broad_CRSP-01323-2021.bam_LoFreq.vcf_heterozygosity.txt).
 
