@@ -1209,7 +1209,7 @@ while(<ALIGNED_CONSENSUS_GENOMES>) # for each line in the file
 	{
 		# process previous sequence
 		$sequence = uc($sequence);
-		if($sequence and $sample_name and $sample_names{$sample_names_for_isnvs})
+		if($sequence and $sample_name and $sample_names_for_isnvs{$sample_name})
 		{
 			$sequence_name_to_consensus{$sample_name} = uc($sequence);
 		}
@@ -1228,7 +1228,7 @@ while(<ALIGNED_CONSENSUS_GENOMES>) # for each line in the file
 	}
 }
 # process final sequence
-if($sequence and $sample_name and $sample_names{$sample_names_for_isnvs})
+if($sequence and $sample_name and $sample_names_for_isnvs{$sample_name})
 {
 	$sequence_name_to_consensus{$sample_name} = uc($sequence);
 }
@@ -2873,10 +2873,10 @@ sub read_in_positive_float_argument
 # returns -1 if this argument was not entered
 sub read_in_boolean_argument
 {
-	my $argument_option_1 = $_[0]; # for example: -d
-	my $argument_option_2 = $_[1]; # for example: --diagonal
+	my $argument_option_1 = $_[0]; # short argument, case sensitive, for example: -d
+	my $argument_option_2 = $_[1]; # long argument, not case sensitive, for example: --diagonal
 	
-	if($argument eq $argument_option_1 or $argument eq $argument_option_2)
+	if($argument eq $argument_option_1 or uc($argument) eq uc($argument_option_2))
 	{
 		my $next_item = $ARGV[$argument_index+1];
 		if($argument_index + 1 > $#ARGV or $next_item =~ /^-\w$/ or $next_item =~ /^--[\w-]+$/)
