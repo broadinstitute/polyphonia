@@ -377,8 +377,9 @@ if(!@plate_map_files and $plate_row_column_count_entered)
 if($plate_size_entered and $plate_row_column_count_entered)
 {
 	print STDERR "Warning: plate map column or row count entered as well as plate size "
-		."entered. Using standard plate size ".$plate_size."; ignoring plate column and row counts.\n";
-	$plate_row_column_count_entered = 0;
+		."entered. Using plate column and row counts ".$plate_number_columns." and "
+		.$plate_number_rows."; ignoring entered standard plate size ".$plate_size.".\n";
+	$plate_size_entered = 0;
 }
 if($minimum_genome_coverage < 0 or $minimum_genome_coverage > 1)
 {
