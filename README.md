@@ -272,7 +272,7 @@ There are two benefits to including a plate map. First, including a plate map al
 <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Microplates.jpg/2560px-Microplates.jpg" alt="plate maps" width="500" align="right" />
 
 By default, polyphonia will assume you have a 96-well plate. You can use `--plate-size` to indicate that your plate is any of the following standard plate layouts:
-- 6-well plate: 3 columns (A, B, C) x 2 rows (1, 2)
+- 6-well plate: 3 columns (1, 2, 3) x 2 rows (A, B)
 - 12-well plate: 4 columns x 3 rows
 - 24-well plate: 6 columns x 4 rows
 - 48-well plate: 8 columns x 6 rows
