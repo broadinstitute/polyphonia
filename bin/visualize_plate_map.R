@@ -13,7 +13,7 @@ input_file_path  <- args[1]
 output_file_path <- args[2]
 number_columns   <- as.numeric(args[3])
 number_rows      <- as.numeric(args[4])
-input_file_type  <- tolower(args[5]) # "isnvs" or "contamination"
+input_file_type  <- tolower(args[5]) # "isnvs" or "contamination" or "contamination_minor" or "contamination_consensus"
 
 
 library(ggplot2)
@@ -123,6 +123,20 @@ if(number_columns < number_rows)
 # reads in input table
 input_table <- read.table(input_file_path, sep="\t", header=TRUE)
 
+# subsets input file to display consensus-level potential contamination only
+if(input_file_type == "contamination_consensus")
+{
+  input_table <- subset(input_table, appearance_of_potential_contamination == "consensus-level")
+  input_file_type <- "contamination"
+}
+
+# subsets input file to display minor allele or minor-consensus mix potential contamination only
+if(input_file_type == "contamination_minor")
+{
+  input_table <- subset(input_table, appearance_of_potential_contamination == "minor alleles" | appearance_of_potential_contamination == "minor and consensus-level")
+  input_file_type <- "contamination"
+}
+
 # expands input table to include all wells, including wells not included in input table
 well <- plate_list(number_rows, number_columns)
 all_wells <- data.frame(well)
@@ -195,92 +209,6 @@ plate_figure_base <- ggplot() +
 # generates contamination visualization
 if(input_file_type == "contamination")
 {
-  # label for maximum contamination volume in legend
-  maximum_contamination_volume <- max(plate_map$estimated_contamination_volume_sum)
-  if(maximum_contamination_volume == 0)
-  {
-    maximum_contamination_volume = 0.01
-  }
-  maximum_contamination_volume_text <- paste(signif(100*maximum_contamination_volume, digits=2), "%", sep="")
-  
-  # whether or not a well is involved in any detected potential contamination (giving or receiving)
-  plate_map$well_involved <- FALSE
-  for(i in 1:nrow(plate_map))
-  {
-    plate_map$well_involved[i] <- any(input_table$contamination_source_well==plate_map$well[i]) || any(input_table$well==plate_map$well[i])
-  }
-  
-  # colors plate map by total potential contamination with arrows from
-  # potential sources of contamination to potential contaminated wells
-  plate_figure_contamination <- plate_figure_base +
-    geom_point(
-      data=plate_map,
-      aes(x=Column, y=Row, fill=estimated_contamination_volume_sum),
-      colour=ifelse(plate_map$well_involved, "black", "darkgrey"),
-      shape=21, size=well_circle_size, stroke=well_circle_line_thickness) +
-    geom_segment(
-      data=input_table,
-      mapping=aes(x=Column0+jitter_horizontal, y=Row0+jitter_vertical, xend=Column+jitter_horizontal, yend=Row+jitter_vertical,
-        size=appearance_of_potential_contamination),
-      arrow=arrow(type="open", angle=30, length=unit(arrow_head_length,"cm"))) +
-    guides(size=FALSE) +
-    scale_size_manual(values = c("minor alleles"=arrow_thickness*0.6, "minor and consensus-level"=arrow_thickness*1, "consensus-level"=arrow_thickness*1.4)) +
-    scale_fill_gradient("Total Estimated Contamination Volume", low="white", high="#CC857E",
-      limits=c(0, maximum_contamination_volume),
-      breaks=c(0, maximum_contamination_volume),
-      labels=c(0, maximum_contamination_volume_text))
-  
-  ggsave(paste(output_file_path, ".pdf", sep=""), plate_figure_contamination, width=WIDTH, height=HEIGHT)
-  ggsave(paste(output_file_path, ".jpg", sep=""), plate_figure_contamination, width=WIDTH, height=HEIGHT)
-}
-
-if(input_file_type == "contamination_consensus")
-{
-  input_table <- subset(input_table, appearance_of_potential_contamination == "consensus-level")
-
-  # label for maximum contamination volume in legend
-  maximum_contamination_volume <- max(plate_map$estimated_contamination_volume_sum)
-  if(maximum_contamination_volume == 0)
-  {
-    maximum_contamination_volume = 0.01
-  }
-  maximum_contamination_volume_text <- paste(signif(100*maximum_contamination_volume, digits=2), "%", sep="")
-  
-  # whether or not a well is involved in any detected potential contamination (giving or receiving)
-  plate_map$well_involved <- FALSE
-  for(i in 1:nrow(plate_map))
-  {
-    plate_map$well_involved[i] <- any(input_table$contamination_source_well==plate_map$well[i]) || any(input_table$well==plate_map$well[i])
-  }
-  
-  # colors plate map by total potential contamination with arrows from
-  # potential sources of contamination to potential contaminated wells
-  plate_figure_contamination <- plate_figure_base +
-    geom_point(
-      data=plate_map,
-      aes(x=Column, y=Row, fill=estimated_contamination_volume_sum),
-      colour=ifelse(plate_map$well_involved, "black", "darkgrey"),
-      shape=21, size=well_circle_size, stroke=well_circle_line_thickness) +
-    geom_segment(
-      data=input_table,
-      mapping=aes(x=Column0+jitter_horizontal, y=Row0+jitter_vertical, xend=Column+jitter_horizontal, yend=Row+jitter_vertical,
-        size=appearance_of_potential_contamination),
-      arrow=arrow(type="open", angle=30, length=unit(arrow_head_length,"cm"))) +
-    guides(size=FALSE) +
-    scale_size_manual(values = c("minor alleles"=arrow_thickness*0.6, "minor and consensus-level"=arrow_thickness*1, "consensus-level"=arrow_thickness*1.4)) +
-    scale_fill_gradient("Total Estimated Contamination Volume", low="white", high="#CC857E",
-      limits=c(0, maximum_contamination_volume),
-      breaks=c(0, maximum_contamination_volume),
-      labels=c(0, maximum_contamination_volume_text))
-  
-  ggsave(paste(output_file_path, ".pdf", sep=""), plate_figure_contamination, width=WIDTH, height=HEIGHT)
-  ggsave(paste(output_file_path, ".jpg", sep=""), plate_figure_contamination, width=WIDTH, height=HEIGHT)
-}
-
-if(input_file_type == "contamination_minor")
-{
-  input_table <- subset(input_table, appearance_of_potential_contamination == "minor alleles" | appearance_of_potential_contamination == "minor and consensus-level")
-
   # label for maximum contamination volume in legend
   maximum_contamination_volume <- max(plate_map$estimated_contamination_volume_sum)
   if(maximum_contamination_volume == 0)
