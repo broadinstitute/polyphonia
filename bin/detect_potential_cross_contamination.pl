@@ -185,7 +185,8 @@ my $plate_size = $DEFAULT_PLATE_SIZE;
 my $plate_size_entered = 0;
 my $plate_number_rows = $DEFAULT_PLATE_NUMBER_ROWS;
 my $plate_number_columns = $DEFAULT_PLATE_NUMBER_COLUMNS;
-my $plate_row_column_count_entered = 0;
+my $plate_row_count_entered = 0;
+my $plate_column_count_entered = 0;
 my $compare_direct_neighbors = $DEFAULT_COMPARE_DIRECT_NEIGHBORS;
 my $compare_diagonal_neighbors = $DEFAULT_COMPARE_DIAGONAL_NEIGHBORS;
 my $compare_row = $DEFAULT_COMPARE_ROW;
@@ -280,12 +281,12 @@ for($argument_index = 0; $argument_index <= $#ARGV; $argument_index++)
 	elsif(($input = read_in_positive_integer_argument("-k", "--plate-rows")) != -1)
 	{
 		$plate_number_rows = $input;
-		$plate_row_column_count_entered = 1;
+		$plate_row_count_entered = 1;
 	}
 	elsif(($input = read_in_positive_integer_argument("-q", "--plate-columns")) != -1)
 	{
 		$plate_number_columns = $input;
-		$plate_row_column_count_entered = 1;
+		$plate_column_count_entered = 1;
 	}
 	elsif(($input = read_in_boolean_argument("-n", "--compare-direct")) != -1)
 	{
@@ -368,18 +369,24 @@ if($plate_size_entered and !@plate_map_files)
 	print STDERR "Warning: plate size entered but no plate map. Ignoring plate size.\n";
 	$plate_size_entered = 0;
 }
-if(!@plate_map_files and $plate_row_column_count_entered)
+if(!@plate_map_files and ($plate_column_count_entered or $plate_row_count_entered))
 {
 	print STDERR "Warning: plate map column or row count entered but no plate map. "
 		."Ignoring plate map column and row count.\n";
-	$plate_row_column_count_entered = 0;
+	$plate_column_count_entered = 0;
+	$plate_row_count_entered = 0;
 }
-if($plate_size_entered and $plate_row_column_count_entered)
+if($plate_size_entered and $plate_column_count_entered)
 {
-	print STDERR "Warning: plate map column or row count entered as well as plate size "
-		."entered. Using plate column and row counts ".$plate_number_columns." and "
-		.$plate_number_rows."; ignoring entered standard plate size ".$plate_size.".\n";
-	$plate_size_entered = 0;
+	print STDERR "Warning: plate map column count entered as well as plate size "
+		."entered. Substituting provided plate column count ".$plate_number_columns
+		." in entered standard plate size ".$plate_size.".\n";
+}
+if($plate_size_entered and $plate_row_count_entered)
+{
+	print STDERR "Warning: plate map row count entered as well as plate size "
+		."entered. Substituting provided plate row count ".$plate_number_rows
+		." in entered standard plate size ".$plate_size.".\n";
 }
 if($minimum_genome_coverage < 0 or $minimum_genome_coverage > 1)
 {
@@ -439,12 +446,22 @@ if(!scalar @plate_map_files)
 }
 
 # retrieves dimensions of standard plate map size entered
+# substitutes in entered dimensions if row or column specifically entered
 if($plate_size_entered)
 {
 	if($STANDARD_PLATE_SIZE_TO_NUMBER_COLUMNS{$plate_size})
 	{
-		$plate_number_columns = $STANDARD_PLATE_SIZE_TO_NUMBER_COLUMNS{$plate_size};
-		$plate_number_rows = $plate_size/$plate_number_columns;
+		my $standard_plate_number_columns = $STANDARD_PLATE_SIZE_TO_NUMBER_COLUMNS{$plate_size};
+		my $standard_plate_number_rows = $plate_size/$standard_plate_number_columns;
+		
+		if(!$plate_column_count_entered)
+		{
+			$plate_number_columns = $standard_plate_number_columns;
+		}
+		if(!$plate_row_count_entered)
+		{
+			$plate_number_rows = $standard_plate_number_rows;
+		}
 	}
 	else
 	{
