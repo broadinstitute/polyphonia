@@ -2364,7 +2364,7 @@ sub print_number_samples_remaining_and_exit_if_none
 	if(scalar keys %sample_names < 2)
 	{
 		print STDERR "Error: no pairs of samples to compare. Exiting.\n";
-		die;
+		exit;
 	}
 }
 
