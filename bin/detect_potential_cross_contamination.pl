@@ -1804,10 +1804,28 @@ sub detect_potential_contamination_in_sample_pair
 	my $potential_contaminated_sample = $_[0];
 	my $potential_contaminating_sample = $_[1];
 	
+	# exits if either contaminated or contaminating sample does not have a consensus genome
+	if(!defined $sequence_name_to_consensus{$potential_contaminated_sample})
+	{
+		print STDERR "Error: no consensus genome for sample "
+			.$potential_contaminated_sample.". Skipping comparison:\n\t"
+			."potential contaminated:  ".$potential_contaminated_sample."\n\t"
+			."potential contaminating: ".$potential_contaminating_sample."\n";
+		return;
+	}
+	if(!defined $sequence_name_to_consensus{$potential_contaminating_sample})
+	{
+		print STDERR "Error: no consensus genome for sample "
+			.$potential_contaminating_sample.". Skipping comparison:\n\t"
+			."potential contaminated:  ".$potential_contaminated_sample."\n\t"
+			."potential contaminating: ".$potential_contaminating_sample."\n";
+		return;
+	}
+	
 	# exits if contaminated sample does not have a within-sample diversity file
 	if(!defined $sample_name_to_within_sample_diversity_file{$potential_contaminated_sample})
 	{
-		print STDERR "Error: no within-sample diversity file for sample"
+		print STDERR "Error: no within-sample diversity file for sample "
 			.$potential_contaminated_sample.". Skipping comparison:\n\t"
 			."potential contaminated:  ".$potential_contaminated_sample."\n\t"
 			."potential contaminating: ".$potential_contaminating_sample."\n";
@@ -1816,6 +1834,8 @@ sub detect_potential_contamination_in_sample_pair
 	
 	# retrieves within-sample diversity file for potential contaminated sample
 	my $potential_contaminated_within_sample_diversity_file = $sample_name_to_within_sample_diversity_file{$potential_contaminated_sample};
+	
+	# exits if within-sample diversity table is not at heterozygosity table stage
 	if($within_sample_diversity_file_to_stage{$potential_contaminated_within_sample_diversity_file} ne "het")
 	{
 		print STDERR "Error: within-sample diversity file for sample "
