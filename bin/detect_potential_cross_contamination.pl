@@ -696,7 +696,7 @@ if(scalar @plate_map_files)
 	
 	# catalogues consensus genome sample names
 	print STDOUT "removing samples without associated consensus genome...\n" if $verbose;
-	my %sample_name_has_consensus_genome = (); # key: sample name -> value: 1 if sample has associated consensus genome
+	my %sample_has_consensus_genome = (); # key: sample name -> value: 1 if sample has associated consensus genome
 	foreach my $consensus_genome_fasta_file(@consensus_genome_files, $consensus_genomes_aligned_file)
 	{
 		if($consensus_genome_fasta_file)
@@ -708,7 +708,7 @@ if(scalar @plate_map_files)
 				if($_ =~ /^>(.*)/) # header line
 				{
 					my $sample_name = $1;
-					$sample_name_has_consensus_genome{$sample_name} = 1;
+					$sample_has_consensus_genome{$sample_name} = 1;
 				}
 			}
 			close FASTA_FILE;
@@ -721,7 +721,7 @@ if(scalar @plate_map_files)
 	# removes samples that don't have a consensus genome
 	foreach my $sample_name(keys %sample_names)
 	{
-		if(!$sample_name_has_consensus_genome{$sample_name})
+		if(!$sample_has_consensus_genome{$sample_name})
 		{
 			delete $sample_names{$sample_name};
 		}
@@ -802,6 +802,18 @@ print STDOUT "removing samples without within-sample diversity file...\n" if $ve
 foreach my $sample_name(keys %sample_names)
 {
 	if(!$sample_name_to_within_sample_diversity_file{$sample_name})
+	{
+		delete $sample_names{$sample_name};
+	}
+}
+
+# prints number of samples remaining
+print_number_samples_remaining_and_exit_if_none();
+
+print STDOUT "removing samples with non-existent within-sample diversity file...\n" if $verbose;
+foreach my $sample_name(keys %sample_names)
+{
+	if(!-e $sample_name_to_within_sample_diversity_file{$sample_name})
 	{
 		delete $sample_names{$sample_name};
 	}
@@ -1443,8 +1455,9 @@ if(scalar @plate_map_files)
 						{
 							if($positions_with_heterozygosity{$position})
 							{
-								print STDERR "Warning: position appears in more than one line in "
-									."heterozygosity table:\n\t".$within_sample_diversity_file."\n";
+								print STDERR "Warning: position ".$position
+									." appears in more than one line in heterozygosity table:\n\t"
+									.$within_sample_diversity_file."\n";
 							}
 							else
 							{
@@ -1793,6 +1806,16 @@ sub detect_potential_contamination_in_sample_pair
 {
 	my $potential_contaminated_sample = $_[0];
 	my $potential_contaminating_sample = $_[1];
+	
+	# exits if contaminated sample does not have a within-sample diversity file
+	if(!defined $sample_name_to_within_sample_diversity_file{$potential_contaminated_sample})
+	{
+		print STDERR "Error: no within-sample diversity file for sample"
+			.$potential_contaminated_sample.". Skipping comparison:\n\t"
+			."potential contaminated:  ".$potential_contaminated_sample."\n\t"
+			."potential contaminating: ".$potential_contaminating_sample."\n";
+		return;
+	}
 	
 	# retrieves within-sample diversity file for potential contaminated sample
 	my $potential_contaminated_within_sample_diversity_file = $sample_name_to_within_sample_diversity_file{$potential_contaminated_sample};
