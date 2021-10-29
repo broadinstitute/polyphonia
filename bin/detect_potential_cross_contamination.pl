@@ -96,60 +96,60 @@ my $default_output_file = $default_temp_intermediate_files_directory.$DEFAULT_OU
 # if no command line arguments supplied, prints options
 if(!scalar @ARGV) # no command line arguments supplied
 {
-	print STDOUT "\nDetects potential cross-contamination.\n";
-	print STDOUT "Usage: polyphonia detect_cross_contam [options]\n";
-	print STDOUT "\n";
+	print STDERR "\nDetects potential cross-contamination.\n";
+	print STDERR "Usage: polyphonia detect_cross_contam [options]\n";
+	print STDERR "\n";
 	
-	print STDOUT "OPTIONS:\n";
-	print STDOUT "- Reference (required):\n";
-	print STDOUT "\t-f | --ref FILE\t\t\tReference fasta file [null]\n";
-	print STDOUT "\n";
+	print STDERR "OPTIONS:\n";
+	print STDERR "- Reference (required):\n";
+	print STDERR "\t-f | --ref FILE\t\t\tReference fasta file [null]\n";
+	print STDERR "\n";
 	
-	print STDOUT "- Consensus genomes (aligned or not aligned, not both; at least one file required):\n";
-	print STDOUT "\t-c | --consensus FILE(S)\tUnaligned consensus genome or genomes [null]\n";
-	print STDOUT "\t-a | --consensus-aligned FILE\tFasta alignment with consensus genomes pre-aligned to reference; reference provided by --ref must appear first [null]\n";
-	print STDOUT "\n";
+	print STDERR "- Consensus genomes (aligned or not aligned, not both; at least one file required):\n";
+	print STDERR "\t-c | --consensus FILE(S)\tUnaligned consensus genome or genomes [null]\n";
+	print STDERR "\t-a | --consensus-aligned FILE\tFasta alignment with consensus genomes pre-aligned to reference; reference provided by --ref must appear first [null]\n";
+	print STDERR "\n";
 	
-	print STDOUT "- Within-sample diversity (any combination; at least one file required):\n";
-	print STDOUT "\t-b | --bam FILE(S)\t\tAligned and trimmed reads as bam file(s); must use reference provided by --ref [null]\n";
-	print STDOUT "\t-v | --vcf FILE(S)\t\tVCF file(s) output by LoFreq or GATK; must use reference provided by --ref [null]\n";
-	print STDOUT "\t-h | --het FILE(S)\t\tTab-separated heterozygosity summary tables; see documentation for format [null]\n";
-	print STDOUT "\n";
+	print STDERR "- Within-sample diversity (any combination; at least one file required):\n";
+	print STDERR "\t-b | --bam FILE(S)\t\tAligned and trimmed reads as bam file(s); must use reference provided by --ref [null]\n";
+	print STDERR "\t-v | --vcf FILE(S)\t\tVCF file(s) output by LoFreq or GATK; must use reference provided by --ref [null]\n";
+	print STDERR "\t-h | --het FILE(S)\t\tTab-separated heterozygosity summary tables; see documentation for format [null]\n";
+	print STDERR "\n";
 	
-	print STDOUT "- Filtering options:\n";
-	print STDOUT "\t-i | --min-maf FLOAT\t\tMinimum minor allele frequency for a position to be considered heterozygous [".$DEFAULT_MINIMUM_MINOR_ALLELE_FREQUENCY."]\n";
-	print STDOUT "\t-e | --min-readcount INT\tMinimum minor allele readcount for a position to be considered heterozygous [".$DEFAULT_MINIMUM_MINOR_ALLELE_READCOUNT."]\n";
-	print STDOUT "\t-r | --min-depth INT\t\tMinimum read depth for a position to be used for comparison [".$DEFAULT_MINIMUM_READ_DEPTH."]\n";
-	print STDOUT "\t-1 | --read-depths FILE(S)\tRead depth tables; provide alongside vcf files or heterozygosity tables if min-depth>0; see documentation for format [null]\n";
-	print STDOUT "\t-g | --min-covered FLOAT\tMinimum proportion genome that must be covered at minimum read depth for a sample to be included [".$DEFAULT_MINIMUM_GENOME_COVERAGE."]\n";
-	print STDOUT "\t-y | --max-mismatches INT\tIn flagged potential cross-contamination, maximum allowed unambiguous bases in contaminating sample consensus not matching contaminated sample alleles [".$DEFAULT_MAXIMUM_ALLOWED_MISMATCHES."]\n";
-	print STDOUT "\n";
+	print STDERR "- Filtering options:\n";
+	print STDERR "\t-i | --min-maf FLOAT\t\tMinimum minor allele frequency for a position to be considered heterozygous [".$DEFAULT_MINIMUM_MINOR_ALLELE_FREQUENCY."]\n";
+	print STDERR "\t-e | --min-readcount INT\tMinimum minor allele readcount for a position to be considered heterozygous [".$DEFAULT_MINIMUM_MINOR_ALLELE_READCOUNT."]\n";
+	print STDERR "\t-r | --min-depth INT\t\tMinimum read depth for a position to be used for comparison [".$DEFAULT_MINIMUM_READ_DEPTH."]\n";
+	print STDERR "\t-1 | --read-depths FILE(S)\tRead depth tables; provide alongside vcf files or heterozygosity tables if min-depth>0; see documentation for format [null]\n";
+	print STDERR "\t-g | --min-covered FLOAT\tMinimum proportion genome that must be covered at minimum read depth for a sample to be included [".$DEFAULT_MINIMUM_GENOME_COVERAGE."]\n";
+	print STDERR "\t-y | --max-mismatches INT\tIn flagged potential cross-contamination, maximum allowed unambiguous bases in contaminating sample consensus not matching contaminated sample alleles [".$DEFAULT_MAXIMUM_ALLOWED_MISMATCHES."]\n";
+	print STDERR "\n";
 	
-	print STDOUT "- Plate map and neighbors (any combination, all optional):\n";
-	print STDOUT "\t-m | --plate-map FILE(S)\tOptional plate map(s) (tab-separated, no header: sample name, plate position (e.g., A8)); provides substantial speed-up [null]\n";
-	print STDOUT "\t-z | --plate-size INT\t\tStandard plate size (6-well, 12-well, 24, 48, 96, 384, 1536, or 3456) [".$DEFAULT_PLATE_SIZE."]\n";
-	print STDOUT "\t-q | --plate-columns INT\tNumber columns in plate (e.g., 1, 2, 3, 4) [".$DEFAULT_PLATE_NUMBER_COLUMNS."]\n";
-	print STDOUT "\t-k | --plate-rows INT\t\tNumber rows in plate (e.g., A, B, C, D) [".$DEFAULT_PLATE_NUMBER_ROWS."]\n";
-	print STDOUT "\t-n | --compare-direct BOOL\tCompare direct plate neighbors (left, right, top, bottom) [".int_to_bool_string($DEFAULT_COMPARE_DIRECT_NEIGHBORS)."]\n";
-	print STDOUT "\t-d | --compare-diagonal BOOL\tCompare diagonal plate neighbors (top-right, bottom-right, top-left, bottom-left) [".int_to_bool_string($DEFAULT_COMPARE_DIAGONAL_NEIGHBORS)."]\n";
-	print STDOUT "\t-w | --compare-row BOOL\t\tCompare samples in the same row (e.g., row A) [".int_to_bool_string($DEFAULT_COMPARE_ROW)."]\n";
-	print STDOUT "\t-l | --compare-column BOOL\tCompare samples in the same column (e.g., column 8) [".int_to_bool_string($DEFAULT_COMPARE_COLUMN)."]\n";
-	print STDOUT "\t-t | --compare-plate BOOL\tCompare all samples in each plate map [".int_to_bool_string($DEFAULT_COMPARE_WHOLE_PLATE_MAP)."]\n";
-	print STDOUT "\n";
+	print STDERR "- Plate map and neighbors (any combination, all optional):\n";
+	print STDERR "\t-m | --plate-map FILE(S)\tOptional plate map(s) (tab-separated, no header: sample name, plate position (e.g., A8)); provides substantial speed-up [null]\n";
+	print STDERR "\t-z | --plate-size INT\t\tStandard plate size (6-well, 12-well, 24, 48, 96, 384, 1536, or 3456) [".$DEFAULT_PLATE_SIZE."]\n";
+	print STDERR "\t-q | --plate-columns INT\tNumber columns in plate (e.g., 1, 2, 3, 4) [".$DEFAULT_PLATE_NUMBER_COLUMNS."]\n";
+	print STDERR "\t-k | --plate-rows INT\t\tNumber rows in plate (e.g., A, B, C, D) [".$DEFAULT_PLATE_NUMBER_ROWS."]\n";
+	print STDERR "\t-n | --compare-direct BOOL\tCompare direct plate neighbors (left, right, top, bottom) [".int_to_bool_string($DEFAULT_COMPARE_DIRECT_NEIGHBORS)."]\n";
+	print STDERR "\t-d | --compare-diagonal BOOL\tCompare diagonal plate neighbors (top-right, bottom-right, top-left, bottom-left) [".int_to_bool_string($DEFAULT_COMPARE_DIAGONAL_NEIGHBORS)."]\n";
+	print STDERR "\t-w | --compare-row BOOL\t\tCompare samples in the same row (e.g., row A) [".int_to_bool_string($DEFAULT_COMPARE_ROW)."]\n";
+	print STDERR "\t-l | --compare-column BOOL\tCompare samples in the same column (e.g., column 8) [".int_to_bool_string($DEFAULT_COMPARE_COLUMN)."]\n";
+	print STDERR "\t-t | --compare-plate BOOL\tCompare all samples in each plate map [".int_to_bool_string($DEFAULT_COMPARE_WHOLE_PLATE_MAP)."]\n";
+	print STDERR "\n";
 	
-	print STDOUT "- Output:\n";
-	print STDOUT "\t-o | --output FILE\t\tOutput file path [".$default_output_file."]\n";
-	print STDOUT "\t-s | --out-figures DIRECTORY\tPath of directory to store plate visualization files [".$default_visualizations_directory."]\n";
-	print STDOUT "\t-x | --out-temp DIRECTORY\tPath of directory to store intermediate and temporary files [".$default_temp_intermediate_files_directory."]\n";
-	print STDOUT "\n";
+	print STDERR "- Output:\n";
+	print STDERR "\t-o | --output FILE\t\tOutput file path [".$default_output_file."]\n";
+	print STDERR "\t-s | --out-figures DIRECTORY\tPath of directory to store plate visualization files [".$default_visualizations_directory."]\n";
+	print STDERR "\t-x | --out-temp DIRECTORY\tPath of directory to store intermediate and temporary files [".$default_temp_intermediate_files_directory."]\n";
+	print STDERR "\n";
 	
-	print STDOUT "- Misc:\n";
-	print STDOUT "\t-p | --cores INT\t\tOptional number of cores to use for preprocessing in parallel [".$DEFAULT_CORES_TO_USE."]\n";
-	print STDOUT "\t-u | --verbose BOOL\t\tPrint progress updates to STDOUT [".int_to_bool_string($DEFAULT_VERBOSE)."]\n";
-	print STDOUT "\t-j | --overwrite BOOL\t\tOverwrite files that already exist at output, intermediate, and temp file paths [".int_to_bool_string($DEFAULT_OVERWRITE)."]\n";
-	print STDOUT "\t-2 | --print-all-iSNVs BOOL\tInclude all threshold-passing samples in iSNVs visualizations, including samples without plate neighbors [".int_to_bool_string($DEFAULT_PRINT_ALL_ISNVS)."]\n";
-	print STDOUT "\t-0 | --print-all BOOL\t\tOutput outcomes of all comparisons (all comparisons are marked as potential cross-contamination) [".int_to_bool_string($DEFAULT_PRINT_ALL)."]\n";
-	print STDOUT "\n\n";
+	print STDERR "- Misc:\n";
+	print STDERR "\t-p | --cores INT\t\tOptional number of cores to use for preprocessing in parallel [".$DEFAULT_CORES_TO_USE."]\n";
+	print STDERR "\t-u | --verbose BOOL\t\tPrint progress updates to STDOUT [".int_to_bool_string($DEFAULT_VERBOSE)."]\n";
+	print STDERR "\t-j | --overwrite BOOL\t\tOverwrite files that already exist at output, intermediate, and temp file paths [".int_to_bool_string($DEFAULT_OVERWRITE)."]\n";
+	print STDERR "\t-2 | --print-all-iSNVs BOOL\tInclude all threshold-passing samples in iSNVs visualizations, including samples without plate neighbors [".int_to_bool_string($DEFAULT_PRINT_ALL_ISNVS)."]\n";
+	print STDERR "\t-0 | --print-all BOOL\t\tOutput outcomes of all comparisons (all comparisons are marked as potential cross-contamination) [".int_to_bool_string($DEFAULT_PRINT_ALL)."]\n";
+	print STDERR "\n\n";
 	exit;
 }
 
@@ -478,7 +478,7 @@ if($plate_size_entered)
 # verifies that all positions in plate map fit in entered plate map
 if(scalar @plate_map_files)
 {
-	print STDOUT "verifying entered plate map positions are valid...\n" if $verbose;
+	print STDERR "verifying entered plate map positions are valid...\n" if $verbose;
 	
 	# retrieves all valid letters for this plate map
 	my %valid_row_letters = (); # key: letter(s) designating valid row on plate -> 1
@@ -562,113 +562,113 @@ if(scalar @plate_map_files) # visualizations only generated if plate maps are pr
 
 # prints input files and options entered
 # reference
-print STDOUT "\n" if $verbose;
-print STDOUT "REFERENCE:\n\t".$reference_genome_file."\n" if $verbose;
+print STDERR "\n" if $verbose;
+print STDERR "REFERENCE:\n\t".$reference_genome_file."\n" if $verbose;
 
 # consensus genome files
-print STDOUT "CONSENSUS GENOMES:\n" if $verbose;
+print STDERR "CONSENSUS GENOMES:\n" if $verbose;
 foreach my $consensus_genome_file(@consensus_genome_files)
 {
-	print STDOUT "\t".$consensus_genome_file."\n" if $verbose;
+	print STDERR "\t".$consensus_genome_file."\n" if $verbose;
 }
 if($consensus_genomes_aligned_file)
 {
-	print STDOUT "\tpre-aligned: ".$consensus_genomes_aligned_file."\n" if $verbose;
+	print STDERR "\tpre-aligned: ".$consensus_genomes_aligned_file."\n" if $verbose;
 }
 
 # within-sample diversity files
-print STDOUT "WITHIN-SAMPLE DIVERSITY:\n" if $verbose;
+print STDERR "WITHIN-SAMPLE DIVERSITY:\n" if $verbose;
 foreach my $aligned_and_trimmed_bam_file(@aligned_and_trimmed_bam_files)
 {
-	print STDOUT "\t".$aligned_and_trimmed_bam_file."\n" if $verbose;
+	print STDERR "\t".$aligned_and_trimmed_bam_file."\n" if $verbose;
 }
 foreach my $vcf_file(@vcf_files)
 {
-	print STDOUT "\tpre-processed vcf file: ".$vcf_file."\n" if $verbose;
+	print STDERR "\tpre-processed vcf file: ".$vcf_file."\n" if $verbose;
 }
 foreach my $heterozygosity_table(@heterozygosity_tables)
 {
-	print STDOUT "\tfully pre-processed heterozygosity table: ".$heterozygosity_table."\n" if $verbose;
+	print STDERR "\tfully pre-processed heterozygosity table: ".$heterozygosity_table."\n" if $verbose;
 }
 
 # read depth tables
 if(scalar @read_depth_tables and $minimum_read_depth > 0)
 {
-	print STDOUT "READ DEPTH TABLES:\n" if $verbose;
+	print STDERR "READ DEPTH TABLES:\n" if $verbose;
 	foreach my $read_depth_table(@read_depth_tables)
 	{
-		print STDOUT "\t".$read_depth_table."\n" if $verbose;
+		print STDERR "\t".$read_depth_table."\n" if $verbose;
 	}
 }
 
 # optional plate map file(s) and related options
 if(scalar @plate_map_files)
 {
-	print STDOUT "PLATE MAP(S):\n" if $verbose;
+	print STDERR "PLATE MAP(S):\n" if $verbose;
 	foreach my $plate_map_file(@plate_map_files)
 	{
-		print STDOUT "\t".$plate_map_file."\n" if $verbose;
+		print STDERR "\t".$plate_map_file."\n" if $verbose;
 	}
-	print STDOUT "\t".$plate_number_rows." rows in plate\n" if $verbose;
-	print STDOUT "\t".$plate_number_columns." columns in plate\n" if $verbose;
+	print STDERR "\t".$plate_number_rows." rows in plate\n" if $verbose;
+	print STDERR "\t".$plate_number_columns." columns in plate\n" if $verbose;
 	
-	print STDOUT "PLATE MAP USE:\n" if $verbose;
+	print STDERR "PLATE MAP USE:\n" if $verbose;
 	if($compare_whole_plate_map)
 	{
-		print STDOUT "Comparing all samples in the same plate map.\n" if $verbose;
+		print STDERR "Comparing all samples in the same plate map.\n" if $verbose;
 	}
 	else
 	{
 		if($compare_direct_neighbors)
 		{
-			print STDOUT "\tComparing direct plate neighbors (left, right, top, bottom).\n" if $verbose;
+			print STDERR "\tComparing direct plate neighbors (left, right, top, bottom).\n" if $verbose;
 		}
 		if($compare_diagonal_neighbors)
 		{
-			print STDOUT "\tComparing diagonal plate neighbors (top-right, bottom-right, top-left, bottom-left).\n" if $verbose;
+			print STDERR "\tComparing diagonal plate neighbors (top-right, bottom-right, top-left, bottom-left).\n" if $verbose;
 		}
 		if($compare_row)
 		{
-			print STDOUT "\tComparing samples in the same row (e.g., row A).\n" if $verbose;
+			print STDERR "\tComparing samples in the same row (e.g., row A).\n" if $verbose;
 		}
 		if($compare_column)
 		{
-			print STDOUT "\tComparing samples in the same column (e.g., column 8).\n" if $verbose;
+			print STDERR "\tComparing samples in the same column (e.g., column 8).\n" if $verbose;
 		}
 	}
 }
 
 # options
 print STDERR "OPTIONS:\n" if $verbose;
-print STDOUT "\tminimum read depth: ".$minimum_read_depth."\n" if $verbose;
-print STDOUT "\tminimum genome coverage: ".($minimum_genome_coverage*100)."%\n" if $verbose;
-print STDOUT "\tminimum minor allele readcount: ".$minimum_minor_allele_readcount."\n" if $verbose;
-print STDOUT "\tminimum minor allele frequency: ".($minimum_minor_allele_frequency*100)."%\n" if $verbose;
-print STDOUT "\tmaximum allowed mismatches: ".$maximum_allowed_mismatches."\n" if $verbose;
+print STDERR "\tminimum read depth: ".$minimum_read_depth."\n" if $verbose;
+print STDERR "\tminimum genome coverage: ".($minimum_genome_coverage*100)."%\n" if $verbose;
+print STDERR "\tminimum minor allele readcount: ".$minimum_minor_allele_readcount."\n" if $verbose;
+print STDERR "\tminimum minor allele frequency: ".($minimum_minor_allele_frequency*100)."%\n" if $verbose;
+print STDERR "\tmaximum allowed mismatches: ".$maximum_allowed_mismatches."\n" if $verbose;
 
 # output files
-print STDOUT "OUTPUT:\n" if $verbose;
-print STDOUT "\toutput file: ".$output_file_path."\n" if $verbose;
-print STDOUT "\tplate visualization files: ".$visualizations_directory."\n" if $verbose;
-print STDOUT "\tintermediate and temporary files: ".$temp_intermediate_directory."\n" if $verbose;
+print STDERR "OUTPUT:\n" if $verbose;
+print STDERR "\toutput file: ".$output_file_path."\n" if $verbose;
+print STDERR "\tplate visualization files: ".$visualizations_directory."\n" if $verbose;
+print STDERR "\tintermediate and temporary files: ".$temp_intermediate_directory."\n" if $verbose;
 
 # output options
 if($print_all)
 {
-	print STDOUT "\tPrinting all comparisons.\n" if $verbose;
+	print STDERR "\tPrinting all comparisons.\n" if $verbose;
 }
 if($print_all_isnvs)
 {
-	print STDOUT "\tPrinting iSNVs for all samples in plate visualization file, including samples without plate neighbors.\n" if $verbose;
+	print STDERR "\tPrinting iSNVs for all samples in plate visualization file, including samples without plate neighbors.\n" if $verbose;
 }
-print STDOUT "\n" if $verbose;
+print STDERR "\n" if $verbose;
 
 
 # retrieves sample names from plate maps if possible
 my %sample_names = (); # key: sample name to include in comparisons -> value: 1
 if(scalar @plate_map_files)
 {
-	print STDOUT "retrieving sample names from plate map(s)...\n" if $verbose;
+	print STDERR "retrieving sample names from plate map(s)...\n" if $verbose;
 	foreach my $plate_map_file(@plate_map_files)
 	{
 		open PLATE_MAP, "<$plate_map_file" || die "Could not open $plate_map_file to read; terminating =(\n";
@@ -695,7 +695,7 @@ if(scalar @plate_map_files)
 	print_number_samples_remaining_and_exit_if_none();
 	
 	# catalogues consensus genome sample names
-	print STDOUT "removing samples without associated consensus genome...\n" if $verbose;
+	print STDERR "removing samples without associated consensus genome...\n" if $verbose;
 	my %sample_has_consensus_genome = (); # key: sample name -> value: 1 if sample has associated consensus genome
 	foreach my $consensus_genome_fasta_file(@consensus_genome_files, $consensus_genomes_aligned_file)
 	{
@@ -731,7 +731,7 @@ if(scalar @plate_map_files)
 # if no plate map, retrieves sample names from consensus genome fasta files
 else
 {
-	print STDOUT "retrieving sample names from consensus genome fasta file(s)...\n" if $verbose;
+	print STDERR "retrieving sample names from consensus genome fasta file(s)...\n" if $verbose;
 	foreach my $consensus_genome_fasta_file(@consensus_genome_files, $consensus_genomes_aligned_file)
 	{
 		if($consensus_genome_fasta_file)
@@ -755,7 +755,7 @@ else
 }
 
 # records file stage for each within-sample diversity file
-print STDOUT "recording stage of each within-sample diversity file...\n" if $verbose;
+print STDERR "recording stage of each within-sample diversity file...\n" if $verbose;
 my %within_sample_diversity_file_to_stage = (); # key: file path -> value: "bam" or "vcf" or "het" (processed heterozygosity table)
 foreach my $file_path(@heterozygosity_tables)
 {
@@ -771,7 +771,7 @@ foreach my $file_path(@aligned_and_trimmed_bam_files)
 }
 
 # retrieves within-sample diversity file for each sample
-print STDOUT "retrieving within-sample diversity file for each sample...\n" if $verbose;
+print STDERR "retrieving within-sample diversity file for each sample...\n" if $verbose;
 my %sample_name_to_within_sample_diversity_file = (); # key: sample name -> value: file path of within-sample diversity file (bam or vcf or heterozygosity table)
 foreach my $file_path(@aligned_and_trimmed_bam_files, @vcf_files, @heterozygosity_tables) # most processed is looked at last (so that most processed replaces least processed)
 {
@@ -798,7 +798,7 @@ foreach my $file_path(@aligned_and_trimmed_bam_files, @vcf_files, @heterozygosit
 }
 
 # removes samples that don't have a within-sample diversity file
-print STDOUT "removing samples without within-sample diversity file...\n" if $verbose;
+print STDERR "removing samples without within-sample diversity file...\n" if $verbose;
 foreach my $sample_name(keys %sample_names)
 {
 	if(!$sample_name_to_within_sample_diversity_file{$sample_name})
@@ -810,7 +810,7 @@ foreach my $sample_name(keys %sample_names)
 # prints number of samples remaining
 print_number_samples_remaining_and_exit_if_none();
 
-print STDOUT "removing samples with non-existent within-sample diversity file...\n" if $verbose;
+print STDERR "removing samples with non-existent within-sample diversity file...\n" if $verbose;
 foreach my $sample_name(keys %sample_names)
 {
 	if(!-e $sample_name_to_within_sample_diversity_file{$sample_name})
@@ -827,7 +827,7 @@ print_number_samples_remaining_and_exit_if_none();
 my %sample_name_to_read_depth_file = (); # key: sample name -> value: file path of read depth file
 if($minimum_read_depth and scalar @read_depth_tables)
 {
-	print STDOUT "retrieving read depth table for each sample...\n" if $verbose;
+	print STDERR "retrieving read depth table for each sample...\n" if $verbose;
 	foreach my $file_path(@read_depth_tables)
 	{
 		# trims file path to file name
@@ -856,7 +856,7 @@ if($minimum_read_depth and scalar @read_depth_tables)
 # removes samples that don't have a read depth file or bam file
 if($minimum_read_depth)
 {
-	print STDOUT "removing samples without read depth table or bam file to generate it from...\n" if $verbose;
+	print STDERR "removing samples without read depth table or bam file to generate it from...\n" if $verbose;
 	foreach my $sample_name(keys %sample_names)
 	{
 		if(!$sample_name_to_read_depth_file{$sample_name}
@@ -946,7 +946,7 @@ if($minimum_genome_coverage)
 		}
 	}
 	
-	print STDOUT "removing samples without at least ".($minimum_genome_coverage*100)
+	print STDERR "removing samples without at least ".($minimum_genome_coverage*100)
 		."% coverage ("."of ".$reference_sequence_length." total bases)...\n" if $verbose;
 	remove_samples_without_minimum_genome_coverage();
 	
@@ -968,7 +968,7 @@ my %sample_name_to_plate_position = (); # key: plate map file -> sample name -> 
 
 if(scalar @plate_map_files)
 {
-	print STDOUT "reading in plate map positions...\n" if $verbose;
+	print STDERR "reading in plate map positions...\n" if $verbose;
 	foreach my $plate_map_file(@plate_map_files)
 	{
 		# reads in plate map
@@ -1011,7 +1011,7 @@ if(scalar @plate_map_files)
 	}
 	
 	# removes samples that don't have at least one plate neighbor
-	print STDOUT "removing samples without plate neighbors...\n" if $verbose;
+	print STDERR "removing samples without plate neighbors...\n" if $verbose;
 	remove_samples_without_plate_neighbors();
 	
 	# prints number of samples remaining
@@ -1023,7 +1023,7 @@ if(scalar @plate_map_files)
 my %sample_name_to_position_to_read_depth = (); # key: sample name -> key: position -> value: read depth that that position
 if($minimum_read_depth > 0)
 {
-	print STDOUT "generating and reading in read depth files, using ".$cores_to_use." cores in parallel...\n" if $verbose;
+	print STDERR "generating and reading in read depth files, using ".$cores_to_use." cores in parallel...\n" if $verbose;
 	
 	my $pm = Parallel::ForkManager -> new($cores_to_use);
 	$pm -> run_on_finish(
@@ -1050,9 +1050,9 @@ if($minimum_read_depth > 0)
 				# runs samtools depth
 				$read_depth_file = $temp_intermediate_directory.retrieve_file_name($within_sample_diversity_file."_read_depth.txt");
 				check_if_file_exists_before_writing($read_depth_file);
-				print STDOUT "$SAMTOOLS_EXECUTABLE_FILE_PATH depth $within_sample_diversity_file > $read_depth_file\n" if $verbose;
+				print STDERR "$SAMTOOLS_EXECUTABLE_FILE_PATH depth $within_sample_diversity_file > $read_depth_file\n" if $verbose;
 				`$SAMTOOLS_EXECUTABLE_FILE_PATH depth $within_sample_diversity_file > $read_depth_file`;
-				print STDOUT "\n" if $verbose;
+				print STDERR "\n" if $verbose;
 			}
 			else # no bam file
 			{
@@ -1086,7 +1086,7 @@ if($minimum_read_depth > 0)
 	$pm -> wait_all_children;
 
 # not parallelized; uncomment and replace parallelized version if needed
-# 	print STDOUT "generating read depth files (not parallelized)...\n" if $verbose;
+# 	print STDERR "generating read depth files (not parallelized)...\n" if $verbose;
 # 
 # 	foreach my $sample(keys %sample_names)
 # 	{
@@ -1101,9 +1101,9 @@ if($minimum_read_depth > 0)
 # 			{
 # 				# runs samtools depth
 # 				check_if_file_exists_before_writing($read_depth_file);
-# 				print STDOUT "$SAMTOOLS_EXECUTABLE_FILE_PATH depth $within_sample_diversity_file > $read_depth_file\n" if $verbose;
+# 				print STDERR "$SAMTOOLS_EXECUTABLE_FILE_PATH depth $within_sample_diversity_file > $read_depth_file\n" if $verbose;
 # 				`$SAMTOOLS_EXECUTABLE_FILE_PATH depth $within_sample_diversity_file > $read_depth_file`;
-# 				print STDOUT "\n" if $verbose;
+# 				print STDERR "\n" if $verbose;
 # 			}
 # 			else
 # 			{
@@ -1136,7 +1136,7 @@ if($minimum_read_depth > 0)
 
 	# verifies that each sample has at least minimum_genome_coverage * reference_sequence_length
 	# positions with sufficient read depth
-	print STDOUT "removing samples without at least "
+	print STDERR "removing samples without at least "
 		.($minimum_genome_coverage * $reference_sequence_length)." bases with read depth >= "
 		.$minimum_read_depth." (".(100*$minimum_genome_coverage)."% of "
 		.$reference_sequence_length." total bases)...\n" if $verbose;
@@ -1261,7 +1261,7 @@ close ALIGNED_CONSENSUS_GENOMES;
 
 
 # saves base indices in reference where there are gaps
-print STDOUT "identifying indices with gaps in reference and removing from all sequences in alignment...\n" if $verbose;
+print STDERR "identifying indices with gaps in reference and removing from all sequences in alignment...\n" if $verbose;
 my %base_index_has_gap = (); # key: index of base in reference sequence (0-indexed) -> value: 1 if there is a gap in the reference sequence
 my @reference_values = split(//, $reference_sequence);
 for(my $base_index = 0; $base_index < length($reference_sequence); $base_index++)
@@ -1290,7 +1290,7 @@ $reference_sequence = remove_bases_at_indices_with_gaps_in_reference($reference_
 my %sequence_name_to_pre_masking_consensus = %sequence_name_to_consensus;
 if($minimum_read_depth > 0)
 {
-	print STDOUT "masking positions with read depth < ".$minimum_read_depth."...\n" if $verbose;
+	print STDERR "masking positions with read depth < ".$minimum_read_depth."...\n" if $verbose;
 	foreach my $sample_name(keys %sample_names)
 	{
 		# retrieves consensus genome bases
@@ -1307,7 +1307,7 @@ if($minimum_read_depth > 0)
 		$sequence_name_to_consensus{$sample_name} = join("", @consensus_values);
 	}
 	
-	print STDOUT "removing samples without at least ".($minimum_genome_coverage*100)
+	print STDERR "removing samples without at least ".($minimum_genome_coverage*100)
 		."% coverage with read depth >= ".$minimum_read_depth." ("."of "
 		.$reference_sequence_length." total bases)...\n" if $verbose;
 	my $samples_removed = remove_samples_without_minimum_genome_coverage();
@@ -1318,7 +1318,7 @@ if($minimum_read_depth > 0)
 	if($samples_removed and scalar @plate_map_files)
 	{
 		# removes samples that are now without plate neighbors
-		print STDOUT "removing samples without plate neighbors...\n" if $verbose;
+		print STDERR "removing samples without plate neighbors...\n" if $verbose;
 		remove_samples_without_plate_neighbors();
 	
 		# prints number of samples remaining
@@ -1329,7 +1329,7 @@ if($minimum_read_depth > 0)
 
 # pre-processes within-sample diversity files
 # parallelization based on https://perlmaven.com/speed-up-calculation-by-running-in-parallel
-print STDOUT "pre-processing within-sample diversity files, using ".$cores_to_use." cores in parallel...\n" if $verbose;
+print STDERR "pre-processing within-sample diversity files, using ".$cores_to_use." cores in parallel...\n" if $verbose;
 my %updated_within_sample_diversity_files = ();
 my $pm = Parallel::ForkManager -> new($cores_to_use);
 $pm -> run_on_finish(
@@ -1364,7 +1364,7 @@ foreach my $sample(keys %updated_within_sample_diversity_files)
 my %plate_map_file_to_plate_iSNV_file = (); # key: plate map file -> value: file with plate iSNVs
 if(scalar @plate_map_files)
 {
-	print STDOUT "generating plate-map iSNV summaries...\n" if $verbose;
+	print STDERR "generating plate-map iSNV summaries...\n" if $verbose;
 	my %sample_name_to_number_positions_with_heterozygosity = (); # key: sample name -> value: number iSNVs
 	my %sample_examined = (); # key: sample name -> value: 1 if we've counted iSNVs in this sample
 	foreach my $plate_map_file(@plate_map_files)
@@ -1539,7 +1539,7 @@ sub
 # within-sample diversity files must be pre-processed before this step
 if(scalar @plate_map_files)
 {
-	print STDOUT "comparing all neighboring samples...\n" if $verbose;
+	print STDERR "comparing all neighboring samples...\n" if $verbose;
 	my %sample_pair_compared = (); # keys: sample name, sample name -> value: 1 if sample pair compared
 	foreach my $plate_map_file(@plate_map_files)
 	{
@@ -1665,7 +1665,7 @@ if(scalar @plate_map_files)
 # if no plate map provided, compares all pairs of samples
 else
 {
-	print STDOUT "comparing all pairs of samples...\n" if $verbose;
+	print STDERR "comparing all pairs of samples...\n" if $verbose;
 	my @sample_names_array = keys %sample_names;
 	for(my $index_1 = 0; $index_1 <= $#sample_names_array; $index_1++)
 	{
@@ -2245,7 +2245,7 @@ sub process_within_sample_diversity_file_for_sample
 		# runs LoFreq for bam -> vcf
 		my $output_vcf_file = $temp_intermediate_directory.retrieve_file_name($within_sample_diversity_file."_LoFreq.vcf");
 		check_if_file_exists_before_writing($output_vcf_file);
-		print STDOUT "$LOFREQ_EXECUTABLE_FILE_PATH call -f $reference_genome_file -o $output_vcf_file $within_sample_diversity_file\n" if $verbose;
+		print STDERR "$LOFREQ_EXECUTABLE_FILE_PATH call -f $reference_genome_file -o $output_vcf_file $within_sample_diversity_file\n" if $verbose;
 		`$LOFREQ_EXECUTABLE_FILE_PATH call -f $reference_genome_file -o $output_vcf_file $within_sample_diversity_file`;
 		
 		# updates within-sample diversity file saved for this sample
@@ -2259,9 +2259,9 @@ sub process_within_sample_diversity_file_for_sample
 		# runs vcf_file_to_heterozygosity_table.pl for vcf -> heterozygosity table
 		my $output_heterozygosity_table = $temp_intermediate_directory.retrieve_file_name($within_sample_diversity_file)."_heterozygosity.txt";
 		check_if_file_exists_before_writing($output_heterozygosity_table);
-# 		print STDOUT "$VCF_TO_HETEROZYGOSITY_TABLE_SCRIPT_FILE_PATH $within_sample_diversity_file > $output_heterozygosity_table\n" if $verbose;
+# 		print STDERR "$VCF_TO_HETEROZYGOSITY_TABLE_SCRIPT_FILE_PATH $within_sample_diversity_file > $output_heterozygosity_table\n" if $verbose;
 		`$VCF_TO_HETEROZYGOSITY_TABLE_SCRIPT_FILE_PATH $within_sample_diversity_file > $output_heterozygosity_table`;
-		print STDOUT "\n" if $verbose;
+		print STDERR "\n" if $verbose;
 		
 		# updates within-sample diversity file saved for this sample
 		$within_sample_diversity_file = $output_heterozygosity_table;
@@ -2377,7 +2377,7 @@ sub is_base
 sub print_number_samples_remaining_and_exit_if_none
 {
 	# prints number of samples remaining
-	print STDOUT (keys %sample_names)." samples remain...\n" if $verbose;
+	print STDERR (keys %sample_names)." samples remain...\n" if $verbose;
 
 	# verifies that we still have samples to compare
 	if(scalar keys %sample_names < 2)
