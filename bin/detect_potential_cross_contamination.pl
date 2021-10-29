@@ -327,6 +327,9 @@ for($argument_index = 0; $argument_index <= $#ARGV; $argument_index++)
 	}
 }
 
+# added for testing--DELETE LATER
+$cores_to_use = 1;
+
 
 # verifies that all necessary command line arguments have been included
 if(!$reference_genome_file)
