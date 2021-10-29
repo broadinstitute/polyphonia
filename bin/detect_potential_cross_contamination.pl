@@ -1565,26 +1565,31 @@ if(scalar @plate_map_files)
 		foreach my $plate_position(keys %{$plate_position_to_sample_name{$plate_map_file}})
 		{
 			my $sample_1 = $plate_position_to_sample_name{$plate_map_file}{$plate_position};
-			my @neighboring_samples = retrieve_samples_neighboring_plate_position($plate_position, $sample_1, $plate_map_file);
-			
-			foreach my $sample_2(@neighboring_samples)
+			if($sample_names{$sample_1}) # verify that this sample is included
 			{
-				my $neighboring_plate_position = $sample_name_to_plate_position{$plate_map_file}{$sample_2};
-				if(!$sample_pair_compared{$sample_1}{$sample_2}) # this pair of samples not already compared
+				# retrieve neighboring samples (only samples that are included)
+				my @neighboring_samples = retrieve_samples_neighboring_plate_position($plate_position, $sample_1, $plate_map_file);
+			
+				# compares sample to all included neighboring samples
+				foreach my $sample_2(@neighboring_samples)
 				{
-					# records that we are comparing this pair (to avoid comparing it again)
-					$sample_pair_compared{$sample_1}{$sample_2} = 1;
-					$sample_pair_compared{$sample_2}{$sample_1} = 1;
+					my $neighboring_plate_position = $sample_name_to_plate_position{$plate_map_file}{$sample_2};
+					if(!$sample_pair_compared{$sample_1}{$sample_2}) # this pair of samples not already compared
+					{
+						# records that we are comparing this pair (to avoid comparing it again)
+						$sample_pair_compared{$sample_1}{$sample_2} = 1;
+						$sample_pair_compared{$sample_2}{$sample_1} = 1;
 				
-					# tests sample 1 contaminating sample 2 and vice versa
-					my $pid = $pm -> start and next;
+						# tests sample 1 contaminating sample 2 and vice versa
+						my $pid = $pm -> start and next;
 					
-					my ($result_a, $plate_result_a) = detect_potential_contamination_in_sample_pair($sample_1, $sample_2);
-					my ($result_b, $plate_result_b) = detect_potential_contamination_in_sample_pair($sample_2, $sample_1);
+						my ($result_a, $plate_result_a) = detect_potential_contamination_in_sample_pair($sample_1, $sample_2);
+						my ($result_b, $plate_result_b) = detect_potential_contamination_in_sample_pair($sample_2, $sample_1);
 					
-					$pm -> finish(0, {sample_1 => $sample_1, sample_2 => $sample_2,
-						result_a => $result_a, plate_result_a => $plate_result_a,
-						result_b => $result_b, plate_result_b => $plate_result_b});
+						$pm -> finish(0, {sample_1 => $sample_1, sample_2 => $sample_2,
+							result_a => $result_a, plate_result_a => $plate_result_a,
+							result_b => $result_b, plate_result_b => $plate_result_b});
+					}
 				}
 			}
 		}
