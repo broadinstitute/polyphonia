@@ -1795,18 +1795,19 @@ sub detect_potential_contamination_in_sample_pair
 	my $potential_contaminated_within_sample_diversity_file = $sample_name_to_within_sample_diversity_file{$potential_contaminated_sample};
 	if($within_sample_diversity_file_to_stage{$potential_contaminated_within_sample_diversity_file} ne "het")
 	{
-		print STDERR "Warning: within-sample diversity file for sample "
+		print STDERR "Error: within-sample diversity file for sample "
 			.$potential_contaminated_sample." not preprocessed:\n\t"
-			.$potential_contaminated_within_sample_diversity_file."\n";
+			.$potential_contaminated_within_sample_diversity_file."\nExiting.\n";
+		die;
 		
 		# if needed, processes within-sample diversity file for potential contaminated sample
 		# may cause race conditions and is in general a terrible idea--delete if possible
-		my $within_sample_diversity_file = process_within_sample_diversity_file_for_sample($potential_contaminated_sample);
-		$sample_name_to_within_sample_diversity_file{$potential_contaminated_sample} = $within_sample_diversity_file;
-		$within_sample_diversity_file_to_stage{$within_sample_diversity_file} = "het";
-		
-		# updates value
-		$potential_contaminated_within_sample_diversity_file = $sample_name_to_within_sample_diversity_file{$potential_contaminated_sample};
+# 		my $within_sample_diversity_file = process_within_sample_diversity_file_for_sample($potential_contaminated_sample);
+# 		$sample_name_to_within_sample_diversity_file{$potential_contaminated_sample} = $within_sample_diversity_file;
+# 		$within_sample_diversity_file_to_stage{$within_sample_diversity_file} = "het";
+# 		
+# 		# updates value
+# 		$potential_contaminated_within_sample_diversity_file = $sample_name_to_within_sample_diversity_file{$potential_contaminated_sample};
 	}
 	
 	# reads in heterozygosity table generated for within-sample diversity of potential contaminated sample
@@ -2232,7 +2233,7 @@ sub process_within_sample_diversity_file_for_sample
 		# runs vcf_file_to_heterozygosity_table.pl for vcf -> heterozygosity table
 		my $output_heterozygosity_table = $temp_intermediate_directory.retrieve_file_name($within_sample_diversity_file)."_heterozygosity.txt";
 		check_if_file_exists_before_writing($output_heterozygosity_table);
-		print STDOUT "$VCF_TO_HETEROZYGOSITY_TABLE_SCRIPT_FILE_PATH $within_sample_diversity_file > $output_heterozygosity_table\n" if $verbose;
+# 		print STDOUT "$VCF_TO_HETEROZYGOSITY_TABLE_SCRIPT_FILE_PATH $within_sample_diversity_file > $output_heterozygosity_table\n" if $verbose;
 		`$VCF_TO_HETEROZYGOSITY_TABLE_SCRIPT_FILE_PATH $within_sample_diversity_file > $output_heterozygosity_table`;
 		print STDOUT "\n" if $verbose;
 		
