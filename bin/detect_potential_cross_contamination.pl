@@ -723,6 +723,15 @@ if(scalar @plate_map_files)
 			delete $sample_names{$sample_name};
 		}
 	}
+	
+	# DELETE: verifies
+	foreach my $sample_name(keys %sample_names)
+	{
+		if(!$sample_has_consensus_genome{$sample_name})
+		{
+			print STDERR "ERROR AAAA\n";
+		}
+	}
 }
 
 # if no plate map, retrieves sample names from consensus genome fasta files
@@ -804,6 +813,15 @@ foreach my $sample_name(keys %sample_names)
 	}
 }
 
+# DELETE: verifies
+foreach my $sample_name(keys %sample_names)
+{
+	if(!$sample_name_to_within_sample_diversity_file{$sample_name})
+	{
+		print STDERR "ERROR BBBB\n";
+	}
+}
+
 # prints number of samples remaining
 print_number_samples_remaining_and_exit_if_none();
 
@@ -813,6 +831,15 @@ foreach my $sample_name(keys %sample_names)
 	if(!-e $sample_name_to_within_sample_diversity_file{$sample_name})
 	{
 		delete $sample_names{$sample_name};
+	}
+}
+
+# DELETE: verifies
+foreach my $sample_name(keys %sample_names)
+{
+	if(!-e $sample_name_to_within_sample_diversity_file{$sample_name})
+	{
+		print STDERR "ERROR CCCC\n";
 	}
 }
 
@@ -860,6 +887,16 @@ if($minimum_read_depth)
 			and $within_sample_diversity_file_to_stage{$sample_name_to_within_sample_diversity_file{$sample_name}} ne "bam")
 		{
 			delete $sample_names{$sample_name};
+		}
+	}
+	
+	# DELETE: verifies
+	foreach my $sample_name(keys %sample_names)
+	{
+		if(!$sample_name_to_read_depth_file{$sample_name}
+			and $within_sample_diversity_file_to_stage{$sample_name_to_within_sample_diversity_file{$sample_name}} ne "bam")
+		{
+			print STDERR "ERROR DDDD\n";
 		}
 	}
 	
@@ -2434,6 +2471,25 @@ sub remove_samples_without_minimum_genome_coverage
 			$number_samples_removed++;
 		}
 	}
+	
+	# DELETE: verifies
+	foreach my $sample_name(keys %sample_names)
+	{
+		# retrieves consensus genome bases
+		my $consensus = $sequence_name_to_consensus{$sample_name};
+		my @consensus_values = split(//, $consensus);
+
+		# counts unambiguous bases in consensus genome
+		my $consensus_unambig_bases = count_unambiguous_bases_in_sequence(@consensus_values);
+		my $consensus_percent_covered = $consensus_unambig_bases / $reference_sequence_length;
+
+		# removes sample name if sample does not have minimum genome coverage
+		if($consensus_percent_covered < $minimum_genome_coverage)
+		{
+			print STDERR "ERROR EEEE\n";
+		}
+	}
+	
 	return $number_samples_removed;
 }
 
@@ -2461,6 +2517,25 @@ sub remove_samples_without_minimum_genome_coverage_with_high_read_depth
 			$number_samples_removed++;
 		}
 	}
+	
+	# DELETE: verifies
+	for my $sample_name(keys %sample_name_to_position_to_read_depth)
+	{
+		my $number_positions_with_high_read_depth = 0;
+		for my $position(keys %{$sample_name_to_position_to_read_depth{$sample_name}})
+		{
+			if($sample_name_to_position_to_read_depth{$sample_name}{$position} >= $minimum_read_depth)
+			{
+				$number_positions_with_high_read_depth++;
+			}
+		}
+		
+		if($number_positions_with_high_read_depth < $minimum_genome_coverage * $reference_sequence_length)
+		{
+			print STDERR "ERROR FFFF\n";
+		}
+	}
+	
 	return $number_samples_removed;
 }
 
@@ -2495,6 +2570,16 @@ sub remove_samples_without_plate_neighbors
 			$number_samples_removed++;
 		}
 	}
+	
+	# DELETE: verifies
+	foreach my $sample_name(keys %sample_names)
+	{
+		if(!$sample_has_plate_neighbors{$sample_name})
+		{
+			print STDERR "ERROR GGGG\n";
+		}
+	}
+	
 	return $number_samples_removed;
 }
 
