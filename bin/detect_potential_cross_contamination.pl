@@ -112,7 +112,7 @@ if(!scalar @ARGV) # no command line arguments supplied
 	
 	print STDERR "- Within-sample diversity (any combination; at least one file required):\n";
 	print STDERR "\t-b | --bam FILE(S)\t\tAligned and trimmed reads as bam file(s); must use reference provided by --ref [null]\n";
-	print STDERR "\t-v | --vcf FILE(S)\t\tVCF file(s) output by LoFreq or GATK; must use reference provided by --ref [null]\n";
+	print STDERR "\t-v | --vcf FILE(S)\t\tVCF file(s) output by LoFreq; must use reference provided by --ref [null]\n";
 	print STDERR "\t-h | --het FILE(S)\t\tTab-separated heterozygosity summary tables; see documentation for format [null]\n";
 	print STDERR "\n";
 	

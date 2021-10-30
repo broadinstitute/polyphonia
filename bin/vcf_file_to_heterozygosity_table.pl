@@ -1,26 +1,22 @@
 #!/usr/bin/env perl
 
-# reads in vcf file and prints human-readable heterozygosity table
+# Reads in vcf file output produced by LoFreq and prints human-readable heterozygosity table.
 
-# includes positions with with all of:
-#   base substitution (indels not included)
-#   minor allele readcount >= 10 reads
-#   minor allele frequency >= 3%
-
-# output columns, tab-separated:
-#   reference
-#   position (relative to reference, 1-indexed)
-#   major allele
-#   major allele readcount
-#   major allele frequency
-#   minor allele
-#   minor allele readcount
-#   minor allele frequency
+# Output columns, tab-separated:
+# - reference
+# - position (relative to reference, 1-indexed)
+# - major allele
+# - major allele readcount
+# - major allele frequency
+# - minor allele
+# - minor allele readcount
+# - minor allele frequency
 
 use strict;
 use warnings;
+use Math::Round;
 
-my $vcf_file = $ARGV[0]; # output of GATK or LoFreq, uncompressed or .gz
+my $vcf_file = $ARGV[0]; # output of LoFreq, uncompressed or .gz
 
 
 # columns in input vcf file
@@ -39,9 +35,13 @@ my $NEWLINE = "\n";
 my $NO_DATA = "NA";
 my $NO_DATA_INPUT_VALUE = ".";
 
+# for printing allele frequencies
+my $DECIMALS_TO_ROUND_TO = 6; # same as in vcf files
+my $NUMBER_ALLELES_TO_PRINT_PER_POSITION = 2;
+
 # thresholds for including a heterozygous position
-my $MINIMUM_MINOR_ALLELE_READCOUNT = 10;
-my $MINIMUM_MINOR_ALLELE_FREQUENCY = 0.03; # 3%
+# my $MINIMUM_MINOR_ALLELE_READCOUNT = 10;
+# my $MINIMUM_MINOR_ALLELE_FREQUENCY = 0.03; # 3%
 
 
 # verifies that input file exists
@@ -70,6 +70,8 @@ if($vcf_file =~ /^(.*)[.]gz$/) # assumes file is zipped if ends in .gz, not othe
 }
 
 # reads in vcf file
+my %chr_to_position_to_allele_to_readcount = (); # key: assembly reference -> key: position -> key: allele -> value: readcount
+my %chr_to_position_to_read_depth = (); # key: assembly reference -> key: position -> value: read depth
 open VCF_FILE, "<$vcf_file" || die "Could not open $vcf_file to read; terminating =(\n";
 while(<VCF_FILE>) # for each line in the file
 {
@@ -80,88 +82,82 @@ while(<VCF_FILE>) # for each line in the file
 		my @items_in_row = split($DELIMITER, $line);
 		my $info = $items_in_row[$INFO_COLUMN];
 		
-		# checks if line refers to position of heterozygosity and retrieves allele frequency
-		my $line_is_position_of_heterozygosity = 0;
-		my $allele_1_frequency;
-		if($info =~ /ABHet=([\d.]+)$INFO_DELIMITER/) # heterozygous call in GATK file
+		# retrieves position information
+		my $assembly_reference = $items_in_row[$REFERENCE_COLUMN];
+		my $position = $items_in_row[$POSITION_COLUMN];
+		
+		# retrieves allele identities
+		my $allele_ref = $items_in_row[$REFERENCE_ALLELE_COLUMN]; # higher-frequency allele
+		my $allele_alt = $items_in_row[$ALTERNATIVE_ALLELES_COLUMN]; # lower-frequency allele
+		
+		# retrieves read depth
+		my $read_depth = 0;
+		if($info =~ /DP=(\d+)$INFO_DELIMITER/)
 		{
-			$allele_1_frequency = $1;
-			$line_is_position_of_heterozygosity = 1;
-		}
-		elsif($info =~ /ABHom=([\d.]+)$INFO_DELIMITER/) # homozygous call in GATK file
-		{
-			# ignore
-		}
-		elsif($info =~ /AF=([\d.]+)$INFO_DELIMITER/) # allele frequency in LoFreq file
-		{
-			$allele_1_frequency = 1 - $1;
-			$line_is_position_of_heterozygosity = 1;
+			$read_depth = $1;
 		}
 		
-		# retrieves all other valuable information from line
-		if($line_is_position_of_heterozygosity)
+		# retrieves allele readcounts
+		my $allele_ref_readcount = 0;
+		my $allele_alt_readcount = 0;
+		if($info =~ /DP4=(\d+),(\d+),(\d+),(\d+)$/)
 		{
-			# retrieves allele identities
-			my $allele_1 = $items_in_row[$REFERENCE_ALLELE_COLUMN]; # higher-frequency allele
-			my $allele_2 = $items_in_row[$ALTERNATIVE_ALLELES_COLUMN]; # lower-frequency allele
-			
-			# swaps higher- and lower-frequency alleles if necessary
-			if($allele_1_frequency < 0.5)
-			{
-				$allele_1_frequency = 1 - $allele_1_frequency;
-				
-				# swaps alleles
-				$allele_1 = $items_in_row[$ALTERNATIVE_ALLELES_COLUMN];
-				$allele_2 = $items_in_row[$REFERENCE_ALLELE_COLUMN];
-			}
-			my $allele_2_frequency = 1 - $allele_1_frequency;
-			
-			if($items_in_row[$ALTERNATIVE_ALLELES_COLUMN] !~ /^\w$/
-				and $items_in_row[$ALTERNATIVE_ALLELES_COLUMN] ne $NO_DATA_INPUT_VALUE)
-			{
-				print STDERR "Error: more than two alleles. This script isn't written to handle that. Exiting.\n";
-				die;
-			}
-			
-			# retrieves read depth
-			my $read_depth = 0;
-			if($info =~ /DP=(\d+)$INFO_DELIMITER/)
-			{
-				$read_depth = $1;
-			}
-			
-			# calculated read count of each allele
-			# can also get from AD values
-			my $allele_1_readcount = round($allele_1_frequency * $read_depth);
-			my $allele_2_readcount = round($allele_2_frequency * $read_depth);
-			
-			# retrieves other information
-			my $assembly_reference = $items_in_row[$REFERENCE_COLUMN];
-			my $position = $items_in_row[$POSITION_COLUMN];
-	
-			if( # major and minor allele are each one base
-				$allele_1 =~ /^\w$/ and $allele_2 =~ /^\w$/)
-			
-				# this position's minor allele frequency and readcount pass our thresholds
-# 				and $allele_2_readcount >= $MINIMUM_MINOR_ALLELE_READCOUNT
-# 				and $allele_2_frequency >= $MINIMUM_MINOR_ALLELE_FREQUENCY)
-			{
-				# prints human-readable row describing this position
-				print $assembly_reference.$DELIMITER;
-				print $position.$DELIMITER;
-			
-				print $allele_1.$DELIMITER;
-				print $allele_1_readcount.$DELIMITER;
-				print $allele_1_frequency.$DELIMITER;
-			
-				print $allele_2.$DELIMITER;
-				print $allele_2_readcount.$DELIMITER;
-				print $allele_2_frequency.$NEWLINE;
-			}
+			$allele_ref_readcount = $1 + $2;
+			$allele_alt_readcount = $3 + $4;
 		}
+		
+		# saves allele readcounts (if they are non-zero)
+		if($allele_ref_readcount > 0)
+		{
+			$chr_to_position_to_allele_to_readcount{$assembly_reference}{$position}{$allele_ref} = $allele_ref_readcount;
+		}
+		if($allele_alt_readcount > 0)
+		{
+			$chr_to_position_to_allele_to_readcount{$assembly_reference}{$position}{$allele_alt} = $allele_alt_readcount;
+		}
+		
+		# saves read depth
+		$chr_to_position_to_read_depth{$assembly_reference}{$position} = $read_depth;
 	}
 }
 close VCF_FILE;
+
+
+# prints human-readable row describing each position
+for my $assembly_reference(sort keys %chr_to_position_to_allele_to_readcount)
+{
+	for my $position(sort keys %{$chr_to_position_to_allele_to_readcount{$assembly_reference}})
+	{
+		# checks that this position has at least 2 alleles with non-zero readcount
+		if(scalar keys %{$chr_to_position_to_allele_to_readcount{$assembly_reference}{$position}} >= 2)
+		{
+			# prints start of line
+			print $assembly_reference.$DELIMITER.$position;
+			my $read_depth = $chr_to_position_to_read_depth{$assembly_reference}{$position};
+		
+			# prints the two alleles with non-zero readcount, from greatest readcount to lowest
+			my $number_alleles_printed = 0;
+			for my $allele(sort {$chr_to_position_to_allele_to_readcount{$assembly_reference}{$position}{$b}
+					<=> $chr_to_position_to_allele_to_readcount{$assembly_reference}{$position}{$a}}
+				keys %{$chr_to_position_to_allele_to_readcount{$assembly_reference}{$position}})
+			{
+				if($number_alleles_printed < $NUMBER_ALLELES_TO_PRINT_PER_POSITION)
+				{
+					my $allele_readcount = $chr_to_position_to_allele_to_readcount{$assembly_reference}{$position}{$allele};
+					my $allele_frequency = round_value($allele_readcount / $read_depth, $DECIMALS_TO_ROUND_TO);
+			
+					print $DELIMITER.$allele;
+					print $DELIMITER.$allele_readcount;
+					print $DELIMITER.$allele_frequency;
+					
+					$number_alleles_printed++;
+				}
+			}
+			print $NEWLINE;
+		}
+	}
+}
+
 
 # deletes unzipped vcf file if we created it
 if($created_unzipped_vcf_file)
@@ -169,14 +165,17 @@ if($created_unzipped_vcf_file)
 	`rm $vcf_file`;
 }
 
+
 # input: floating point value (example: 3.14159)
-# output: value rounded to first decimal point (example: 3.1)
-use Math::Round;
+# output: value rounded to nth decimal point (example: 3.1)
 sub round_value
 {
 	my $value = $_[0];
-	return sprintf("%.1f", $value);
+	my $number_decimals = $_[1];
+	return sprintf("%.".$number_decimals."f", $value);
 }
+
 
 # May 11, 2020
 # June 1, 2021
+# October 29, 2021
