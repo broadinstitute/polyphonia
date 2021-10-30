@@ -1008,11 +1008,14 @@ if(scalar @plate_map_files)
 	}
 	
 	# removes samples that don't have at least one plate neighbor
-	print STDERR "removing samples without plate neighbors...\n" if $verbose;
-	remove_samples_without_plate_neighbors();
+	if(!$print_all_isnvs)
+	{
+		print STDERR "removing samples without plate neighbors...\n" if $verbose;
+		remove_samples_without_plate_neighbors();
 	
-	# prints number of samples remaining
-	print_number_samples_remaining_and_exit_if_none();
+		# prints number of samples remaining
+		print_number_samples_remaining_and_exit_if_none();
+	}
 }
 
 
@@ -1312,7 +1315,7 @@ if($minimum_read_depth > 0)
 	# prints number of samples remaining
 	print_number_samples_remaining_and_exit_if_none();
 	
-	if($samples_removed and scalar @plate_map_files)
+	if($samples_removed and scalar @plate_map_files and !$print_all_isnvs)
 	{
 		# removes samples that are now without plate neighbors
 		print STDERR "removing samples without plate neighbors...\n" if $verbose;
@@ -1388,7 +1391,6 @@ if(scalar @plate_map_files)
 		close PLATE_MAP;
 
 		# retrieves number iSNVs for each sample on plate map
-		# (excludes previously removed samples without neighbors unless print_all_isnvs is TRUE)
 		foreach my $plate_position(keys %{$plate_position_to_sample_name{$plate_map_file}})
 		{
 			my $sample = $plate_position_to_sample_name{$plate_map_file}{$plate_position};
@@ -1509,6 +1511,18 @@ if(scalar @plate_map_files)
 		
  		`$PLATE_VISUALIZATION_FILE_PATH $plate_iSNVs_output_file $plate_iSNV_visualization_output_file $plate_number_columns $plate_number_rows isnvs`;
 	}
+}
+
+
+# removes samples without neighbors if we haven't already (if we delayed it to print all iSNVs passing thresholds)
+if($print_all_isnvs)
+{
+	# removes samples that without plate neighbors
+	print STDERR "removing samples without plate neighbors...\n" if $verbose;
+	remove_samples_without_plate_neighbors();
+
+	# prints number of samples remaining
+	print_number_samples_remaining_and_exit_if_none();
 }
 
 
