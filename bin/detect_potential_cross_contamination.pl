@@ -2129,12 +2129,12 @@ sub detect_potential_contamination_in_sample_pair
 		elsif(scalar @matched_allele_frequencies % 2 == 0) # even
 		{
 			# average of the two center values
-			$median_frequency = ($matched_allele_frequencies[(scalar @matched_allele_frequencies)/2 + 1]
+			$median_frequency = ($matched_allele_frequencies[(scalar @matched_allele_frequencies)/2 - 1]
 				+ $matched_allele_frequencies[(scalar @matched_allele_frequencies)/2]) / 2;
 		}
 		else # odd
 		{
-			$median_frequency = $matched_allele_frequencies[(scalar @matched_allele_frequencies)/2 + 1]
+			$median_frequency = $matched_allele_frequencies[(scalar @matched_allele_frequencies + 1)/2]
 		}
 		
 		# generates range
