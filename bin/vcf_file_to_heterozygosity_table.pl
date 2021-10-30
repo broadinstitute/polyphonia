@@ -106,14 +106,23 @@ while(<VCF_FILE>) # for each line in the file
 			$allele_alt_readcount = $3 + $4;
 		}
 		
-		# saves allele readcounts (if they are non-zero)
-		if($allele_ref_readcount > 0)
+		# prints warning if allele is not one character
+		if($allele_ref !~ /^\w$/ or $allele_alt !~ /^\w$/)
 		{
-			$chr_to_position_to_allele_to_readcount{$assembly_reference}{$position}{$allele_ref} = $allele_ref_readcount;
+			print STDERR "Warning: not a base substitution (alleles ".$allele_ref
+				." and ".$allele_alt.") at position ".$position." in vcf file:\n\t".$vcf_file."\n";
 		}
-		if($allele_alt_readcount > 0)
+		else # only saves base substitutions for printing
 		{
-			$chr_to_position_to_allele_to_readcount{$assembly_reference}{$position}{$allele_alt} = $allele_alt_readcount;
+			# saves allele readcounts if they are non-zero
+			if($allele_ref_readcount > 0)
+			{
+				$chr_to_position_to_allele_to_readcount{$assembly_reference}{$position}{$allele_ref} = $allele_ref_readcount;
+			}
+			if($allele_alt_readcount > 0)
+			{
+				$chr_to_position_to_allele_to_readcount{$assembly_reference}{$position}{$allele_alt} = $allele_alt_readcount;
+			}
 		}
 		
 		# saves read depth
