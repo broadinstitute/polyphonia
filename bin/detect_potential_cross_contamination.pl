@@ -1949,7 +1949,7 @@ sub detect_potential_contamination_in_sample_pair
 		{
 			if($positions_with_heterozygosity{$position})
 			{
-				print STDERR "Warning: position appears in more than one line in "
+				print STDERR "Warning: position ".$position." appears in more than one line in "
 					."heterozygosity table:\n\t".$potential_contaminated_within_sample_diversity_file."\n";
 			}
 			else
