@@ -2519,7 +2519,7 @@ sub remove_samples_without_minimum_genome_coverage_with_high_read_depth
 	}
 	
 	# DELETE: verifies
-	for my $sample_name(keys %sample_name_to_position_to_read_depth)
+	for my $sample_name(keys %sample_names)
 	{
 		my $number_positions_with_high_read_depth = 0;
 		for my $position(keys %{$sample_name_to_position_to_read_depth{$sample_name}})
