@@ -2140,15 +2140,15 @@ sub detect_potential_contamination_in_sample_pair
 		{
 			$median_frequency = $matched_allele_frequencies[0];
 		}
-		elsif(scalar @matched_allele_frequencies % 2 == 0) # even
+		elsif(scalar @matched_allele_frequencies % 2 == 0) # even number of values
 		{
 			# average of the two center values
 			$median_frequency = ($matched_allele_frequencies[(scalar @matched_allele_frequencies)/2 - 1]
 				+ $matched_allele_frequencies[(scalar @matched_allele_frequencies)/2]) / 2;
 		}
-		else # odd
+		else # odd number of values
 		{
-			$median_frequency = $matched_allele_frequencies[(scalar @matched_allele_frequencies + 1)/2]
+			$median_frequency = $matched_allele_frequencies[(scalar @matched_allele_frequencies - 1)/2]
 		}
 		
 		# generates range
@@ -2196,7 +2196,7 @@ sub detect_potential_contamination_in_sample_pair
 	$output_line .= add_comma_separators($potential_contaminated_consensus_unambig_bases).$DELIMITER;
 	$output_line .= prepare_percentage_to_print($potential_contaminated_consensus_percent_covered).$DELIMITER;
 	$output_line .= $number_positions_with_heterozygosity.$DELIMITER;
-	$output_line .= $list_of_alleles_to_print.$DELIMITER;
+	$output_line .= $list_of_alleles_to_print.$DELIMITER; # TODO
 	
 	# adds columns about contaminating sample
 	$output_line .= $potential_contaminating_sample.$DELIMITER;
