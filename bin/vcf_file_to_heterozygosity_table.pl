@@ -135,7 +135,7 @@ close VCF_FILE;
 # prints human-readable row describing each position
 for my $assembly_reference(sort keys %chr_to_position_to_allele_to_readcount)
 {
-	for my $position(sort keys %{$chr_to_position_to_allele_to_readcount{$assembly_reference}})
+	for my $position(sort {$a <=> $b} keys %{$chr_to_position_to_allele_to_readcount{$assembly_reference}})
 	{
 		# checks that this position has at least 2 alleles with non-zero readcount
 		if(scalar keys %{$chr_to_position_to_allele_to_readcount{$assembly_reference}{$position}} >= 2)
