@@ -1525,9 +1525,9 @@ if(scalar @plate_map_files)
 
 
 # removes samples without neighbors if we haven't already (if we delayed it to print all iSNVs passing thresholds)
-if($print_all_isnvs)
+if(scalar @plate_map_files and $print_all_isnvs)
 {
-	# removes samples that without plate neighbors
+	# removes samples without plate neighbors
 	print STDERR "removing samples without plate neighbors...\n" if $verbose;
 	remove_samples_without_plate_neighbors();
 
