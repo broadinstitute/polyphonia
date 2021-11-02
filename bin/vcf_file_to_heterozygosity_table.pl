@@ -1,16 +1,26 @@
 #!/usr/bin/env perl
 
-# Reads in vcf file output produced by LoFreq and prints human-readable heterozygosity table.
+# Reads in vcf file output produced by LoFreq and prints human-readable heterozygosity
+# table. Optionally filters output by read depth and minor allele readcount and frequency.
 
 # Output columns, tab-separated:
-# - reference
-# - position (relative to reference, 1-indexed)
-# - major allele
-# - major allele readcount
-# - major allele frequency
-# - minor allele
-# - minor allele readcount
-# - minor allele frequency
+# - Reference
+# - Position (relative to reference, 1-indexed)
+# - Major allele
+# - Major allele readcount
+# - Major allele frequency
+# - Minor allele
+# - Minor allele readcount
+# - Minor allele frequency
+
+# Usage:
+# perl vcf_file_to_heterozygosity_table.pl [vcf file output by LoFreq]
+# [1 to filter output, 0 if not]
+
+# Prints to console. To print to file, use
+# perl vcf_file_to_heterozygosity_table.pl [vcf file output by LoFreq]
+# [1 to filter output, 0 if not] > [output file path]
+
 
 use strict;
 use warnings;
