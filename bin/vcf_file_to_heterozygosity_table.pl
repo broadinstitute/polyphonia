@@ -17,7 +17,13 @@ use warnings;
 use Math::Round;
 
 my $vcf_file = $ARGV[0]; # output of LoFreq, uncompressed or .gz
+my $filter_output = $ARGV[1]; # if 1, filters output using thresholds for including a heterozygous position; if 0, includes all positions with heterozygosity in output
 
+
+# thresholds for including a heterozygous position
+my $MINIMUM_MINOR_ALLELE_READCOUNT = 10;
+my $MINIMUM_MINOR_ALLELE_FREQUENCY = 0.03; # 3%
+my $MINIMUM_READ_DEPTH = 100;
 
 # columns in input vcf file
 my $REFERENCE_COLUMN = 0; # 0-indexed
@@ -38,12 +44,6 @@ my $NO_DATA_INPUT_VALUE = ".";
 # for printing allele frequencies
 my $DECIMALS_TO_ROUND_TO = 6; # same as in vcf files
 my $NUMBER_ALLELES_TO_PRINT_PER_POSITION = 2;
-
-# thresholds for including a heterozygous position
-my $FILTER_OUTPUT = 0; # if 1, applies below thresholds; if 0, does not
-my $MINIMUM_MINOR_ALLELE_READCOUNT = 10;
-my $MINIMUM_MINOR_ALLELE_FREQUENCY = 0.03; # 3%
-my $MINIMUM_READ_DEPTH = 100;
 
 
 # verifies that input file exists
@@ -179,7 +179,7 @@ for my $assembly_reference(sort keys %chr_to_position_to_allele_to_readcount)
 			}
 			
 			# prints output line for this position if we aren't filtering or if position passes thresholds
-			if(!$FILTER_OUTPUT or ($read_depth >= $MINIMUM_READ_DEPTH
+			if(!$filter_output or ($read_depth >= $MINIMUM_READ_DEPTH
 				and $minor_allele_readcount >= $MINIMUM_MINOR_ALLELE_READCOUNT
 				and $minor_allele_frequency >= $MINIMUM_MINOR_ALLELE_FREQUENCY))
 			{
