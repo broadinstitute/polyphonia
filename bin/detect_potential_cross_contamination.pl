@@ -656,7 +656,11 @@ if($print_all)
 }
 if($print_all_isnvs)
 {
-	print STDERR "\tPrinting iSNVs for all samples in plate visualization file, including samples without plate neighbors.\n" if $verbose;
+	print STDERR "\tPrinting iSNVs for all threshold-passing samples in plate visualization file, including samples without plate neighbors.\n" if $verbose;
+}
+else
+{
+	print STDERR "\tPrinting iSNVs only for threshold-passing samples with plate neighbors.\n" if $verbose;
 }
 print STDERR "\n" if $verbose;
 
