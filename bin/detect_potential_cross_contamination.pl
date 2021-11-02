@@ -1297,7 +1297,7 @@ $reference_sequence = remove_bases_at_indices_with_gaps_in_reference($reference_
 # masks any positions with read depth below minimum_read_depth
 # removes samples that do not have sufficiently complete genomes with read depth filter applied
 # removes samples without plate neighbors after read depth filter applied
-my %sequence_name_to_pre_masking_consensus = %sequence_name_to_consensus;
+my %sequence_name_to_pre_masking_consensus = ();
 if($minimum_read_depth > 0)
 {
 	print STDERR "masking positions with read depth < ".$minimum_read_depth."...\n" if $verbose;
@@ -1307,6 +1307,7 @@ if($minimum_read_depth > 0)
 		my $consensus = $sequence_name_to_consensus{$sample_name};
 		my @consensus_values = split(//, $consensus);
 		
+		# masks positions with low read depth
 		for my $position(keys %{$sample_name_to_position_to_read_depth{$sample_name}})
 		{
 			if($sample_name_to_position_to_read_depth{$sample_name}{$position} < $minimum_read_depth)
@@ -1314,6 +1315,9 @@ if($minimum_read_depth > 0)
 				$consensus_values[$position - 1] = "N";
 			}
 		}
+		
+		# saves masked and non-masked consensus genomes
+		$sequence_name_to_pre_masking_consensus{$sample_name} = $consensus;
 		$sequence_name_to_consensus{$sample_name} = join("", @consensus_values);
 	}
 	
@@ -1334,6 +1338,11 @@ if($minimum_read_depth > 0)
 		# prints number of samples remaining
 		print_number_samples_remaining_and_exit_if_none();
 	}
+}
+else
+{
+	# copies consensus genomes without masking
+	%sequence_name_to_pre_masking_consensus = %sequence_name_to_consensus;
 }
 
 
