@@ -40,8 +40,10 @@ my $DECIMALS_TO_ROUND_TO = 6; # same as in vcf files
 my $NUMBER_ALLELES_TO_PRINT_PER_POSITION = 2;
 
 # thresholds for including a heterozygous position
-# my $MINIMUM_MINOR_ALLELE_READCOUNT = 10;
-# my $MINIMUM_MINOR_ALLELE_FREQUENCY = 0.03; # 3%
+my $FILTER_OUTPUT = 0; # if 1, applies below thresholds; if 0, does not
+my $MINIMUM_MINOR_ALLELE_READCOUNT = 10;
+my $MINIMUM_MINOR_ALLELE_FREQUENCY = 0.03; # 3%
+my $MINIMUM_READ_DEPTH = 100;
 
 
 # verifies that input file exists
@@ -140,29 +142,49 @@ for my $assembly_reference(sort keys %chr_to_position_to_allele_to_readcount)
 		# checks that this position has at least 2 alleles with non-zero readcount
 		if(scalar keys %{$chr_to_position_to_allele_to_readcount{$assembly_reference}{$position}} >= 2)
 		{
-			# prints start of line
-			print $assembly_reference.$DELIMITER.$position;
+			# saves start of line
+			my $output_line = $assembly_reference.$DELIMITER.$position;
+			
+			# retrieves read depth at this position
 			my $read_depth = $chr_to_position_to_read_depth{$assembly_reference}{$position};
 		
-			# prints the two alleles with non-zero readcount, from greatest readcount to lowest
+			# saves info on the two alleles with non-zero readcount, from greatest readcount to lowest
 			my $number_alleles_printed = 0;
+			my $minor_allele_readcount = -1;
+			my $minor_allele_frequency = -1;
 			for my $allele(sort {$chr_to_position_to_allele_to_readcount{$assembly_reference}{$position}{$b}
 					<=> $chr_to_position_to_allele_to_readcount{$assembly_reference}{$position}{$a}}
 				keys %{$chr_to_position_to_allele_to_readcount{$assembly_reference}{$position}})
 			{
 				if($number_alleles_printed < $NUMBER_ALLELES_TO_PRINT_PER_POSITION)
 				{
+					# retrieves allele readcount and frequency
 					my $allele_readcount = $chr_to_position_to_allele_to_readcount{$assembly_reference}{$position}{$allele};
 					my $allele_frequency = round_value($allele_readcount / $read_depth, $DECIMALS_TO_ROUND_TO);
 			
-					print $DELIMITER.$allele;
-					print $DELIMITER.$allele_readcount;
-					print $DELIMITER.$allele_frequency;
+					# adds allele info to output line
+					$output_line .= $DELIMITER.$allele;
+					$output_line .= $DELIMITER.$allele_readcount;
+					$output_line .= $DELIMITER.$allele_frequency;
 					
 					$number_alleles_printed++;
+					
+					# saves info on minor allele for filtering
+					if($number_alleles_printed == 2)
+					{
+						$minor_allele_readcount = $allele_readcount;
+						$minor_allele_frequency = $allele_frequency;
+					}
 				}
 			}
-			print $NEWLINE;
+			
+			# prints output line for this position if we aren't filtering or if position passes thresholds
+			if(!$FILTER_OUTPUT or ($read_depth >= $MINIMUM_READ_DEPTH
+				and $minor_allele_readcount >= $MINIMUM_MINOR_ALLELE_READCOUNT
+				and $minor_allele_frequency >= $MINIMUM_MINOR_ALLELE_FREQUENCY))
+			{
+				print $output_line.$NEWLINE;
+			}
 		}
 	}
 }
@@ -188,3 +210,4 @@ sub round_value
 # May 11, 2020
 # June 1, 2021
 # October 29, 2021
+# November 2, 2021
