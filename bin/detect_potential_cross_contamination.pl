@@ -1140,10 +1140,20 @@ if($minimum_read_depth > 0)
 		.($minimum_genome_coverage * $reference_sequence_length)." bases with read depth >= "
 		.$minimum_read_depth." (".(100*$minimum_genome_coverage)."% of "
 		.$reference_sequence_length." total bases)...\n" if $verbose;
-	remove_samples_without_minimum_genome_coverage_with_high_read_depth();
+	my $samples_removed = remove_samples_without_minimum_genome_coverage_with_high_read_depth();
 	
 	# prints number of samples remaining
 	print_number_samples_remaining_and_exit_if_none();
+	
+	if($samples_removed and scalar @plate_map_files and !$print_all_isnvs)
+	{
+		# removes samples that are now without plate neighbors
+		print STDERR "removing samples without plate neighbors...\n" if $verbose;
+		remove_samples_without_plate_neighbors();
+	
+		# prints number of samples remaining
+		print_number_samples_remaining_and_exit_if_none();
+	}
 }
 
 
