@@ -1,7 +1,8 @@
 #!/usr/bin/env perl
 
-# Reads in vcf file output produced by LoFreq call and prints human-readable heterozygosity
-# table. Optionally filters output by read depth and minor allele readcount and frequency.
+# Reads in vcf file output produced by LoFreq call and prints human-readable
+# heterozygosity table. Optionally filters output by read depth, minor allele readcount,
+# and minor allele frequency.
 
 # See https://csb5.github.io/lofreq/commands/#call for information on LoFreq call.
 
