@@ -2302,7 +2302,7 @@ sub process_within_sample_diversity_file_for_sample
 		# runs LoFreq for bam -> vcf
 		my $output_vcf_file = $temp_intermediate_directory.retrieve_file_name($within_sample_diversity_file."_LoFreq.vcf");
 		check_if_file_exists_before_writing($output_vcf_file);
-		print STDERR "$LOFREQ_EXECUTABLE_FILE_PATH call -f $reference_genome_file -o $output_vcf_file $within_sample_diversity_file\n" if $verbose;
+# 		print STDERR "$LOFREQ_EXECUTABLE_FILE_PATH call -f $reference_genome_file -o $output_vcf_file $within_sample_diversity_file\n" if $verbose;
 		`$LOFREQ_EXECUTABLE_FILE_PATH call -f $reference_genome_file -o $output_vcf_file $within_sample_diversity_file`;
 		
 		# updates within-sample diversity file saved for this sample
