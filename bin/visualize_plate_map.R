@@ -123,6 +123,13 @@ if(number_columns < number_rows)
 # reads in input table
 input_table <- read.table(input_file_path, sep="\t", header=TRUE)
 
+# reads in input table estimated contamination volume
+input_table$estimated_contamination_volume <- as.numeric(sub("%", "", input_table$estimated_contamination_volume)) / 100
+
+# orders options for appearance of potential contamination
+input_table$appearance_of_potential_contamination <- factor(input_table$appearance_of_potential_contamination,
+                                                            levels=c("minor alleles", "minor and consensus-level", "consensus-level"))
+
 # subsets input file to display consensus-level potential contamination only
 if(input_file_type == "contamination_consensus")
 {
@@ -140,14 +147,14 @@ if(input_file_type == "contamination_minor")
 # expands input table to include all wells, including wells not included in input table
 well <- plate_list(number_rows, number_columns)
 all_wells <- data.frame(well)
+input_table$well <- input_table$potential_contaminated_sample_plate_position
 plate_map <- merge(x=all_wells, y=input_table, by="well", all=TRUE)
 
 # calculates sum of estimated contamination volume for each well
 # (in case a well is potentially contaminated by multiple samples)
 if(input_file_type == "contamination")
 {
-  volume_summed_by_well <- aggregate(x=plate_map$estimated_contamination_volume,
-    by=list(plate_map$well), FUN=sum, na.rm=TRUE)
+  volume_summed_by_well <- aggregate(x=plate_map$estimated_contamination_volume, by=list(plate_map$well), FUN=sum, na.rm=TRUE)
   colnames(volume_summed_by_well) <- c("well","estimated_contamination_volume_sum")
   volume_summed_by_well$estimated_contamination_volume_sum <- sapply(volume_summed_by_well$estimated_contamination_volume_sum, function(x) min(x,1)) # caps volume at 100%
   plate_map <- volume_summed_by_well
@@ -163,6 +170,7 @@ input_table$Column <- as.numeric(gsub("[^[:digit:]]", "", input_table$well)) # r
 
 if(input_file_type == "contamination")
 {
+  input_table$contamination_source_well <- input_table$potential_contaminating_sample_plate_position
   input_table$Row0 <- as.numeric(lapply(gsub("[[:digit:]]","",input_table$contamination_source_well), FUN=row_letters_to_row_number)) # retrieves letters, converts to digits
   input_table$Column0 <- as.numeric(gsub("[^[:digit:]]", "", input_table$contamination_source_well)) # retrieves digits
   
@@ -210,12 +218,16 @@ plate_figure_base <- ggplot() +
 if(input_file_type == "contamination")
 {
   # label for maximum contamination volume in legend
-  maximum_contamination_volume <- max(plate_map$estimated_contamination_volume_sum)
-  if(maximum_contamination_volume == 0)
-  {
-    maximum_contamination_volume = 0.01
-  }
-  maximum_contamination_volume_text <- paste(signif(100*maximum_contamination_volume, digits=2), "%", sep="")
+  # maximum_contamination_volume <- max(plate_map$estimated_contamination_volume_sum)
+  # if(maximum_contamination_volume == 0)
+  # {
+  #   maximum_contamination_volume = 0.01
+  # }
+  # maximum_contamination_volume_text <- paste(signif(100*maximum_contamination_volume, digits=2), "%", sep="")
+  minimum_contamination_volume <- 0
+  maximum_contamination_volume <- 1
+  minimum_contamination_volume_text <- "0%"
+  maximum_contamination_volume_text <- "100%"
   
   # whether or not a well is involved in any detected potential contamination (giving or receiving)
   plate_map$well_involved <- FALSE
@@ -233,16 +245,29 @@ if(input_file_type == "contamination")
       colour=ifelse(plate_map$well_involved, "black", "darkgrey"),
       shape=21, size=well_circle_size, stroke=well_circle_line_thickness) +
     geom_segment(
-      data=input_table,
+      data=subset(input_table, appearance_of_potential_contamination == "consensus-level"),
       mapping=aes(x=Column0+jitter_horizontal, y=Row0+jitter_vertical, xend=Column+jitter_horizontal, yend=Row+jitter_vertical,
-        size=appearance_of_potential_contamination),
+        color=appearance_of_potential_contamination),
+      arrow=arrow(type="open", angle=30, length=unit(arrow_head_length,"cm"))) +
+    geom_segment(
+      data=subset(input_table, appearance_of_potential_contamination == "minor and consensus-level"),
+      mapping=aes(x=Column0+jitter_horizontal, y=Row0+jitter_vertical, xend=Column+jitter_horizontal, yend=Row+jitter_vertical,
+                  color=appearance_of_potential_contamination),
+      arrow=arrow(type="open", angle=30, length=unit(arrow_head_length,"cm"))) +
+    geom_segment(
+      data=subset(input_table, appearance_of_potential_contamination == "minor alleles"),
+      mapping=aes(x=Column0+jitter_horizontal, y=Row0+jitter_vertical, xend=Column+jitter_horizontal, yend=Row+jitter_vertical,
+                  color=appearance_of_potential_contamination),
       arrow=arrow(type="open", angle=30, length=unit(arrow_head_length,"cm"))) +
     guides(size=FALSE) +
     scale_size_manual(values = c("minor alleles"=arrow_thickness*0.6, "minor and consensus-level"=arrow_thickness*1, "consensus-level"=arrow_thickness*1.4)) +
     scale_fill_gradient("Total Estimated Contamination Volume", low="white", high="#CC857E",
-      limits=c(0, maximum_contamination_volume),
-      breaks=c(0, maximum_contamination_volume),
-      labels=c(0, maximum_contamination_volume_text))
+      limits=c(minimum_contamination_volume, maximum_contamination_volume),
+      breaks=c(minimum_contamination_volume, maximum_contamination_volume),
+      labels=c(minimum_contamination_volume_text, maximum_contamination_volume_text)) +
+    scale_color_manual("Appearance of Contamination",
+                       values=c("minor alleles"="black", "minor and consensus-level"="darkgrey", "consensus-level"="lightgrey")) +
+    theme(legend.position="bottom", legend.box="vertical", legend.margin=margin())
   
   ggsave(paste(output_file_path, ".pdf", sep=""), plate_figure_contamination, width=WIDTH, height=HEIGHT)
   ggsave(paste(output_file_path, ".jpg", sep=""), plate_figure_contamination, width=WIDTH, height=HEIGHT)
