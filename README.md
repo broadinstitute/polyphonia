@@ -471,7 +471,7 @@ If you enter at least one plate map file, polyphonia will generate a visualizati
 
 You can view an example of a plate map visualization of potential cross-contamination at the [end](#output-files-1) of the [example run-through](#example-run-throughs):
 
-<p align="center"><img src="https://user-images.githubusercontent.com/6245320/122625873-663da880-d075-11eb-975a-0f7c9ddd19f0.jpg" width="550"></p>
+<p align="center"><img src="https://github-production-user-asset-6210df.s3.amazonaws.com/6245320/280387383-2e1d4edb-4cb4-4420-99d1-b427d91e1746.jpg" width="737"></p>
 
 You can set the [output directory](#output-file-paths) for the plate map visualization of potential cross-contamination using `--out-figures`.
 
@@ -557,7 +557,9 @@ The USA-MA-Broad_CRSP-01323-2021 alleles appearing at consensus level in USA-MA-
 
 Our plate visualizations are in the directory `/opt/polyphonia/test/test1_plate_visualizations`, `USA-MA-Broad_CRSP-01315_23-2021_plate_map.txt_potential_cross_contamination_visualization.jpg` and `USA-MA-Broad_CRSP-01315_23-2021_plate_map.txt_iSNVs_visualization.jpg`:
 
-<p align="center"><img src="https://user-images.githubusercontent.com/6245320/122625873-663da880-d075-11eb-975a-0f7c9ddd19f0.jpg" width="418"><img src="https://user-images.githubusercontent.com/6245320/122625879-6b9af300-d075-11eb-9b5e-dfdf1308b2aa.jpg" width="418"></p>
+<p align="center"><img src="https://github-production-user-asset-6210df.s3.amazonaws.com/6245320/280387383-2e1d4edb-4cb4-4420-99d1-b427d91e1746.jpg" width="67%"></p>
+
+<p align="center"><img src="https://user-images.githubusercontent.com/6245320/122625879-6b9af300-d075-11eb-9b5e-dfdf1308b2aa.jpg" width="50%"></p>
 
 In the visualization of potential cross-contamination, we see that USA-MA-Broad_CRSP-01323-2021, in well H10, is potentially contaminated by USA-MA-Broad_CRSP-01315-2021, in well H9, and that the median allele frequency of potentially contaminating alleles is 4.9%.
 
