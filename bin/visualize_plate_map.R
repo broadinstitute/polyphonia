@@ -8,18 +8,13 @@
 
 rm(list=ls())
 
-# args = commandArgs(trailingOnly=TRUE)
-# input_file_path  <- args[1]
-# output_file_path <- args[2]
-# number_columns   <- as.numeric(args[3])
-# number_rows      <- as.numeric(args[4])
-# input_file_type  <- tolower(args[5]) # "isnvs" or "contamination" or "contamination_minor" or "contamination_consensus"
+args = commandArgs(trailingOnly=TRUE)
+input_file_path  <- args[1]
+output_file_path <- args[2]
+number_columns   <- as.numeric(args[3])
+number_rows      <- as.numeric(args[4])
+input_file_type  <- tolower(args[5]) # "isnvs" or "contamination" or "contamination_minor" or "contamination_consensus"
 
-input_file_path  <- "/Users/lakras/2021_05_19_contamination_detection_from_minor_alleles/2023_11_01_github_clone/test/potential_cross-contamination.txt"
-output_file_path <- "/Users/lakras/2021_05_19_contamination_detection_from_minor_alleles/2023_11_01_github_clone/test/potential_cross-contamination"
-number_columns   <- 12
-number_rows      <- 8
-input_file_type  <- "contamination" # "isnvs" or "contamination" or "contamination_minor" or "contamination_consensus"
 
 library(ggplot2)
 library(plyr)
