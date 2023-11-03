@@ -8,13 +8,18 @@
 
 rm(list=ls())
 
-args = commandArgs(trailingOnly=TRUE)
-input_file_path  <- args[1]
-output_file_path <- args[2]
-number_columns   <- as.numeric(args[3])
-number_rows      <- as.numeric(args[4])
-input_file_type  <- tolower(args[5]) # "isnvs" or "contamination" or "contamination_minor" or "contamination_consensus"
+# args = commandArgs(trailingOnly=TRUE)
+# input_file_path  <- args[1]
+# output_file_path <- args[2]
+# number_columns   <- as.numeric(args[3])
+# number_rows      <- as.numeric(args[4])
+# input_file_type  <- tolower(args[5]) # "isnvs" or "contamination" or "contamination_minor" or "contamination_consensus"
 
+input_file_path  <- "/Users/lakras/2021_05_19_contamination_detection_from_minor_alleles/2023_11_01_github_clone/test/potential_cross-contamination.txt"
+output_file_path <- "/Users/lakras/2021_05_19_contamination_detection_from_minor_alleles/2023_11_01_github_clone/test/potential_cross-contamination"
+number_columns   <- 12
+number_rows      <- 8
+input_file_type  <- "contamination" # "isnvs" or "contamination" or "contamination_minor" or "contamination_consensus"
 
 library(ggplot2)
 library(plyr)
@@ -95,7 +100,7 @@ scaling_factor <- min(12/number_columns, 8/number_rows)
 well_circle_size <- 12 * scaling_factor
 well_circle_line_thickness <- min(0.3 * scaling_factor, 0.5)
 arrow_head_length <- 0.63 * scaling_factor
-arrow_thickness <- 2 * well_circle_line_thickness
+arrow_thickness <- well_circle_line_thickness
 
 text_in_wells_size <- 4 * scaling_factor
 if(scaling_factor < 0.26)
@@ -123,12 +128,16 @@ if(number_columns < number_rows)
 # reads in input table
 input_table <- read.table(input_file_path, sep="\t", header=TRUE)
 
-# reads in input table estimated contamination volume
-input_table$estimated_contamination_volume <- as.numeric(sub("%", "", input_table$estimated_contamination_volume)) / 100
+# reads in input table estimated contamination volume--converts from % to decimal if needed
+if(grepl("%", input_table$estimated_contamination_volume[1]))
+{
+  input_table$estimated_contamination_volume <- as.numeric(sub("%", "", input_table$estimated_contamination_volume)) / 100
+}
 
 # orders options for appearance of potential contamination
 input_table$appearance_of_potential_contamination <- factor(input_table$appearance_of_potential_contamination,
                                                             levels=c("minor alleles", "minor and consensus-level", "consensus-level"))
+
 
 # subsets input file to display consensus-level potential contamination only
 if(input_file_type == "contamination_consensus")
@@ -140,14 +149,18 @@ if(input_file_type == "contamination_consensus")
 # subsets input file to display minor allele or minor-consensus mix potential contamination only
 if(input_file_type == "contamination_minor")
 {
-  input_table <- subset(input_table, appearance_of_potential_contamination == "minor alleles" | appearance_of_potential_contamination == "minor and consensus-level")
+  input_table <- subset(input_table, appearance_of_potential_contamination == "minor alleles"
+                        | appearance_of_potential_contamination == "minor and consensus-level")
   input_file_type <- "contamination"
 }
 
 # expands input table to include all wells, including wells not included in input table
 well <- plate_list(number_rows, number_columns)
 all_wells <- data.frame(well)
-input_table$well <- input_table$potential_contaminated_sample_plate_position
+if(!"well" %in% names(input_table))
+{
+  input_table$well <- input_table$potential_contaminated_sample_plate_position
+}
 plate_map <- merge(x=all_wells, y=input_table, by="well", all=TRUE)
 
 # calculates sum of estimated contamination volume for each well
@@ -236,6 +249,10 @@ if(input_file_type == "contamination")
     plate_map$well_involved[i] <- any(input_table$contamination_source_well==plate_map$well[i]) || any(input_table$well==plate_map$well[i])
   }
   
+  input_table$appearance_of_potential_contamination <- factor(input_table$appearance_of_potential_contamination,
+                                                              levels=c("minor alleles", "minor and consensus-level", "consensus-level"))
+  
+  
   # colors plate map by total potential contamination with arrows from
   # potential sources of contamination to potential contaminated wells
   plate_figure_contamination <- plate_figure_base +
@@ -247,20 +264,18 @@ if(input_file_type == "contamination")
     geom_segment(
       data=subset(input_table, appearance_of_potential_contamination == "consensus-level"),
       mapping=aes(x=Column0+jitter_horizontal, y=Row0+jitter_vertical, xend=Column+jitter_horizontal, yend=Row+jitter_vertical,
-        color=appearance_of_potential_contamination),
-      arrow=arrow(type="open", angle=30, length=unit(arrow_head_length,"cm"))) +
+                  color=appearance_of_potential_contamination),
+      arrow=arrow(type="open", angle=30, length=unit(arrow_head_length,"cm")), size=arrow_thickness) +
     geom_segment(
       data=subset(input_table, appearance_of_potential_contamination == "minor and consensus-level"),
       mapping=aes(x=Column0+jitter_horizontal, y=Row0+jitter_vertical, xend=Column+jitter_horizontal, yend=Row+jitter_vertical,
                   color=appearance_of_potential_contamination),
-      arrow=arrow(type="open", angle=30, length=unit(arrow_head_length,"cm"))) +
+      arrow=arrow(type="open", angle=30, length=unit(arrow_head_length,"cm")), size=arrow_thickness) +
     geom_segment(
       data=subset(input_table, appearance_of_potential_contamination == "minor alleles"),
       mapping=aes(x=Column0+jitter_horizontal, y=Row0+jitter_vertical, xend=Column+jitter_horizontal, yend=Row+jitter_vertical,
                   color=appearance_of_potential_contamination),
-      arrow=arrow(type="open", angle=30, length=unit(arrow_head_length,"cm"))) +
-    guides(size=FALSE) +
-    scale_size_manual(values = c("minor alleles"=arrow_thickness*0.6, "minor and consensus-level"=arrow_thickness*1, "consensus-level"=arrow_thickness*1.4)) +
+      arrow=arrow(type="open", angle=30, length=unit(arrow_head_length,"cm")), size=arrow_thickness) +
     scale_fill_gradient("Total Estimated Contamination Volume", low="white", high="#CC857E",
       limits=c(minimum_contamination_volume, maximum_contamination_volume),
       breaks=c(minimum_contamination_volume, maximum_contamination_volume),
