@@ -124,15 +124,17 @@ if(number_columns < number_rows)
 input_table <- read.table(input_file_path, sep="\t", header=TRUE)
 
 # reads in input table estimated contamination volume--converts from % to decimal if needed
-if(grepl("%", input_table$estimated_contamination_volume[1]))
+if(input_file_type != "isnvs")
 {
-  input_table$estimated_contamination_volume <- as.numeric(sub("%", "", input_table$estimated_contamination_volume)) / 100
+  if(grepl("%", input_table$estimated_contamination_volume[1]))
+  {
+    input_table$estimated_contamination_volume <- as.numeric(sub("%", "", input_table$estimated_contamination_volume)) / 100
+  }
+  
+  # orders options for appearance of potential contamination
+  input_table$appearance_of_potential_contamination <- factor(input_table$appearance_of_potential_contamination,
+                                                              levels=c("minor alleles", "minor and consensus-level", "consensus-level"))
 }
-
-# orders options for appearance of potential contamination
-input_table$appearance_of_potential_contamination <- factor(input_table$appearance_of_potential_contamination,
-                                                            levels=c("minor alleles", "minor and consensus-level", "consensus-level"))
-
 
 # subsets input file to display consensus-level potential contamination only
 if(input_file_type == "contamination_consensus")
@@ -318,3 +320,5 @@ if(input_file_type == "isnvs")
 # May 20, 2021
 # June 9, 2021
 # June 14, 2021
+# November 12, 2023
+                                                                     
