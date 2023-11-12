@@ -180,7 +180,10 @@ input_table$Column <- as.numeric(gsub("[^[:digit:]]", "", input_table$well)) # r
 
 if(input_file_type == "contamination")
 {
-  input_table$contamination_source_well <- input_table$potential_contaminating_sample_plate_position
+  if(!"contamination_source_well" %in% names(input_table))
+  {
+    input_table$contamination_source_well <- input_table$potential_contaminating_sample_plate_position
+  }
   input_table$Row0 <- as.numeric(lapply(gsub("[[:digit:]]","",input_table$contamination_source_well), FUN=row_letters_to_row_number)) # retrieves letters, converts to digits
   input_table$Column0 <- as.numeric(gsub("[^[:digit:]]", "", input_table$contamination_source_well)) # retrieves digits
   
@@ -321,4 +324,3 @@ if(input_file_type == "isnvs")
 # June 9, 2021
 # June 14, 2021
 # November 12, 2023
-                                                                     
