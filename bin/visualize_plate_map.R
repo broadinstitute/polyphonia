@@ -286,7 +286,7 @@ if(input_file_type == "contamination")
       breaks=c(minimum_contamination_volume, maximum_contamination_volume),
       labels=c(minimum_contamination_volume_text, maximum_contamination_volume_text)) +
     scale_color_manual("Appearance of Contamination",
-                       values=c("minor alleles"="black", "minor and consensus-level"="#615176", "consensus-level"="#B1B4DA")) +
+                       values=c("minor alleles"="black", "minor and consensus-level"="#615176", "consensus-level"="#A1A4CA")) +
     theme(legend.position="bottom", legend.box="vertical", legend.margin=margin())
   
   ggsave(paste(output_file_path, ".pdf", sep=""), plate_figure_contamination, width=WIDTH, height=HEIGHT)
