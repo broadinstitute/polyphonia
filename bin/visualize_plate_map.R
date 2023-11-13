@@ -270,7 +270,7 @@ if(input_file_type == "contamination")
       data=subset(input_table, appearance_of_potential_contamination == "consensus-level"),
       mapping=aes(x=Column0+jitter_horizontal, y=Row0+jitter_vertical, xend=Column+jitter_horizontal, yend=Row+jitter_vertical,
                   color=appearance_of_potential_contamination),
-      arrow=arrow(type="open", angle=30, length=unit(arrow_head_length,"cm")), linewidth=arrow_thickness, linetype="dotdash") +
+      arrow=arrow(type="open", angle=30, length=unit(arrow_head_length,"cm")), linewidth=arrow_thickness, linetype="longdash") +
     geom_segment(
       data=subset(input_table, appearance_of_potential_contamination == "minor and consensus-level"),
       mapping=aes(x=Column0+jitter_horizontal, y=Row0+jitter_vertical, xend=Column+jitter_horizontal, yend=Row+jitter_vertical,
