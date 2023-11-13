@@ -226,7 +226,7 @@ plate_figure_base <- ggplot() +
     axis.text=element_text(size=axis_text_size),
     legend.position="bottom",
     panel.background=element_blank(),
-    panel.border=element_rect(colour="black", fill=NA, linewidth=0.3),
+    panel.border=element_rect(colour="black", fill=NA, size=0.3),
     panel.grid.major=element_blank(),
     panel.grid.minor=element_blank()
   )
@@ -270,17 +270,17 @@ if(input_file_type == "contamination")
       data=subset(input_table, appearance_of_potential_contamination == "consensus-level"),
       mapping=aes(x=Column0+jitter_horizontal, y=Row0+jitter_vertical, xend=Column+jitter_horizontal, yend=Row+jitter_vertical,
                   color=appearance_of_potential_contamination),
-      arrow=arrow(type="open", angle=30, length=unit(arrow_head_length,"cm")), linewidth=arrow_thickness, linetype="longdash") +
+      arrow=arrow(type="open", angle=30, length=unit(arrow_head_length,"cm")), size=arrow_thickness, linetype="longdash") +
     geom_segment(
       data=subset(input_table, appearance_of_potential_contamination == "minor and consensus-level"),
       mapping=aes(x=Column0+jitter_horizontal, y=Row0+jitter_vertical, xend=Column+jitter_horizontal, yend=Row+jitter_vertical,
                   color=appearance_of_potential_contamination),
-      arrow=arrow(type="open", angle=30, length=unit(arrow_head_length,"cm")), linewidth=arrow_thickness, linetype="longdash") +
+      arrow=arrow(type="open", angle=30, length=unit(arrow_head_length,"cm")), size=arrow_thickness, linetype="longdash") +
     geom_segment(
       data=subset(input_table, appearance_of_potential_contamination == "minor alleles"),
       mapping=aes(x=Column0+jitter_horizontal, y=Row0+jitter_vertical, xend=Column+jitter_horizontal, yend=Row+jitter_vertical,
                   color=appearance_of_potential_contamination),
-      arrow=arrow(type="open", angle=30, length=unit(arrow_head_length,"cm")), linewidth=arrow_thickness) +
+      arrow=arrow(type="open", angle=30, length=unit(arrow_head_length,"cm")), size=arrow_thickness) +
     scale_fill_gradient("Total Estimated Contamination Volume", low="white", high="#CC857E",
       limits=c(minimum_contamination_volume, maximum_contamination_volume),
       breaks=c(minimum_contamination_volume, maximum_contamination_volume),
