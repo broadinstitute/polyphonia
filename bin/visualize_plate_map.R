@@ -184,13 +184,9 @@ if(input_file_type == "contamination")
   {
     input_table$contamination_source_well <- input_table$potential_contaminating_sample_plate_position
   }
-  input_table$Row0 <- NULL
-  input_table$Column0 <- NULL
-  if(nrow(input_table) > 0)
-  {
-    input_table$Row0 <- as.numeric(lapply(gsub("[[:digit:]]","",input_table$contamination_source_well), FUN=row_letters_to_row_number)) # retrieves letters, converts to digits
-    input_table$Column0 <- as.numeric(gsub("[^[:digit:]]", "", input_table$contamination_source_well)) # retrieves digits
-  }
+  input_table$Row0 <- as.numeric(lapply(gsub("[[:digit:]]","",input_table$contamination_source_well), FUN=row_letters_to_row_number)) # retrieves letters, converts to digits
+  input_table$Column0 <- as.numeric(gsub("[^[:digit:]]", "", input_table$contamination_source_well)) # retrieves digits
+  
   
   # determines amount to jitter--more jitter if more lines of potential cross-contamination
   MIN_JITTER <- 0
