@@ -139,15 +139,15 @@ if(input_file_type != "isnvs")
 # subsets input file to display consensus-level potential contamination only
 if(input_file_type == "contamination_consensus")
 {
-  input_table <- subset(input_table, appearance_of_potential_contamination == "consensus-level")
+  input_table <- subset(input_table, appearance_of_potential_contamination == "consensus-level"
+                        | appearance_of_potential_contamination == "minor and consensus-level")
   input_file_type <- "contamination"
 }
 
 # subsets input file to display minor allele or minor-consensus mix potential contamination only
 if(input_file_type == "contamination_minor")
 {
-  input_table <- subset(input_table, appearance_of_potential_contamination == "minor alleles"
-                        | appearance_of_potential_contamination == "minor and consensus-level")
+  input_table <- subset(input_table, appearance_of_potential_contamination == "minor alleles")
   input_file_type <- "contamination"
 }
 
