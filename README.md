@@ -157,7 +157,7 @@ Polyphonia is available through the following [WDL](https://github.com/openwdl/w
 
 ## Under the Hood
 
-<p align="center"><img src="https://user-images.githubusercontent.com/6245320/122775196-e29fd980-d277-11eb-80b9-2b2ffb4fa3ae.png" alt="process flowchart" width="750"></p>
+<p align="center"><img src="https://github-production-user-asset-6210df.s3.amazonaws.com/6245320/285010267-b812bd08-5044-4ae6-8b79-8de3c788302e.png" alt="process flowchart" width="750"></p>
 
 Polyphonia starts off by verifying and printing input options and preparing a list of samples to analyze. Samples without a [consensus genome](#consensus-genomes) or [within-sample diversity file](#within-sample-diversity-files) are excluded from analysis. If at least one [optional plate map](#optional-plate-map-inputs) is provided, samples not appearing in any plate map are excluded from analysis. A [read depth filter](#position-inclusion-thresholds) is applied. Samples not passing [sample inclusion thresholds](#sample-inclusion-thresholds) are excluded from analysis. To save time, samples without any plate neighbors as specified by provided [well comparison options](#well-comparison-options) are excluded.
 
