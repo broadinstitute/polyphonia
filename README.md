@@ -24,6 +24,7 @@ OPTIONS:
 	-1 | --read-depths FILE(S)	Read depth tables; provide alongside vcf files or heterozygosity tables if min-depth>0; see documentation for format [null]
 	-g | --min-covered FLOAT	Minimum proportion genome that must be covered at minimum read depth for a sample to be included [0.95]
 	-y | --max-mismatches INT	In flagged potential cross-contamination, maximum allowed unambiguous bases in contaminating sample consensus not matching contaminated sample alleles [1]
+	-3 | --masked-positions STRING	1-indexed positions to mask (e.g., 1-10,50,55-70) [null]
 
 - Plate map and neighbors (any combination, all optional):
 	-m | --plate-map FILE(S)	Optional plate map(s) (tab-separated, no header: sample name, plate position (e.g., A8)); provides substantial speed-up [null]
@@ -335,6 +336,9 @@ By default, ≥95% of the genome must be unambigously covered for a sample to be
 
 `--min-depth`
 `--read-depths`
+`--masked-positions`
+
+Use `--masked-positions` to specify positions that should be masked, for example positions known to have high rates of sequencing error. Masked positions are not included as input consensus or minor alleles.
 
 Use `--min-depth` to set the minimum number of reads that must overlap a position in a sample in order for that position to be included. If a position does not pass the read depth filter, it is not included in the numerator of [genome coverage](#sample-inclusion-thresholds) and is not included as a heterozygous position.
 
