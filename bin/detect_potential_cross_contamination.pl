@@ -684,14 +684,14 @@ if($masked_positions_string)
 	foreach my $position_item(@position_items)
 	{
 		# fills in ranges
-		if($line =~ /(\d+)\-(\d+)/)
+		if($position_item =~ /(\d+)\-(\d+)/)
 		{
 			my $first_position = $1;
 			my $last_position = $2;
 			
 			for(my $position = $first_position; $position <= $last_position; $position++)
 			{
-				$position{$position_item} = 1;
+				$position_is_masked{$position_item} = 1;
 			}
 		}
 		
