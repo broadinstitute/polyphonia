@@ -123,7 +123,7 @@ if(!scalar @ARGV) # no command line arguments supplied
 	print STDERR "\t-1 | --read-depths FILE(S)\tRead depth tables; provide alongside vcf files or heterozygosity tables if min-depth>0; see documentation for format [null]\n";
 	print STDERR "\t-g | --min-covered FLOAT\tMinimum proportion genome that must be covered at minimum read depth for a sample to be included [".$DEFAULT_MINIMUM_GENOME_COVERAGE."]\n";
 	print STDERR "\t-y | --max-mismatches INT\tIn flagged potential cross-contamination, maximum allowed unambiguous bases in contaminating sample consensus not matching contaminated sample alleles [".$DEFAULT_MAXIMUM_ALLOWED_MISMATCHES."]\n";
-	print STDERR "\t-3 | --masked-positions STRING\t [null]\n";
+	print STDERR "\t-3 | --masked-positions STRING\t1-indexed positions to mask (e.g., 1-10,50,55-70) [null]\n";
 	print STDERR "\n";
 	
 	print STDERR "- Plate map and neighbors (any combination, all optional):\n";
