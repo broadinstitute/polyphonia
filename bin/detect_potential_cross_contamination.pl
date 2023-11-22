@@ -123,6 +123,7 @@ if(!scalar @ARGV) # no command line arguments supplied
 	print STDERR "\t-1 | --read-depths FILE(S)\tRead depth tables; provide alongside vcf files or heterozygosity tables if min-depth>0; see documentation for format [null]\n";
 	print STDERR "\t-g | --min-covered FLOAT\tMinimum proportion genome that must be covered at minimum read depth for a sample to be included [".$DEFAULT_MINIMUM_GENOME_COVERAGE."]\n";
 	print STDERR "\t-y | --max-mismatches INT\tIn flagged potential cross-contamination, maximum allowed unambiguous bases in contaminating sample consensus not matching contaminated sample alleles [".$DEFAULT_MAXIMUM_ALLOWED_MISMATCHES."]\n";
+	print STDERR "\t-3 | --masked-positions STRING\t [null]\n";
 	print STDERR "\n";
 	
 	print STDERR "- Plate map and neighbors (any combination, all optional):\n";
@@ -161,6 +162,7 @@ my $consensus_genomes_aligned_file = "";
 my $minimum_genome_coverage = $DEFAULT_MINIMUM_GENOME_COVERAGE;
 my $maximum_allowed_mismatches = $DEFAULT_MAXIMUM_ALLOWED_MISMATCHES;
 my $minimum_read_depth = $DEFAULT_MINIMUM_READ_DEPTH;
+my $masked_positions_string = "";
 
 my @aligned_and_trimmed_bam_files = ();
 my @vcf_files = ();
@@ -272,6 +274,10 @@ for($argument_index = 0; $argument_index <= $#ARGV; $argument_index++)
 	elsif(($input = read_in_input_files_argument("-m", "--plate-map")) ne "-1")
 	{
 		push(@plate_map_files, @$input);
+	}
+	elsif(($input = read_in_string_argument("-3", "--masked-positions")) != -1)
+	{
+		$masked_positions_string = $input;
 	}
 	elsif(($input = read_in_positive_integer_argument("-z", "--plate-size")) != -1)
 	{
@@ -642,6 +648,10 @@ print STDERR "\tminimum genome coverage: ".($minimum_genome_coverage*100)."%\n" 
 print STDERR "\tminimum minor allele readcount: ".$minimum_minor_allele_readcount."\n" if $verbose;
 print STDERR "\tminimum minor allele frequency: ".($minimum_minor_allele_frequency*100)."%\n" if $verbose;
 print STDERR "\tmaximum allowed mismatches: ".$maximum_allowed_mismatches."\n" if $verbose;
+if($masked_positions_string)
+{
+	print STDERR "\tmasked positions: ".$masked_positions_string."\n" if $verbose;
+}
 
 # output files
 print STDERR "OUTPUT:\n" if $verbose;
@@ -664,6 +674,34 @@ else
 }
 print STDERR "\n" if $verbose;
 
+
+# retrieves masked positions from masked positions string argument
+my %position_is_masked = ();
+if($masked_positions_string)
+{
+	# split string on ,
+	my @position_items = split(",", $masked_positions_string);
+	foreach my $position_item(@position_items)
+	{
+		# fills in ranges
+		if($line =~ /(\d+)\-(\d+)/)
+		{
+			my $first_position = $1;
+			my $last_position = $2;
+			
+			for(my $position = $first_position; $position <= $last_position; $position++)
+			{
+				$position{$position_item} = 1;
+			}
+		}
+		
+		# adds single position
+		else
+		{
+			$position_is_masked{$position_item} = 1;
+		}
+	}
+}
 
 # retrieves sample names from plate maps if possible
 my %sample_names = (); # key: sample name to include in comparisons -> value: 1
@@ -1299,12 +1337,14 @@ $reference_sequence = remove_bases_at_indices_with_gaps_in_reference($reference_
 
 
 # masks any positions with read depth below minimum_read_depth
+# masks any positions input by user
 # removes samples that do not have sufficiently complete genomes with read depth filter applied
 # removes samples without plate neighbors after read depth filter applied
 my %sequence_name_to_pre_masking_consensus = ();
-if($minimum_read_depth > 0)
+if($minimum_read_depth > 0 or $masked_positions_string)
 {
-	print STDERR "masking positions with read depth < ".$minimum_read_depth."...\n" if $verbose;
+	print STDERR "masking positions with read depth < ".$minimum_read_depth
+		." and positions ".$masked_positions_string."...\n" if $verbose;
 	foreach my $sample_name(keys %sample_names)
 	{
 		# retrieves consensus genome bases
@@ -1312,11 +1352,26 @@ if($minimum_read_depth > 0)
 		my @consensus_values = split(//, $consensus);
 		
 		# masks positions with low read depth
-		for my $position(keys %{$sample_name_to_position_to_read_depth{$sample_name}})
+		if($minimum_read_depth > 0)
 		{
-			if($sample_name_to_position_to_read_depth{$sample_name}{$position} < $minimum_read_depth)
+			for my $position(keys %{$sample_name_to_position_to_read_depth{$sample_name}})
 			{
-				$consensus_values[$position - 1] = "N";
+				if($sample_name_to_position_to_read_depth{$sample_name}{$position} < $minimum_read_depth)
+				{
+					$consensus_values[$position - 1] = "N";
+				}
+			}
+		}
+		
+		# masks any positions input by user
+		if($masked_positions_string)
+		{
+			foreach my $position(keys %position_is_masked)
+			{
+				if($position_is_masked{$position})
+				{
+					$consensus_values[$position - 1] = "N";
+				}
 			}
 		}
 		
@@ -1961,14 +2016,16 @@ sub detect_potential_contamination_in_sample_pair
 				.$potential_contaminated_within_sample_diversity_file."\n";
 		}
 	
-		# only includes positions with minor allele readcount >= 10, minor allele frequency >= 3%,
+		# only includes positions not masked by user,
+		# with minor allele readcount >= 10, minor allele frequency >= 3%,
 		# minor + consensus-level allele readcount >= minimum_read_depth,
 		# and read depth in potential contaminated sample >= minimum_read_depth
 		# assumes that major allele frequency = 100% - minor allele frequency
 		if($minor_allele_readcount >= $minimum_minor_allele_readcount
 			and $minor_allele_frequency >= $minimum_minor_allele_frequency
 			and $minor_allele_readcount + $major_allele_readcount >= $minimum_read_depth
-			and (!$minimum_read_depth or $sample_name_to_position_to_read_depth{$potential_contaminated_sample}{$position} >= $minimum_read_depth))
+			and (!$minimum_read_depth or $sample_name_to_position_to_read_depth{$potential_contaminated_sample}{$position} >= $minimum_read_depth)
+			and (!$masked_positions_string or !$position_is_masked{$position}))
 		{
 			if($positions_with_heterozygosity{$position})
 			{
@@ -2051,7 +2108,8 @@ sub detect_potential_contamination_in_sample_pair
 		my $nucleotide_at_position = $potential_contaminating_consensus_values[$position - 1];
 		if(is_unambiguous_base($nucleotide_at_position)
 			and (!$minimum_read_depth or $sample_name_to_position_to_read_depth{$potential_contaminating_sample}{$position} >= $minimum_read_depth)
-			and (!$minimum_read_depth or $sample_name_to_position_to_read_depth{$potential_contaminated_sample}{$position} >= $minimum_read_depth))
+			and (!$minimum_read_depth or $sample_name_to_position_to_read_depth{$potential_contaminated_sample}{$position} >= $minimum_read_depth)
+			and (!$masked_positions_string or !$position_is_masked{$position}))
 		{
 			if($minor_alleles{$position}{$nucleotide_at_position}
 				or $major_alleles{$position}{$nucleotide_at_position})
@@ -2113,6 +2171,9 @@ sub detect_potential_contamination_in_sample_pair
 		
 		if( # not a location with heterozygosity
 			!$positions_with_heterozygosity{$position}
+			
+			# position not masked by user
+			and (!$masked_positions_string or $position_is_masked{$position})
 		
 			 # mismatch between contaminated and contaminating consensus sequences
 			and $potential_contaminated_consensus_value ne $potential_contaminating_consensus_value
@@ -2211,7 +2272,7 @@ sub detect_potential_contamination_in_sample_pair
 	
 	# adds columns about contaminated sample
 	$output_line .= $potential_contaminated_sample.$DELIMITER;
-	if($minimum_read_depth)
+	if($minimum_read_depth or $masked_positions_string)
 	{
 		$output_line .= add_comma_separators($pre_masking_potential_contaminated_consensus_unambig_bases).$DELIMITER;
 		$output_line .= prepare_percentage_to_print($pre_masking_potential_contaminated_consensus_percent_covered).$DELIMITER;
@@ -2223,7 +2284,7 @@ sub detect_potential_contamination_in_sample_pair
 	
 	# adds columns about contaminating sample
 	$output_line .= $potential_contaminating_sample.$DELIMITER;
-	if($minimum_read_depth)
+	if($minimum_read_depth or $masked_positions_string)
 	{
 		$output_line .= add_comma_separators($pre_masking_potential_contaminating_consensus_unambig_bases).$DELIMITER;
 		$output_line .= prepare_percentage_to_print($pre_masking_potential_contaminating_consensus_percent_covered).$DELIMITER;
@@ -2487,7 +2548,8 @@ sub remove_samples_without_minimum_genome_coverage_with_high_read_depth
 		my $number_positions_with_high_read_depth = 0;
 		for my $position(keys %{$sample_name_to_position_to_read_depth{$sample_name}})
 		{
-			if($sample_name_to_position_to_read_depth{$sample_name}{$position} >= $minimum_read_depth)
+			if($sample_name_to_position_to_read_depth{$sample_name}{$position} >= $minimum_read_depth
+				and !$position_is_masked{$position})
 			{
 				$number_positions_with_high_read_depth++;
 			}
@@ -2923,6 +2985,30 @@ sub read_in_positive_integer_argument
 		if($argument_index + 1 > $#ARGV or $next_item !~ /^\d+$/)
 		{
 			print STDERR "Warning: ignoring ".$argument_option_1." | ".$argument_option_2." argument with no int.\n";
+		}
+		else
+		{
+			$argument_index++;
+			return $next_item;
+		}
+	}
+	return -1; # this argument was not entered
+}
+
+# checks if parameter argument was supplied and, if so, reads in string that follows
+# returns string supplied after argument
+# returns -1 if this argument was not entered
+sub read_in_string_argument
+{
+	my $argument_option_1 = $_[0]; # for example: -p
+	my $argument_option_2 = $_[1]; # for example: --cores
+	
+	if($argument eq $argument_option_1 or $argument eq $argument_option_2)
+	{
+		my $next_item = $ARGV[$argument_index+1];
+		if($argument_index + 1 > $#ARGV or $next_item !~ /^\d+$/)
+		{
+			print STDERR "Warning: ignoring ".$argument_option_1." | ".$argument_option_2." argument with no string.\n";
 		}
 		else
 		{
