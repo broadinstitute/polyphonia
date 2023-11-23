@@ -124,6 +124,7 @@ if(!scalar @ARGV) # no command line arguments supplied
 	print STDERR "\t-g | --min-covered FLOAT\tMinimum proportion genome that must be covered at minimum read depth for a sample to be included [".$DEFAULT_MINIMUM_GENOME_COVERAGE."]\n";
 	print STDERR "\t-y | --max-mismatches INT\tIn flagged potential cross-contamination, maximum allowed unambiguous bases in contaminating sample consensus not matching contaminated sample alleles [".$DEFAULT_MAXIMUM_ALLOWED_MISMATCHES."]\n";
 	print STDERR "\t-3 | --masked-positions STRING\t1-indexed positions to mask (e.g., 1-10,50,55-70) [null]\n";
+	print STDERR "\t-4 | --masked-positions-file FILE\t1-indexed positions to mask, one per line [null]\n";
 	print STDERR "\n";
 	
 	print STDERR "- Plate map and neighbors (any combination, all optional):\n";
@@ -163,6 +164,7 @@ my $minimum_genome_coverage = $DEFAULT_MINIMUM_GENOME_COVERAGE;
 my $maximum_allowed_mismatches = $DEFAULT_MAXIMUM_ALLOWED_MISMATCHES;
 my $minimum_read_depth = $DEFAULT_MINIMUM_READ_DEPTH;
 my $masked_positions_string = "";
+my $masked_positions_file = "";
 
 my @aligned_and_trimmed_bam_files = ();
 my @vcf_files = ();
@@ -275,9 +277,13 @@ for($argument_index = 0; $argument_index <= $#ARGV; $argument_index++)
 	{
 		push(@plate_map_files, @$input);
 	}
-	elsif(($input = read_in_string_argument("-3", "--masked-positions")) != -1)
+	elsif(($input = read_in_string_argument("-3", "--masked-positions")) ne -1)
 	{
 		$masked_positions_string = $input;
+	}
+	elsif(($input = read_in_input_files_argument("-4", "--masked-positions-file")) ne -1)
+	{
+		$masked_positions_file = $input;
 	}
 	elsif(($input = read_in_positive_integer_argument("-z", "--plate-size")) != -1)
 	{
@@ -443,6 +449,10 @@ foreach my $plate_map_file(@plate_map_files)
 foreach my $read_depth_table(@read_depth_tables)
 {
 	verify_input_file_exists_and_is_nonempty($read_depth_table, "read depth table", 1, 0);
+}
+if($masked_positions_file)
+{
+	verify_input_file_exists_and_is_nonempty($masked_positions_file, "masked positions file", 1, 0);
 }
 
 # option to print all iSNV counts set to FALSE if no plate maps provided
@@ -652,6 +662,10 @@ if($masked_positions_string)
 {
 	print STDERR "\tmasked positions: ".$masked_positions_string."\n" if $verbose;
 }
+if($masked_positions_file)
+{
+	print STDERR "\tmasked positions described in file: ".$masked_positions_file."\n" if $verbose;
+}
 
 # output files
 print STDERR "OUTPUT:\n" if $verbose;
@@ -702,6 +716,21 @@ if($masked_positions_string)
 		}
 	}
 }
+if($masked_positions_file)
+{
+	open MASKED_POSITIONS, "<$masked_positions_file" || die "Could not open $masked_positions_file to read; terminating =(\n";
+	while(<MASKED_POSITIONS>) # for each line in the file
+	{
+		chomp;
+		my $position = $_;
+		if($position)
+		{
+			$position_is_masked{$position} = 1;
+		}
+	}
+	close MASKED_POSITIONS;
+}
+
 
 # retrieves sample names from plate maps if possible
 my %sample_names = (); # key: sample name to include in comparisons -> value: 1
@@ -1341,10 +1370,10 @@ $reference_sequence = remove_bases_at_indices_with_gaps_in_reference($reference_
 # removes samples that do not have sufficiently complete genomes with read depth filter applied
 # removes samples without plate neighbors after read depth filter applied
 my %sequence_name_to_pre_masking_consensus = ();
-if($minimum_read_depth > 0 or $masked_positions_string)
+if($minimum_read_depth > 0 or scalar keys %position_is_masked)
 {
 	print STDERR "masking positions with read depth < ".$minimum_read_depth
-		." and positions ".$masked_positions_string."...\n" if $verbose;
+		." and user-defined masked positions...\n" if $verbose;
 	foreach my $sample_name(keys %sample_names)
 	{
 		# retrieves consensus genome bases
@@ -1364,7 +1393,7 @@ if($minimum_read_depth > 0 or $masked_positions_string)
 		}
 		
 		# masks any positions input by user
-		if($masked_positions_string)
+		if(scalar keys %position_is_masked)
 		{
 			foreach my $position(keys %position_is_masked)
 			{
@@ -2025,7 +2054,7 @@ sub detect_potential_contamination_in_sample_pair
 			and $minor_allele_frequency >= $minimum_minor_allele_frequency
 			and $minor_allele_readcount + $major_allele_readcount >= $minimum_read_depth
 			and (!$minimum_read_depth or $sample_name_to_position_to_read_depth{$potential_contaminated_sample}{$position} >= $minimum_read_depth)
-			and (!$masked_positions_string or !$position_is_masked{$position}))
+			and !$position_is_masked{$position})
 		{
 			if($positions_with_heterozygosity{$position})
 			{
@@ -2109,7 +2138,7 @@ sub detect_potential_contamination_in_sample_pair
 		if(is_unambiguous_base($nucleotide_at_position)
 			and (!$minimum_read_depth or $sample_name_to_position_to_read_depth{$potential_contaminating_sample}{$position} >= $minimum_read_depth)
 			and (!$minimum_read_depth or $sample_name_to_position_to_read_depth{$potential_contaminated_sample}{$position} >= $minimum_read_depth)
-			and (!$masked_positions_string or !$position_is_masked{$position}))
+			and !$position_is_masked{$position})
 		{
 			if($minor_alleles{$position}{$nucleotide_at_position}
 				or $major_alleles{$position}{$nucleotide_at_position})
@@ -2173,7 +2202,7 @@ sub detect_potential_contamination_in_sample_pair
 			!$positions_with_heterozygosity{$position}
 			
 			# position not masked by user
-			and (!$masked_positions_string or $position_is_masked{$position})
+			and !$position_is_masked{$position}
 		
 			 # mismatch between contaminated and contaminating consensus sequences
 			and $potential_contaminated_consensus_value ne $potential_contaminating_consensus_value
@@ -2272,7 +2301,7 @@ sub detect_potential_contamination_in_sample_pair
 	
 	# adds columns about contaminated sample
 	$output_line .= $potential_contaminated_sample.$DELIMITER;
-	if($minimum_read_depth or $masked_positions_string)
+	if($minimum_read_depth or scalar keys %position_is_masked)
 	{
 		$output_line .= add_comma_separators($pre_masking_potential_contaminated_consensus_unambig_bases).$DELIMITER;
 		$output_line .= prepare_percentage_to_print($pre_masking_potential_contaminated_consensus_percent_covered).$DELIMITER;
@@ -2284,7 +2313,7 @@ sub detect_potential_contamination_in_sample_pair
 	
 	# adds columns about contaminating sample
 	$output_line .= $potential_contaminating_sample.$DELIMITER;
-	if($minimum_read_depth or $masked_positions_string)
+	if($minimum_read_depth or scalar keys %position_is_masked)
 	{
 		$output_line .= add_comma_separators($pre_masking_potential_contaminating_consensus_unambig_bases).$DELIMITER;
 		$output_line .= prepare_percentage_to_print($pre_masking_potential_contaminating_consensus_percent_covered).$DELIMITER;
