@@ -159,7 +159,8 @@ Polyphonia is available through the following [WDL](https://github.com/openwdl/w
 
 ## Under the Hood
 
-<p align="center"><img src="https://github-production-user-asset-6210df.s3.amazonaws.com/6245320/285010267-b812bd08-5044-4ae6-8b79-8de3c788302e.png" alt="process flowchart" width="750"></p>
+<p align="center"><img src="https://github-production-user-asset-6210df.s3.amazonaws.com/6245320/285103041-993fad40-d34b-4b6e-a90d-4861172b4fd7.png" alt="process flowchart" width="750"></p>
+
 
 Polyphonia starts off by verifying and printing input options and preparing a list of samples to analyze. Samples without a [consensus genome](#consensus-genomes) or [within-sample diversity file](#within-sample-diversity-files) are excluded from analysis. If at least one [optional plate map](#optional-plate-map-inputs) is provided, samples not appearing in any plate map are excluded from analysis. A [read depth filter](#position-inclusion-thresholds) is applied. Samples not passing [sample inclusion thresholds](#sample-inclusion-thresholds) are excluded from analysis. To save time, samples without any plate neighbors as specified by provided [well comparison options](#well-comparison-options) are excluded.
 
@@ -167,7 +168,7 @@ If [consensus genomes](#consensus-genomes) are not already aligned, they are ali
 
 [Within-sample diversity files](#within-sample-diversity-files) are pre-processed depending on their stage in processing, [in parallel](#parallelization) if possible. If aligned reads are provided in a bam file, they are processed using [`LoFreq call`](https://csb5.github.io/lofreq/commands/#call) into a vcf file, which is in turn processed into a heterozygosity table cataloguing within-sample diversity (base substitutions only). If the aligned reads bam file is large, processing it can take a long time. If a vcf file is provided, it is processed into a heterozygosity table. (If a heterozygosity table is provided, it does not need to be processed.) [Allele filtering thresholds](#allele-filtering-thresholds) are applied to the heterozygosity tables as they are read in.
 
-Pairs of samples are then compared to detect potential cross-contamination. A sample A is marked as potentially contaminated by another sample B if the consensus genome of B is completely represented in the consensus genome or minor alleles of sample A, allowing for a small number of mismatches specified by input [cross-contamination detection thresholds](#cross-contamination-detection-thresholds). Only positions with unambiguous bases (`A`, `T`, `C`, or `G`) in both samples are compared.
+Pairs of samples are then compared to detect potential cross-contamination. A sample B is marked as potentially contaminated by another sample A if the consensus genome of A is completely represented in the consensus genome or minor alleles of sample B, allowing for a small number of mismatches specified by input [cross-contamination detection thresholds](#cross-contamination-detection-thresholds). Only positions with unambiguous bases (`A`, `T`, `C`, or `G`) in both samples are compared.
 
 If at least one plate map is provided, each sample is compared to the samples in neighboring wells as determined by provided [well comparison options](#well-comparison-options). If no plate map is provided, all samples are compared to all other samples. (As the number of samples increases, comparing all samples to all other samples very quickly becomes a large and intractably slow task.) If possible, comparisons are made [in parallel](#parallelization).
 
