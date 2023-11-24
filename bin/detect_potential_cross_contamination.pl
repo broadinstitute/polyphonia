@@ -3035,7 +3035,7 @@ sub read_in_string_argument
 	if($argument eq $argument_option_1 or $argument eq $argument_option_2)
 	{
 		my $next_item = $ARGV[$argument_index+1];
-		if($argument_index + 1 > $#ARGV or $next_item !~ /^\d+$/)
+		if($argument_index + 1 > $#ARGV or $next_item !~ /^.+$/)
 		{
 			print STDERR "Warning: ignoring ".$argument_option_1." | ".$argument_option_2." argument with no string.\n";
 		}
