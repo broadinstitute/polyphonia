@@ -277,11 +277,11 @@ for($argument_index = 0; $argument_index <= $#ARGV; $argument_index++)
 	{
 		push(@plate_map_files, @$input);
 	}
-	elsif(($input = read_in_string_argument("-3", "--masked-positions")) ne -1)
+	elsif(($input = read_in_string_argument("-3", "--masked-positions")) ne "-1")
 	{
 		$masked_positions_string = $input;
 	}
-	elsif(($input = read_in_input_files_argument("-4", "--masked-positions-file")) ne -1)
+	elsif(($input = read_in_input_file_argument("-4", "--masked-positions-file")) ne "-1")
 	{
 		$masked_positions_file = $input;
 	}
