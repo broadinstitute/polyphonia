@@ -2989,7 +2989,9 @@ sub read_in_input_file_argument
 		my $next_item = $ARGV[$argument_index+1];
 		if($argument_index + 1 > $#ARGV or $next_item =~ /^-\w$/ or $next_item =~ /^--[\w-]+$/)
 		{
-			print STDERR "Warning: ignoring ".$argument_option_1." | ".$argument_option_2." argument with no input file.\n";
+			print STDERR "Warning: ignoring ".$argument_option_1." | ".$argument_option_2
+				." argument with no input file. Setting to empty string.\n";
+			return "";
 		}
 		else
 		{
@@ -3013,7 +3015,9 @@ sub read_in_positive_integer_argument
 		my $next_item = $ARGV[$argument_index+1];
 		if($argument_index + 1 > $#ARGV or $next_item !~ /^\d+$/)
 		{
-			print STDERR "Warning: ignoring ".$argument_option_1." | ".$argument_option_2." argument with no int.\n";
+			print STDERR "Warning: ignoring ".$argument_option_1." | ".$argument_option_2
+				." argument with no int. Setting to 0.\n";
+			return 0;
 		}
 		else
 		{
@@ -3037,7 +3041,9 @@ sub read_in_string_argument
 		my $next_item = $ARGV[$argument_index+1];
 		if($argument_index + 1 > $#ARGV or $next_item !~ /^.+$/)
 		{
-			print STDERR "Warning: ignoring ".$argument_option_1." | ".$argument_option_2." argument with no string.\n";
+			print STDERR "Warning: ignoring ".$argument_option_1." | ".$argument_option_2
+				." argument with no string. Setting to empty string.\n";
+			return "";
 		}
 		else
 		{
@@ -3061,7 +3067,9 @@ sub read_in_positive_float_argument
 		my $next_item = $ARGV[$argument_index+1];
 		if($argument_index + 1 > $#ARGV or $next_item !~ /^[\d.]+$/)
 		{
-			print STDERR "Warning: ignoring ".$argument_option_1." | ".$argument_option_2." argument with no float.\n";
+			print STDERR "Warning: ignoring ".$argument_option_1." | ".$argument_option_2
+				." argument with no float. Setting to 0.\n";
+			return 0;
 		}
 		else
 		{
@@ -3086,7 +3094,9 @@ sub read_in_boolean_argument
 		my $next_item = $ARGV[$argument_index+1];
 		if($argument_index + 1 > $#ARGV or $next_item =~ /^-\w$/ or $next_item =~ /^--[\w-]+$/)
 		{
-			print STDERR "Warning: ignoring ".$argument_option_1." | ".$argument_option_2." argument with no boolean.\n";
+			print STDERR "Warning: ignoring ".$argument_option_1." | ".$argument_option_2
+				." argument with no boolean. Setting to false.\n";
+			return 0;
 		}
 		else
 		{
@@ -3128,7 +3138,8 @@ sub read_in_input_files_argument
 		}
 		if(!$items_added)
 		{
-			print STDERR "Warning: ignoring ".$argument_option_1." | ".$argument_option_2." argument with no input file.\n";
+			print STDERR "Warning: ignoring ".$argument_option_1." | ".$argument_option_2
+				." argument with no input file. Setting to empty array.\n";
 		}
 		return \@input_files;
 	}
