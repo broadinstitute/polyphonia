@@ -1208,7 +1208,7 @@ if($minimum_read_depth > 0)
 	# verifies that each sample has at least minimum_genome_coverage * reference_sequence_length
 	# positions with sufficient read depth
 	print STDERR "removing samples without at least "
-		.($minimum_genome_coverage * $reference_sequence_length)." bases with read depth >= "
+		.($minimum_genome_coverage * $reference_sequence_length)." unmasked bases with read depth >= "
 		.$minimum_read_depth." (".(100*$minimum_genome_coverage)."% of "
 		.$reference_sequence_length." total bases)...\n" if $verbose;
 	my $samples_removed = remove_samples_without_minimum_genome_coverage_with_high_read_depth();
