@@ -705,7 +705,7 @@ if($masked_positions_string)
 			
 			for(my $position = $first_position; $position <= $last_position; $position++)
 			{
-				$position_is_masked{$position_item} = 1;
+				$position_is_masked{$position} = 1;
 			}
 		}
 		
