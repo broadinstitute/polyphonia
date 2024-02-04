@@ -26,7 +26,7 @@ OPTIONS:
 	-3 | --masked-positions STRING	1-indexed positions to mask (e.g., 1-10,50,55-70) [null]
 	-4 | --masked-positions-file FILE	1-indexed positions to mask, one per line [null]
 	-y | --max-mismatches INT	In flagged potential cross-contamination, maximum allowed unambiguous bases in contaminating sample consensus not matching contaminated sample alleles [0]
-	-5 | --min-matches INT	Of positions at which the two consensus genomes differ, the minimum number of positions at which contamination is detected as a minor allele [5]
+	-5 | --min-matches INT		Of positions at which the two consensus genomes differ, the minimum number of positions at which contamination is detected as a minor allele [5]
 	-6 | --min-matches-proportion FLOAT	Of positions at which the two consensus genomes differ, the minimum proportion of positions at which contamination is detected as a minor allele [0.5]
 
 - Plate map and neighbors (any combination, all optional):

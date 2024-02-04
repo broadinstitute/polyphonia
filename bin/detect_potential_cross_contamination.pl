@@ -127,7 +127,7 @@ if(!scalar @ARGV) # no command line arguments supplied
 	print STDERR "\t-3 | --masked-positions STRING\t1-indexed positions to mask (e.g., 1-10,50,55-70) [null]\n";
 	print STDERR "\t-4 | --masked-positions-file FILE\t1-indexed positions to mask, one per line [null]\n";
 	print STDERR "\t-y | --max-mismatches INT\tIn flagged potential cross-contamination, maximum allowed unambiguous bases in contaminating sample consensus not matching contaminated sample alleles [".$DEFAULT_MAXIMUM_ALLOWED_MISMATCHES."]\n";
-	print STDERR "\t-5 | --min-matches INT\tOf positions at which the two consensus genomes differ, the minimum number of positions at which contamination is detected as a minor allele [".$DEFAULT_MINIMUM_MINOR_ALLELES_MATCHED."]\n";
+	print STDERR "\t-5 | --min-matches INT\t\tOf positions at which the two consensus genomes differ, the minimum number of positions at which contamination is detected as a minor allele [".$DEFAULT_MINIMUM_MINOR_ALLELES_MATCHED."]\n";
 	print STDERR "\t-5 | --min-matches-proportion FLOAT\tOf positions at which the two consensus genomes differ, the minimum proportion of positions at which contamination is detected as a minor allele [".$DEFAULT_MINIMUM_PROPORTION_GENOME_DEFINING_POSITIONS_MATCHED."]\n";
 	print STDERR "\n";
 	
