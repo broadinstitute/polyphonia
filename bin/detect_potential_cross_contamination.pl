@@ -1869,7 +1869,7 @@ if($minimum_read_depth)
 
 print OUT_FILE "number_consensus_differences".$DELIMITER;
 print OUT_FILE "consensus_differences".$DELIMITER;
-print OUT_FILE "number_minor_alleles_matched".$DELIMITER;
+print OUT_FILE "number_consensus_differences_matched_as_minor_alleles".$DELIMITER;
 print OUT_FILE "proportion_consensus_differences_matched_as_minor_alleles".$DELIMITER;
 print OUT_FILE "minor_alleles_matched".$DELIMITER;
 print OUT_FILE "num_mismatches".$DELIMITER;
