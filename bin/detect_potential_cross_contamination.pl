@@ -66,8 +66,10 @@ my $NO_DATA = "NA";
 my $DEFAULT_MAXIMUM_ALLOWED_MISMATCHES = 1;
 my $DEFAULT_MINIMUM_GENOME_COVERAGE = 0.95;
 my $DEFAULT_MINIMUM_READ_DEPTH = 100;
-my $DEFAULT_MINIMUM_MINOR_ALLELE_READCOUNT = 10; # ignore minor alleles with readcount <10 (does not consider the position to have heterozygosity)
-my $DEFAULT_MINIMUM_MINOR_ALLELE_FREQUENCY = 0.03; # 3%
+my $DEFAULT_MINIMUM_MINOR_ALLELE_READCOUNT = 0; # ignore minor alleles with readcount <N (does not consider the position to have heterozygosity)
+my $DEFAULT_MINIMUM_MINOR_ALLELE_FREQUENCY = 0; # 0%
+my $DEFAULT_MINIMUM_MINOR_ALLELES_MATCHED = 5;
+my $DEFAULT_MINIMUM_PROPORTION_GENOME_DEFINING_POSITIONS_MATCHED = 0.5; # 50%
 
 my $DEFAULT_OUTPUT_FILE_NAME = "potential_cross-contamination.txt";
 my $DEFAULT_OVERWRITE = 0; # false
@@ -122,9 +124,11 @@ if(!scalar @ARGV) # no command line arguments supplied
 	print STDERR "\t-r | --min-depth INT\t\tMinimum read depth for a position to be used for comparison [".$DEFAULT_MINIMUM_READ_DEPTH."]\n";
 	print STDERR "\t-1 | --read-depths FILE(S)\tRead depth tables; provide alongside vcf files or heterozygosity tables if min-depth>0; see documentation for format [null]\n";
 	print STDERR "\t-g | --min-covered FLOAT\tMinimum proportion genome that must be covered at minimum read depth for a sample to be included [".$DEFAULT_MINIMUM_GENOME_COVERAGE."]\n";
-	print STDERR "\t-y | --max-mismatches INT\tIn flagged potential cross-contamination, maximum allowed unambiguous bases in contaminating sample consensus not matching contaminated sample alleles [".$DEFAULT_MAXIMUM_ALLOWED_MISMATCHES."]\n";
 	print STDERR "\t-3 | --masked-positions STRING\t1-indexed positions to mask (e.g., 1-10,50,55-70) [null]\n";
 	print STDERR "\t-4 | --masked-positions-file FILE\t1-indexed positions to mask, one per line [null]\n";
+	print STDERR "\t-y | --max-mismatches INT\tIn flagged potential cross-contamination, maximum allowed unambiguous bases in contaminating sample consensus not matching contaminated sample alleles [".$DEFAULT_MAXIMUM_ALLOWED_MISMATCHES."]\n";
+	print STDERR "\t-5 | --min-matches INT\tOf positions at which the two consensus genomes differ, the minimum number of positions at which contamination is detected as a minor allele [".$DEFAULT_MINIMUM_MINOR_ALLELES_MATCHED."]\n";
+	print STDERR "\t-5 | --min-matches-proportion FLOAT\tOf positions at which the two consensus genomes differ, the minimum proportion of positions at which contamination is detected as a minor allele [".$DEFAULT_MINIMUM_PROPORTION_GENOME_DEFINING_POSITIONS_MATCHED."]\n";
 	print STDERR "\n";
 	
 	print STDERR "- Plate map and neighbors (any combination, all optional):\n";
@@ -162,6 +166,8 @@ my @consensus_genome_files = ();
 my $consensus_genomes_aligned_file = "";
 my $minimum_genome_coverage = $DEFAULT_MINIMUM_GENOME_COVERAGE;
 my $maximum_allowed_mismatches = $DEFAULT_MAXIMUM_ALLOWED_MISMATCHES;
+my $minimum_minor_alleles_matched = $DEFAULT_MINIMUM_MINOR_ALLELES_MATCHED;
+my $minimum_proportion_genome_defining_positions_matched = $DEFAULT_MINIMUM_PROPORTION_GENOME_DEFINING_POSITIONS_MATCHED;
 my $minimum_read_depth = $DEFAULT_MINIMUM_READ_DEPTH;
 my $masked_positions_string = "";
 my $masked_positions_file = "";
@@ -228,6 +234,14 @@ for($argument_index = 0; $argument_index <= $#ARGV; $argument_index++)
 	elsif(($input = read_in_positive_integer_argument("-y", "--max-mismatches")) != -1)
 	{
 		$maximum_allowed_mismatches = $input;
+	}
+	elsif(($input = read_in_positive_integer_argument("-5", "--min-matches")) != -1)
+	{
+		$minimum_minor_alleles_matched = $input;
+	}
+	elsif(($input = read_in_positive_float_argument("-6", "--min-matches-proportion")) != -1)
+	{
+		$minimum_proportion_genome_defining_positions_matched = $input;
 	}
 	elsif(($input = read_in_positive_integer_argument("-p", "--cores")) != -1)
 	{

@@ -18,14 +18,16 @@ OPTIONS:
 	-h | --het FILE(S)		Tab-separated heterozygosity summary tables; see documentation for format [null]
 
 - Filtering options:
-	-i | --min-maf FLOAT		Minimum minor allele frequency for a position to be considered heterozygous [0.03]
-	-e | --min-readcount INT	Minimum minor allele readcount for a position to be considered heterozygous [10]
+	-i | --min-maf FLOAT		Minimum minor allele frequency for a position to be considered heterozygous [0]
+	-e | --min-readcount INT	Minimum minor allele readcount for a position to be considered heterozygous [0]
 	-r | --min-depth INT		Minimum read depth for a position to be used for comparison [100]
 	-1 | --read-depths FILE(S)	Read depth tables; provide alongside vcf files or heterozygosity tables if min-depth>0; see documentation for format [null]
 	-g | --min-covered FLOAT	Minimum proportion genome that must be covered at minimum read depth for a sample to be included [0.95]
-	-y | --max-mismatches INT	In flagged potential cross-contamination, maximum allowed unambiguous bases in contaminating sample consensus not matching contaminated sample alleles [1]
 	-3 | --masked-positions STRING	1-indexed positions to mask (e.g., 1-10,50,55-70) [null]
 	-4 | --masked-positions-file FILE	1-indexed positions to mask, one per line [null]
+	-y | --max-mismatches INT	In flagged potential cross-contamination, maximum allowed unambiguous bases in contaminating sample consensus not matching contaminated sample alleles [0]
+	-5 | --min-matches INT	Of positions at which the two consensus genomes differ, the minimum number of positions at which contamination is detected as a minor allele [5]
+	-6 | --min-matches-proportion FLOAT	Of positions at which the two consensus genomes differ, the minimum proportion of positions at which contamination is detected as a minor allele [0.5]
 
 - Plate map and neighbors (any combination, all optional):
 	-m | --plate-map FILE(S)	Optional plate map(s) (tab-separated, no header: sample name, plate position (e.g., A8)); provides substantial speed-up [null]
@@ -365,7 +367,7 @@ If `--min-depth` is set too low, polyphonia may erroneously call mismatches at p
 `--min-readcount`
 `--min-maf`
 
-By default, polyphonia does not include all alleles called by `LoFreq call`. We have found that requiring a minimum minor allele readcount of 10 and a minimum minor allele frequency of 3% after running  `LoFreq call` with default parameters does the best job of separating true within-sample diversity from sequencing errors and other noise. If you would like to specify a different minor allele readcount, you can do that using `--min-readcount`. You can specify a different minimum minor allele frequency using `--min-maf`. These options work regardless of the type(s) of [within-sample diversity files](#within-sample-diversity-files) provided.
+By default, polyphonia includes all alleles called by `LoFreq call`. You can set a minimum minor allele readcount and a minimum minor allele frequency after running `LoFreq call` to help separate true within-sample diversity from sequencing errors and other noise. If you would like to specify a minimum minor allele readcount, you can do that using `--min-readcount`. You can specify a minimum minor allele frequency using `--min-maf`. These options work regardless of the type(s) of [within-sample diversity files](#within-sample-diversity-files) provided.
 
 If [`--min-depth`](#position-inclusion-thresholds) is non-zero, then an allele will be excluded if it appears at a position that does not pass the read depth threshold—even if the minor allele frequency and readcount pass the thresholds set by `--min-readcount` and `--min-maf`.
 
@@ -373,7 +375,7 @@ If [`--min-depth`](#position-inclusion-thresholds) is non-zero, then an allele w
 
 `--max-mismatches`
 
-By default, a sample is considered potentially contaminated if at most 1 contaminating consensus-level allele does not appear as a minor or consensus-level allele in the contaminated sample. You can allow for more sequencing errors or missed minor allele calls by specifying a larger threshold using `--max-mismatches`. A too-large `--max-mismatches` will result in many erroneous cross-contamination calls.
+By default, a sample is considered potentially contaminated if all contaminating consensus-level alleles appear as minor or consensus-level alleles in the contaminated sample. You can allow for more sequencing errors or missed minor allele calls by specifying a larger threshold using `--max-mismatches`. A too-large `--max-mismatches` will result in many erroneous cross-contamination calls.
 
 Alleles are only compared or, therefore, counted as mismatches if they pass the [allele filtering thresholds](#allele-filtering-thresholds) and appear at positions that pass the [read depth filter](#position-inclusion-thresholds).
 
