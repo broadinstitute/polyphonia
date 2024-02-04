@@ -1781,19 +1781,6 @@ if(scalar @plate_map_files)
 			check_if_file_exists_before_writing($plate_visualization_output_file.".jpg");
 			check_if_file_exists_before_writing($plate_visualization_output_file.".pdf");
 			`$PLATE_VISUALIZATION_FILE_PATH $plate_output_file $plate_visualization_output_file $plate_number_columns $plate_number_rows contamination`;
-
-			# generates visualization of consensus-level contamination only
-			my $plate_visualization_output_file_consensus = trim_off_file_extension($plate_output_file)."_visualization_consensus";
-			check_if_file_exists_before_writing($plate_visualization_output_file_consensus.".jpg");
-			check_if_file_exists_before_writing($plate_visualization_output_file_consensus.".pdf");
-			`$PLATE_VISUALIZATION_FILE_PATH $plate_output_file $plate_visualization_output_file_consensus $plate_number_columns $plate_number_rows contamination_consensus`;
-
-			# generates visualization of minor allele-level contamination only
-			my $plate_visualization_output_file_minor = trim_off_file_extension($plate_output_file)."_visualization_minor";
-			check_if_file_exists_before_writing($plate_visualization_output_file_minor.".jpg");
-			check_if_file_exists_before_writing($plate_visualization_output_file_minor.".pdf");
-			`$PLATE_VISUALIZATION_FILE_PATH $plate_output_file $plate_visualization_output_file_minor $plate_number_columns $plate_number_rows contamination_minor`;
-
 		}
 	}
 }

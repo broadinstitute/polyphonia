@@ -13,7 +13,7 @@ input_file_path  <- args[1]
 output_file_path <- args[2]
 number_columns   <- as.numeric(args[3])
 number_rows      <- as.numeric(args[4])
-input_file_type  <- tolower(args[5]) # "isnvs" or "contamination" or "contamination_minor" or "contamination_consensus"
+input_file_type  <- tolower(args[5]) # "isnvs" or "contamination"
 
 
 library(ggplot2)
@@ -130,25 +130,6 @@ if(input_file_type != "isnvs")
   {
     input_table$estimated_contamination_volume <- as.numeric(sub("%", "", input_table$estimated_contamination_volume)) / 100
   }
-  
-  # orders options for appearance of potential contamination
-  input_table$appearance_of_potential_contamination <- factor(input_table$appearance_of_potential_contamination,
-                                                              levels=c("minor alleles", "minor and consensus-level", "consensus-level"))
-}
-
-# subsets input file to display consensus-level potential contamination only
-if(input_file_type == "contamination_consensus")
-{
-  input_table <- subset(input_table, appearance_of_potential_contamination == "consensus-level"
-                        | appearance_of_potential_contamination == "minor and consensus-level")
-  input_file_type <- "contamination"
-}
-
-# subsets input file to display minor allele or minor-consensus mix potential contamination only
-if(input_file_type == "contamination_minor")
-{
-  input_table <- subset(input_table, appearance_of_potential_contamination == "minor alleles")
-  input_file_type <- "contamination"
 }
 
 # expands input table to include all wells, including wells not included in input table
@@ -250,9 +231,6 @@ if(input_file_type == "contamination")
     plate_map$well_involved[i] <- any(input_table$contamination_source_well==plate_map$well[i]) || any(input_table$well==plate_map$well[i])
   }
   
-  input_table$appearance_of_potential_contamination <- factor(input_table$appearance_of_potential_contamination,
-                                                              levels=c("minor alleles", "minor and consensus-level", "consensus-level"))
-  
   
   # colors plate map by total potential contamination with arrows from
   # potential sources of contamination to potential contaminated wells
@@ -263,26 +241,13 @@ if(input_file_type == "contamination")
       colour=ifelse(plate_map$well_involved, "black", "darkgrey"),
       shape=21, size=well_circle_size, stroke=well_circle_line_thickness) +
     geom_segment(
-      data=subset(input_table, appearance_of_potential_contamination == "consensus-level"),
-      mapping=aes(x=Column0+jitter_horizontal, y=Row0+jitter_vertical, xend=Column+jitter_horizontal, yend=Row+jitter_vertical,
-                  color=appearance_of_potential_contamination),
-      arrow=arrow(type="open", angle=30, length=unit(arrow_head_length,"cm")), size=arrow_thickness, linetype="longdash") +
-    geom_segment(
-      data=subset(input_table, appearance_of_potential_contamination == "minor and consensus-level"),
-      mapping=aes(x=Column0+jitter_horizontal, y=Row0+jitter_vertical, xend=Column+jitter_horizontal, yend=Row+jitter_vertical,
-                  color=appearance_of_potential_contamination),
-      arrow=arrow(type="open", angle=30, length=unit(arrow_head_length,"cm")), size=arrow_thickness, linetype="longdash") +
-    geom_segment(
-      data=subset(input_table, appearance_of_potential_contamination == "minor alleles"),
-      mapping=aes(x=Column0+jitter_horizontal, y=Row0+jitter_vertical, xend=Column+jitter_horizontal, yend=Row+jitter_vertical,
-                  color=appearance_of_potential_contamination),
+      data=input_table,
+      mapping=aes(x=Column0+jitter_horizontal, y=Row0+jitter_vertical, xend=Column+jitter_horizontal, yend=Row+jitter_vertical),
       arrow=arrow(type="open", angle=30, length=unit(arrow_head_length,"cm")), size=arrow_thickness) +
     scale_fill_gradient("Total Estimated Contamination Volume", low="white", high="#CC857E",
       limits=c(minimum_contamination_volume, maximum_contamination_volume),
       breaks=c(minimum_contamination_volume, maximum_contamination_volume),
       labels=c(minimum_contamination_volume_text, maximum_contamination_volume_text)) +
-    scale_color_manual("Appearance of Contamination",
-                       values=c("minor alleles"="black", "minor and consensus-level"="#615176", "consensus-level"="#A1A4CA")) +
     theme(legend.position="bottom", legend.box="vertical", legend.margin=margin())
   
   ggsave(paste(output_file_path, ".pdf", sep=""), plate_figure_contamination, width=WIDTH, height=HEIGHT)
