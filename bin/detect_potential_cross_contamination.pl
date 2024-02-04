@@ -2411,7 +2411,7 @@ sub detect_potential_contamination_in_sample_pair
 	$output_line .= $number_consensus_differences.$DELIMITER;
 	$output_line .= $consensus_differences_string.$DELIMITER;
 	$output_line .= $number_matches.$DELIMITER;
-	$output_line .= prepare_percentage_to_print($number_matches/$number_consensus_differences < $minimum_proportion_genome_defining_positions_matched).$DELIMITER;
+	$output_line .= prepare_percentage_to_print($number_matches/$number_consensus_differences).$DELIMITER;
 	$output_line .= $matches_string.$DELIMITER;
 	$output_line .= $number_mismatches.$DELIMITER;
 	$output_line .= $mismatches_string.$DELIMITER;
