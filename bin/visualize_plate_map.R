@@ -216,7 +216,7 @@ plate_figure_base <- ggplot() +
 # generates contamination visualization
 if(input_file_type == "contamination")
 {
-  # label for maximum contamination volume in legend
+  # label for contamination volume in legend
   minimum_contamination_volume <- 0
   maximum_contamination_volume <- 0.5
   minimum_contamination_volume_text <- "0%"
