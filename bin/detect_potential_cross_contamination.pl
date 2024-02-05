@@ -2083,12 +2083,6 @@ sub detect_potential_contamination_in_sample_pair
 		}
 	}
 	close HETEROZYGOSITY_TABLE;
-	
-	# verifies that this sample is worth looking at
-# 	if($number_positions_with_heterozygosity < $MINIMUM_MINOR_ALLELES_FOUND_IN_CONSENSUS)
-# 	{
-# 		return;
-# 	}
 
 	# retrieves consensus-level alleles for potential contaminated sample and contaminating sample
 	my $potential_contaminated_consensus = $sequence_name_to_consensus{$potential_contaminated_sample};
@@ -2210,122 +2204,6 @@ sub detect_potential_contamination_in_sample_pair
 			return;
 		}
 	}
-	
-	# counts matches and mismatches at positions with heterozygosity
-# 	my $number_mismatches = 0; # positions where contaminating sample allele does not match minor, major, or consensus sequence allele in contaminated sequence
-# 	my $mismatches_string = "";
-# 	
-# 	my $minor_alleles_matched = 0; # positions where contaminating sample allele matches contaminated sample minor allele
-# 	my $major_alleles_matched = 0; # positions where contaminating sample allele matches contaminated sample major allele
-# 	my $list_of_alleles_matched = ""; # alleles matched, at positions with heterozygosity only, for printing
-# 	my @matched_allele_frequencies = ();
-# 	
-# 	foreach my $position(sort {$a <=> $b} keys %positions_with_heterozygosity)
-# 	{
-# 		my $nucleotide_at_position = $potential_contaminating_consensus_values[$position - 1];
-# 		if(is_unambiguous_base($nucleotide_at_position)
-# 			and (!$minimum_read_depth or $sample_name_to_position_to_read_depth{$potential_contaminating_sample}{$position} >= $minimum_read_depth)
-# 			and (!$minimum_read_depth or $sample_name_to_position_to_read_depth{$potential_contaminated_sample}{$position} >= $minimum_read_depth)
-# 			and !$position_is_masked{$position})
-# 		{
-# 			if($minor_alleles{$position}{$nucleotide_at_position}
-# 				or $major_alleles{$position}{$nucleotide_at_position})
-# 			{
-# 				# saves matched allele to string to print
-# 				if($list_of_alleles_matched)
-# 				{
-# 					$list_of_alleles_matched .= $ALLELE_LIST_SEPARATOR;
-# 				}
-# 				$list_of_alleles_matched .= prepare_allele_to_print($position, $nucleotide_at_position);
-# 				
-# 				# increments count of minor or major alleles matched
-# 				if($minor_alleles{$position}{$nucleotide_at_position})
-# 				{
-# 					$minor_alleles_matched++;
-# 					push(@matched_allele_frequencies, $minor_allele_frequencies{$position}{$nucleotide_at_position});
-# 				}
-# 				elsif($major_alleles{$position}{$nucleotide_at_position})
-# 				{
-# 					$major_alleles_matched++;
-# 					push(@matched_allele_frequencies, $major_allele_frequencies{$position}{$nucleotide_at_position});
-# 				}
-# 			}
-# 			else
-# 			{
-# 				# this base does not match minor or major allele in contaminated sequence
-# 				$number_mismatches++;
-# 				
-# 				# verifies that this potential contamination scenario is still worth looking at
-# 				if($number_mismatches > $maximum_allowed_mismatches)
-# 				{
-# 					if(!$print_all)
-# 					{
-# 						return;
-# 					}
-# 				}
-# 				
-# 				# saves mismatch to string to print
-# 				if($mismatches_string)
-# 				{
-# 					$mismatches_string .= $ALLELE_LIST_SEPARATOR;
-# 				}
-# 				$mismatches_string .= prepare_allele_to_print($position, $nucleotide_at_position);
-# 			}
-# 		}
-# 	}
-
-	# verifies that this potential contamination scenario is still worth looking at
-# 	if($minor_alleles_matched < $MINIMUM_MINOR_ALLELES_FOUND_IN_CONSENSUS)
-# 	{
-# 		return;
-# 	}
-	
-	# counts mismatches in rest of genome
-# 	foreach my $position(1..$#potential_contaminating_consensus_values + 1)
-# 	{
-# 		my $potential_contaminated_consensus_value = $potential_contaminated_consensus_values[$position - 1];
-# 		my $potential_contaminating_consensus_value = $potential_contaminating_consensus_values[$position - 1];
-# 		
-# 		if( # not a location with heterozygosity
-# 			!$positions_with_heterozygosity{$position}
-# 			
-# 			# position not masked by user
-# 			and !$position_is_masked{$position}
-# 		
-# 			 # mismatch between contaminated and contaminating consensus sequences
-# 			and $potential_contaminated_consensus_value ne $potential_contaminating_consensus_value
-# 			
-# 			# bases in both contaminating and contaminated sequence are A, T, C, or G
-# 			and is_unambiguous_base($potential_contaminating_consensus_value)
-# 			and is_unambiguous_base($potential_contaminated_consensus_value)
-# 			
-# 			# both contaminating and contaminated sequence have read depth >= minimum_read_depth
-# 			# at this position
-# 			and (!$minimum_read_depth or $sample_name_to_position_to_read_depth{$potential_contaminating_sample}{$position}
-# 				and $sample_name_to_position_to_read_depth{$potential_contaminating_sample}{$position} >= $minimum_read_depth)
-# 			and (!$minimum_read_depth or $sample_name_to_position_to_read_depth{$potential_contaminated_sample}{$position}
-# 				and $sample_name_to_position_to_read_depth{$potential_contaminated_sample}{$position} >= $minimum_read_depth))
-# 		{
-# 			# this base does not match consensus genome
-# 			$number_mismatches++;
-# 			
-# 			# verifies that this potential contamination scenario is still worth looking at
-# 			if($number_mismatches > $maximum_allowed_mismatches)
-# 			{
-# 				if(!$print_all)
-# 				{
-# 					return;
-# 				}
-# 			}
-# 			
-# 			# saves mismatch to string to print
-# 			if($mismatches_string)
-# 			{
-# 				$mismatches_string .= $ALLELE_LIST_SEPARATOR;
-# 			}
-# 			$mismatches_string .= prepare_allele_to_print($position, $potential_contaminating_consensus_value);
-# 		}
-# 	}
 	
 	# summarizes matched allele frequencies
 	my $median_frequency = 0; # default 0%
