@@ -2328,7 +2328,7 @@ sub detect_potential_contamination_in_sample_pair
 # 	}
 	
 	# summarizes matched allele frequencies
-	my $median_frequency = 1; # default 100% if only consensus sequences match (no heterozygous positions)
+	my $median_frequency = 0; # default 0%
 	my $frequency_range_min = $NO_DATA;
 	my $frequency_range_max = $NO_DATA;
 	my $matched_allele_frequency_string = "";
