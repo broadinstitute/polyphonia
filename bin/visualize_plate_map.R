@@ -123,16 +123,12 @@ if(number_columns < number_rows)
 # reads in input table
 input_table <- read.table(input_file_path, sep="\t", header=TRUE)
 
-# reads in input table estimated contamination volume and likelihood of contamination--converts from % to decimal if needed
+# reads in input table estimated contamination volume--converts from % to decimal if needed
 if(input_file_type == "contamination")
 {
   if(grepl("%", input_table$estimated_contamination_volume[1]))
   {
     input_table$estimated_contamination_volume <- as.numeric(sub("%", "", input_table$estimated_contamination_volume)) / 100
-  }
-  if(grepl("%", input_table$proportion_consensus_differences_matched_as_minor_alleles[1]))
-  {
-    input_table$proportion_consensus_differences_matched_as_minor_alleles <- as.numeric(sub("%", "", input_table$proportion_consensus_differences_matched_as_minor_alleles)) / 100
   }
 }
 
