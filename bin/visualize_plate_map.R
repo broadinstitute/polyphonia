@@ -123,12 +123,16 @@ if(number_columns < number_rows)
 # reads in input table
 input_table <- read.table(input_file_path, sep="\t", header=TRUE)
 
-# reads in input table estimated contamination volume--converts from % to decimal if needed
-if(input_file_type != "isnvs")
+# reads in input table estimated contamination volume and likelihood of contamination--converts from % to decimal if needed
+if(input_file_type == "contamination")
 {
   if(grepl("%", input_table$estimated_contamination_volume[1]))
   {
     input_table$estimated_contamination_volume <- as.numeric(sub("%", "", input_table$estimated_contamination_volume)) / 100
+  }
+  if(grepl("%", input_table$proportion_consensus_differences_matched_as_minor_alleles[1]))
+  {
+    input_table$proportion_consensus_differences_matched_as_minor_alleles <- as.numeric(sub("%", "", input_table$proportion_consensus_differences_matched_as_minor_alleles)) / 100
   }
 }
 
@@ -213,16 +217,16 @@ plate_figure_base <- ggplot() +
 if(input_file_type == "contamination")
 {
   # label for maximum contamination volume in legend
-  # maximum_contamination_volume <- max(plate_map$estimated_contamination_volume_sum)
-  # if(maximum_contamination_volume == 0)
-  # {
-  #   maximum_contamination_volume = 0.01
-  # }
-  # maximum_contamination_volume_text <- paste(signif(100*maximum_contamination_volume, digits=2), "%", sep="")
   minimum_contamination_volume <- 0
-  maximum_contamination_volume <- 1
+  maximum_contamination_volume <- 0.5
   minimum_contamination_volume_text <- "0%"
-  maximum_contamination_volume_text <- "100%"
+  maximum_contamination_volume_text <- "50%+"
+  
+  # label for likelihood of contamination in legend
+  minimum_matched_alleles <- 1
+  maximum_matched_alleles <- 50
+  minimum_matched_alleles_text <- "1"
+  maximum_matched_alleles_text <- "50+"
   
   # whether or not a well is involved in any detected potential contamination (giving or receiving)
   plate_map$well_involved <- FALSE
@@ -230,7 +234,6 @@ if(input_file_type == "contamination")
   {
     plate_map$well_involved[i] <- any(input_table$contamination_source_well==plate_map$well[i]) || any(input_table$well==plate_map$well[i])
   }
-  
   
   # colors plate map by total potential contamination with arrows from
   # potential sources of contamination to potential contaminated wells
@@ -242,13 +245,17 @@ if(input_file_type == "contamination")
       shape=21, size=well_circle_size, stroke=well_circle_line_thickness) +
     geom_segment(
       data=input_table,
-      mapping=aes(x=Column0+jitter_horizontal, y=Row0+jitter_vertical, xend=Column+jitter_horizontal, yend=Row+jitter_vertical),
-      arrow=arrow(type="open", angle=30, length=unit(arrow_head_length,"cm")), size=arrow_thickness) +
-    scale_fill_gradient("Total Estimated Contamination Volume", low="white", high="#CC857E",
+      aes(size=number_consensus_differences_matched_as_minor_alleles, x=Column0+jitter_horizontal, y=Row0+jitter_vertical, xend=Column+jitter_horizontal, yend=Row+jitter_vertical),
+      arrow=arrow(type="open", angle=30, length=unit(arrow_head_length,"cm"))) +
+    scale_size_continuous("Confidence (Number Consensus Differences Matched as Minor Alleles)", range=c(0.1, 2),
+                          limits=c(minimum_matched_alleles, maximum_matched_alleles),
+                          breaks=c(minimum_matched_alleles, maximum_matched_alleles),
+                          labels=c(minimum_matched_alleles_text, maximum_matched_alleles_text)) +
+    scale_fill_gradient("Total Contamination Volume (Median Contaminating Allele Frequency)", low="white", high="#ad5b53", #high="#CC857E",
       limits=c(minimum_contamination_volume, maximum_contamination_volume),
       breaks=c(minimum_contamination_volume, maximum_contamination_volume),
       labels=c(minimum_contamination_volume_text, maximum_contamination_volume_text)) +
-    theme(legend.position="bottom", legend.box="vertical", legend.margin=margin())
+    theme(legend.position="bottom", legend.box="vertical", legend.margin=margin(), legend.title=element_text(size=8), legend.text=element_text(size=8))
   
   ggsave(paste(output_file_path, ".pdf", sep=""), plate_figure_contamination, width=WIDTH, height=HEIGHT)
   ggsave(paste(output_file_path, ".jpg", sep=""), plate_figure_contamination, width=WIDTH, height=HEIGHT)
