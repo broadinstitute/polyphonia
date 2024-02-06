@@ -66,8 +66,10 @@ my $NO_DATA = "NA";
 my $DEFAULT_MAXIMUM_ALLOWED_MISMATCHES = 1;
 my $DEFAULT_MINIMUM_GENOME_COVERAGE = 0.95;
 my $DEFAULT_MINIMUM_READ_DEPTH = 100;
-my $DEFAULT_MINIMUM_MINOR_ALLELE_READCOUNT = 10; # ignore minor alleles with readcount <10 (does not consider the position to have heterozygosity)
-my $DEFAULT_MINIMUM_MINOR_ALLELE_FREQUENCY = 0.03; # 3%
+my $DEFAULT_MINIMUM_MINOR_ALLELE_READCOUNT = 0; # ignore minor alleles with readcount <N (does not consider the position to have heterozygosity)
+my $DEFAULT_MINIMUM_MINOR_ALLELE_FREQUENCY = 0; # 0%
+my $DEFAULT_MINIMUM_MINOR_ALLELES_MATCHED = 5;
+my $DEFAULT_MINIMUM_PROPORTION_GENOME_DEFINING_POSITIONS_MATCHED = 0.5; # 50%
 
 my $DEFAULT_OUTPUT_FILE_NAME = "potential_cross-contamination.txt";
 my $DEFAULT_OVERWRITE = 0; # false
@@ -122,9 +124,11 @@ if(!scalar @ARGV) # no command line arguments supplied
 	print STDERR "\t-r | --min-depth INT\t\tMinimum read depth for a position to be used for comparison [".$DEFAULT_MINIMUM_READ_DEPTH."]\n";
 	print STDERR "\t-1 | --read-depths FILE(S)\tRead depth tables; provide alongside vcf files or heterozygosity tables if min-depth>0; see documentation for format [null]\n";
 	print STDERR "\t-g | --min-covered FLOAT\tMinimum proportion genome that must be covered at minimum read depth for a sample to be included [".$DEFAULT_MINIMUM_GENOME_COVERAGE."]\n";
-	print STDERR "\t-y | --max-mismatches INT\tIn flagged potential cross-contamination, maximum allowed unambiguous bases in contaminating sample consensus not matching contaminated sample alleles [".$DEFAULT_MAXIMUM_ALLOWED_MISMATCHES."]\n";
 	print STDERR "\t-3 | --masked-positions STRING\t1-indexed positions to mask (e.g., 1-10,50,55-70) [null]\n";
 	print STDERR "\t-4 | --masked-positions-file FILE\t1-indexed positions to mask, one per line [null]\n";
+	print STDERR "\t-y | --max-mismatches INT\tIn flagged potential cross-contamination, maximum allowed unambiguous bases in contaminating sample consensus not matching contaminated sample alleles [".$DEFAULT_MAXIMUM_ALLOWED_MISMATCHES."]\n";
+	print STDERR "\t-5 | --min-matches INT\t\tOf positions at which the two consensus genomes differ, the minimum number of positions at which contamination is detected as a minor allele [".$DEFAULT_MINIMUM_MINOR_ALLELES_MATCHED."]\n";
+	print STDERR "\t-5 | --min-matches-proportion FLOAT\tOf positions at which the two consensus genomes differ, the minimum proportion of positions at which contamination is detected as a minor allele [".$DEFAULT_MINIMUM_PROPORTION_GENOME_DEFINING_POSITIONS_MATCHED."]\n";
 	print STDERR "\n";
 	
 	print STDERR "- Plate map and neighbors (any combination, all optional):\n";
@@ -162,6 +166,8 @@ my @consensus_genome_files = ();
 my $consensus_genomes_aligned_file = "";
 my $minimum_genome_coverage = $DEFAULT_MINIMUM_GENOME_COVERAGE;
 my $maximum_allowed_mismatches = $DEFAULT_MAXIMUM_ALLOWED_MISMATCHES;
+my $minimum_minor_alleles_matched = $DEFAULT_MINIMUM_MINOR_ALLELES_MATCHED;
+my $minimum_proportion_genome_defining_positions_matched = $DEFAULT_MINIMUM_PROPORTION_GENOME_DEFINING_POSITIONS_MATCHED;
 my $minimum_read_depth = $DEFAULT_MINIMUM_READ_DEPTH;
 my $masked_positions_string = "";
 my $masked_positions_file = "";
@@ -228,6 +234,14 @@ for($argument_index = 0; $argument_index <= $#ARGV; $argument_index++)
 	elsif(($input = read_in_positive_integer_argument("-y", "--max-mismatches")) != -1)
 	{
 		$maximum_allowed_mismatches = $input;
+	}
+	elsif(($input = read_in_positive_integer_argument("-5", "--min-matches")) != -1)
+	{
+		$minimum_minor_alleles_matched = $input;
+	}
+	elsif(($input = read_in_positive_float_argument("-6", "--min-matches-proportion")) != -1)
+	{
+		$minimum_proportion_genome_defining_positions_matched = $input;
 	}
 	elsif(($input = read_in_positive_integer_argument("-p", "--cores")) != -1)
 	{
@@ -1754,7 +1768,7 @@ if(scalar @plate_map_files)
 			print PLATE_OUT_FILE "contamination_source_well".$DELIMITER;
 			print PLATE_OUT_FILE "sample".$DELIMITER;
 			print PLATE_OUT_FILE "contamination_source_sample".$DELIMITER;
-			print PLATE_OUT_FILE "appearance_of_potential_contamination".$DELIMITER;
+			print PLATE_OUT_FILE "number_consensus_differences_matched_as_minor_alleles".$DELIMITER;
 			print PLATE_OUT_FILE "estimated_contamination_volume".$NEWLINE;
 	
 			# prints cross contamination table
@@ -1768,19 +1782,6 @@ if(scalar @plate_map_files)
 			check_if_file_exists_before_writing($plate_visualization_output_file.".jpg");
 			check_if_file_exists_before_writing($plate_visualization_output_file.".pdf");
 			`$PLATE_VISUALIZATION_FILE_PATH $plate_output_file $plate_visualization_output_file $plate_number_columns $plate_number_rows contamination`;
-
-			# generates visualization of consensus-level contamination only
-			my $plate_visualization_output_file_consensus = trim_off_file_extension($plate_output_file)."_visualization_consensus";
-			check_if_file_exists_before_writing($plate_visualization_output_file_consensus.".jpg");
-			check_if_file_exists_before_writing($plate_visualization_output_file_consensus.".pdf");
-			`$PLATE_VISUALIZATION_FILE_PATH $plate_output_file $plate_visualization_output_file_consensus $plate_number_columns $plate_number_rows contamination_consensus`;
-
-			# generates visualization of minor allele-level contamination only
-			my $plate_visualization_output_file_minor = trim_off_file_extension($plate_output_file)."_visualization_minor";
-			check_if_file_exists_before_writing($plate_visualization_output_file_minor.".jpg");
-			check_if_file_exists_before_writing($plate_visualization_output_file_minor.".pdf");
-			`$PLATE_VISUALIZATION_FILE_PATH $plate_output_file $plate_visualization_output_file_minor $plate_number_columns $plate_number_rows contamination_minor`;
-
 		}
 	}
 }
@@ -1852,14 +1853,15 @@ if($minimum_read_depth)
 	print OUT_FILE "potential_contaminating_sample_unambiguous_bases_passing_read_depth_filter".$DELIMITER;
 	print OUT_FILE "potential_contaminating_sample_genome_covered_passing_read_depth_filter".$DELIMITER;
 }
+
+print OUT_FILE "number_consensus_differences".$DELIMITER;
+print OUT_FILE "consensus_differences".$DELIMITER;
+print OUT_FILE "number_consensus_differences_matched_as_minor_alleles".$DELIMITER;
+print OUT_FILE "proportion_consensus_differences_matched_as_minor_alleles".$DELIMITER;
 print OUT_FILE "minor_alleles_matched".$DELIMITER;
-print OUT_FILE "major_alleles_matched".$DELIMITER;
-print OUT_FILE "heterozygous_positions_matched".$DELIMITER;
-print OUT_FILE "alleles_matched".$DELIMITER;
 print OUT_FILE "num_mismatches".$DELIMITER;
 print OUT_FILE "mismatches".$DELIMITER;
 
-print OUT_FILE "appearance_of_potential_contamination".$DELIMITER;
 print OUT_FILE "estimated_contamination_volume".$DELIMITER;
 print OUT_FILE "contaminating_allele_frequency_range".$DELIMITER;
 print OUT_FILE "contaminating_allele_frequencies";
@@ -1986,7 +1988,7 @@ sub detect_potential_contamination_in_sample_pair
 	my %major_allele_frequencies = (); # key: position, allele -> value: frequency of major allele
 	my %positions_with_heterozygosity = (); # key: position -> value: 1 if position has minor allele
 	my $number_positions_with_heterozygosity = 0;
-	my $list_of_alleles_to_print = "";
+	my $list_of_alleles_at_positions_with_heterozygosity_to_print = "";
 	open HETEROZYGOSITY_TABLE, "<$potential_contaminated_within_sample_diversity_file" || die "Could not open $potential_contaminated_within_sample_diversity_file to read; terminating =(\n";
 	while(<HETEROZYGOSITY_TABLE>) # for each line in the file
 	{
@@ -2073,20 +2075,14 @@ sub detect_potential_contamination_in_sample_pair
 			$minor_allele_frequencies{$position}{$minor_allele} = $minor_allele_frequency;
 			$major_allele_frequencies{$position}{$major_allele} = $major_allele_frequency;
 		
-			if($list_of_alleles_to_print)
+			if($list_of_alleles_at_positions_with_heterozygosity_to_print)
 			{
-				$list_of_alleles_to_print .= $ALLELE_LIST_SEPARATOR;
+				$list_of_alleles_at_positions_with_heterozygosity_to_print .= $ALLELE_LIST_SEPARATOR;
 			}
-			$list_of_alleles_to_print .= prepare_allele_to_print($position, $major_allele.$minor_allele);
+			$list_of_alleles_at_positions_with_heterozygosity_to_print .= prepare_allele_to_print($position, $major_allele.$minor_allele);
 		}
 	}
 	close HETEROZYGOSITY_TABLE;
-	
-	# verifies that this sample is worth looking at
-# 	if($number_positions_with_heterozygosity < $MINIMUM_MINOR_ALLELES_FOUND_IN_CONSENSUS)
-# 	{
-# 		return;
-# 	}
 
 	# retrieves consensus-level alleles for potential contaminated sample and contaminating sample
 	my $potential_contaminated_consensus = $sequence_name_to_consensus{$potential_contaminated_sample};
@@ -2123,49 +2119,62 @@ sub detect_potential_contamination_in_sample_pair
 		}
 	}
 	
-	# counts matches and mismatches at positions with heterozygosity
+	# identifies positions where contaminating and contaminated consensus genomes differ
 	my $number_mismatches = 0; # positions where contaminating sample allele does not match minor, major, or consensus sequence allele in contaminated sequence
 	my $mismatches_string = "";
-	
-	my $minor_alleles_matched = 0; # positions where contaminating sample allele matches contaminated sample minor allele
-	my $major_alleles_matched = 0; # positions where contaminating sample allele matches contaminated sample major allele
-	my $list_of_alleles_matched = ""; # alleles matched, at positions with heterozygosity only, for printing
+	my $number_matches = 0; # positions where contaminating sample consensus allele matches contaminated sample minor allele
+	my $matches_string = "";
 	my @matched_allele_frequencies = ();
-	
-	foreach my $position(sort {$a <=> $b} keys %positions_with_heterozygosity)
+	my $number_consensus_differences = 0; # number positions where consensus alleles of contaminating and contaminated samples differ
+	my $consensus_differences_string = "";
+	foreach my $position(1..$#potential_contaminating_consensus_values + 1)
 	{
-		my $nucleotide_at_position = $potential_contaminating_consensus_values[$position - 1];
-		if(is_unambiguous_base($nucleotide_at_position)
-			and (!$minimum_read_depth or $sample_name_to_position_to_read_depth{$potential_contaminating_sample}{$position} >= $minimum_read_depth)
-			and (!$minimum_read_depth or $sample_name_to_position_to_read_depth{$potential_contaminated_sample}{$position} >= $minimum_read_depth)
-			and !$position_is_masked{$position})
+		my $potential_contaminated_consensus_value = $potential_contaminated_consensus_values[$position - 1];
+		my $potential_contaminating_consensus_value = $potential_contaminating_consensus_values[$position - 1];
+		
+		if( # position not masked by user
+			!$position_is_masked{$position}
+		
+			# mismatch between contaminated and contaminating consensus sequences
+			and $potential_contaminated_consensus_value ne $potential_contaminating_consensus_value
+			
+			# bases in both contaminating and contaminated sequence are A, T, C, or G
+			and is_unambiguous_base($potential_contaminating_consensus_value)
+			and is_unambiguous_base($potential_contaminated_consensus_value)
+			
+			# both contaminating and contaminated sequence have read depth >= minimum_read_depth
+			# at this position
+			and (!$minimum_read_depth or $sample_name_to_position_to_read_depth{$potential_contaminating_sample}{$position}
+				and $sample_name_to_position_to_read_depth{$potential_contaminating_sample}{$position} >= $minimum_read_depth)
+			and (!$minimum_read_depth or $sample_name_to_position_to_read_depth{$potential_contaminated_sample}{$position}
+				and $sample_name_to_position_to_read_depth{$potential_contaminated_sample}{$position} >= $minimum_read_depth))
 		{
-			if($minor_alleles{$position}{$nucleotide_at_position}
-				or $major_alleles{$position}{$nucleotide_at_position})
+			$number_consensus_differences++;
+			if($consensus_differences_string)
 			{
-				# saves matched allele to string to print
-				if($list_of_alleles_matched)
+				$consensus_differences_string .= $ALLELE_LIST_SEPARATOR;
+			}
+			$consensus_differences_string .= prepare_allele_to_print($position, $potential_contaminated_consensus_value.$potential_contaminating_consensus_value);
+		
+			# check if contaminating consensus allele matches contaminated minor allele
+			if($positions_with_heterozygosity{$position}
+				and $minor_alleles{$position}{$potential_contaminating_consensus_value})
+			{
+				$number_matches++;
+				push(@matched_allele_frequencies, $minor_allele_frequencies{$position}{$potential_contaminating_consensus_value});
+			
+				# saves match to string to print
+				if($matches_string)
 				{
-					$list_of_alleles_matched .= $ALLELE_LIST_SEPARATOR;
+					$matches_string .= $ALLELE_LIST_SEPARATOR;
 				}
-				$list_of_alleles_matched .= prepare_allele_to_print($position, $nucleotide_at_position);
-				
-				# increments count of minor or major alleles matched
-				if($minor_alleles{$position}{$nucleotide_at_position})
-				{
-					$minor_alleles_matched++;
-					push(@matched_allele_frequencies, $minor_allele_frequencies{$position}{$nucleotide_at_position});
-				}
-				elsif($major_alleles{$position}{$nucleotide_at_position})
-				{
-					$major_alleles_matched++;
-					push(@matched_allele_frequencies, $major_allele_frequencies{$position}{$nucleotide_at_position});
-				}
+				$matches_string .= prepare_allele_to_print($position, $potential_contaminating_consensus_value);
 			}
 			else
 			{
-				# this base does not match minor or major allele in contaminated sequence
+				# contaminating consensus allele does not match contaminated consensus or minor alleles
 				$number_mismatches++;
+				push(@matched_allele_frequencies, 0);
 				
 				# verifies that this potential contamination scenario is still worth looking at
 				if($number_mismatches > $maximum_allowed_mismatches)
@@ -2181,66 +2190,23 @@ sub detect_potential_contamination_in_sample_pair
 				{
 					$mismatches_string .= $ALLELE_LIST_SEPARATOR;
 				}
-				$mismatches_string .= prepare_allele_to_print($position, $nucleotide_at_position);
+				$mismatches_string .= prepare_allele_to_print($position, $potential_contaminating_consensus_value);
 			}
 		}
 	}
-
-	# verifies that this potential contamination scenario is still worth looking at
-# 	if($minor_alleles_matched < $MINIMUM_MINOR_ALLELES_FOUND_IN_CONSENSUS)
-# 	{
-# 		return;
-# 	}
 	
-	# counts mismatches in rest of genome
-	foreach my $position(1..$#potential_contaminating_consensus_values + 1)
+	# exits if contamination event is of insufficient confidence
+	if($number_matches < $minimum_minor_alleles_matched 
+		or $number_matches/$number_consensus_differences < $minimum_proportion_genome_defining_positions_matched)
 	{
-		my $potential_contaminated_consensus_value = $potential_contaminated_consensus_values[$position - 1];
-		my $potential_contaminating_consensus_value = $potential_contaminating_consensus_values[$position - 1];
-		
-		if( # not a location with heterozygosity
-			!$positions_with_heterozygosity{$position}
-			
-			# position not masked by user
-			and !$position_is_masked{$position}
-		
-			 # mismatch between contaminated and contaminating consensus sequences
-			and $potential_contaminated_consensus_value ne $potential_contaminating_consensus_value
-			
-			# bases in both contaminating and contaminated sequence are A, T, C, or G
-			and is_unambiguous_base($potential_contaminating_consensus_value)
-			and is_unambiguous_base($potential_contaminated_consensus_value)
-			
-			# both contaminating and contaminated sequence have read depth >= minimum_read_depth
-			# at this position
-			and (!$minimum_read_depth or $sample_name_to_position_to_read_depth{$potential_contaminating_sample}{$position}
-				and $sample_name_to_position_to_read_depth{$potential_contaminating_sample}{$position} >= $minimum_read_depth)
-			and (!$minimum_read_depth or $sample_name_to_position_to_read_depth{$potential_contaminated_sample}{$position}
-				and $sample_name_to_position_to_read_depth{$potential_contaminated_sample}{$position} >= $minimum_read_depth))
+		if(!$print_all)
 		{
-			# this base does not match consensus genome
-			$number_mismatches++;
-			
-			# verifies that this potential contamination scenario is still worth looking at
-			if($number_mismatches > $maximum_allowed_mismatches)
-			{
-				if(!$print_all)
-				{
-					return;
-				}
-			}
-			
-			# saves mismatch to string to print
-			if($mismatches_string)
-			{
-				$mismatches_string .= $ALLELE_LIST_SEPARATOR;
-			}
-			$mismatches_string .= prepare_allele_to_print($position, $potential_contaminating_consensus_value);
+			return;
 		}
 	}
 	
 	# summarizes matched allele frequencies
-	my $median_frequency = 1; # default 100% if only consensus sequences match (no heterozygous positions)
+	my $median_frequency = 0; # default 0%
 	my $frequency_range_min = $NO_DATA;
 	my $frequency_range_max = $NO_DATA;
 	my $matched_allele_frequency_string = "";
@@ -2279,21 +2245,6 @@ sub detect_potential_contamination_in_sample_pair
 		}
 	}
 	
-	# summarizes contamination type (minor or consensus-level)
-	my $contamination_type = $NO_DATA;
-	if($minor_alleles_matched and !$major_alleles_matched)
-	{
-		$contamination_type = "minor alleles";
-	}
-	elsif($minor_alleles_matched and $major_alleles_matched)
-	{
-		$contamination_type = "minor and consensus-level";
-	}
-	elsif(!$minor_alleles_matched)
-	{
-		$contamination_type = "consensus-level";
-	}
-	
 	# if we've gotten this far, this sequence could be a contaminating sequence
 	# prepare and return output to print
 	my $output_line = "";
@@ -2309,7 +2260,7 @@ sub detect_potential_contamination_in_sample_pair
 	$output_line .= add_comma_separators($potential_contaminated_consensus_unambig_bases).$DELIMITER;
 	$output_line .= prepare_percentage_to_print($potential_contaminated_consensus_percent_covered).$DELIMITER;
 	$output_line .= $number_positions_with_heterozygosity.$DELIMITER;
-	$output_line .= $list_of_alleles_to_print.$DELIMITER; # TODO
+	$output_line .= $list_of_alleles_at_positions_with_heterozygosity_to_print.$DELIMITER; # TODO
 	
 	# adds columns about contaminating sample
 	$output_line .= $potential_contaminating_sample.$DELIMITER;
@@ -2321,26 +2272,16 @@ sub detect_potential_contamination_in_sample_pair
 	$output_line .= add_comma_separators($potential_contaminating_consensus_unambig_bases).$DELIMITER;
 	$output_line .= prepare_percentage_to_print($potential_contaminating_consensus_percent_covered).$DELIMITER;
 	
-	# adds columns about positions with and without matched alleles
-	$output_line .= $minor_alleles_matched.$DELIMITER;
-	$output_line .= $major_alleles_matched.$DELIMITER;
-	
-	if($number_positions_with_heterozygosity)
-	{
-		my $percent_heterozygous_positions_matched = (($minor_alleles_matched+$major_alleles_matched)/$number_positions_with_heterozygosity);
-		$output_line .= prepare_percentage_to_print($percent_heterozygous_positions_matched).$DELIMITER;
-	}
-	else
-	{
-		$output_line .= $NO_DATA.$DELIMITER;
-	}
-	
-	$output_line .= $list_of_alleles_matched.$DELIMITER;
+	# adds columns about match
+	$output_line .= $number_consensus_differences.$DELIMITER;
+	$output_line .= $consensus_differences_string.$DELIMITER;
+	$output_line .= $number_matches.$DELIMITER;
+	$output_line .= prepare_percentage_to_print($number_matches/$number_consensus_differences).$DELIMITER;
+	$output_line .= $matches_string.$DELIMITER;
 	$output_line .= $number_mismatches.$DELIMITER;
 	$output_line .= $mismatches_string.$DELIMITER;
 	
 	# adds columns for contaminating allele frequencies
-	$output_line .= $contamination_type.$DELIMITER;
 	$output_line .= prepare_percentage_to_print($median_frequency).$DELIMITER; # approximate contamination volume
 	if($frequency_range_min eq $NO_DATA or $frequency_range_min == $frequency_range_max)
 	{
@@ -2372,7 +2313,7 @@ sub detect_potential_contamination_in_sample_pair
 		# for plate map-specific output file
 		$output_line_plate .= $potential_contaminated_sample.$DELIMITER;
 		$output_line_plate .= $potential_contaminating_sample.$DELIMITER;
-		$output_line_plate .= $contamination_type.$DELIMITER;
+		$output_line_plate .= $number_matches.$DELIMITER;
 		$output_line_plate .= $median_frequency;
 	}
 
